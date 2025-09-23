@@ -8,7 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
-
+use App\Models\Setting;
 class AuthenticatedSessionController extends Controller
 {
     /**
@@ -22,25 +22,31 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
-    {
-        // Authenticate user via Breeze
-        $request->authenticate();
+  public function store(LoginRequest $request): RedirectResponse
+{
+    \Log::info('Login attempt:', $request->all());
 
-        $request->session()->regenerate();
+    $loginMethod = Setting::where('key', 'login_method')->value('value') ?? 'email';
 
-        $user = $request->user(); // Get authenticated user
-
-        // Get all role names as an array
-        $roleNames = $user->roles->pluck('role')->toArray();
-
-        // Redirect based on roles
-        if (in_array('User', $roleNames)) {
-            return redirect()->route('homePage');
-        }else {
-            return redirect()->to('admin-panel/dashboard');
-        }
+    if ($loginMethod === 'phone') {
+        $credentials = ['phone' => $request->input('phone'), 'password' => $request->input('password')];
+    } else {
+        $credentials = ['email' => $request->input('email'), 'password' => $request->input('password')];
     }
+
+    \Log::info('Credentials:', $credentials);
+
+    if (Auth::attempt($credentials, $request->filled('remember'))) {
+        $request->session()->regenerate();
+        return redirect()->intended('admin-panel/dashboard');
+    }
+
+    \Log::warning('Authentication failed for credentials:', $credentials);
+
+    return back()->withErrors([
+        'login' => __('auth.failed'),
+    ]);
+}
 
     /**
      * Destroy an authenticated session.

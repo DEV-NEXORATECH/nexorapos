@@ -4,59 +4,60 @@
 
 @section('content')
 
-			<div class="main-panel">
-				<div class="content">
-					<div class="container-fluid">
+    <div class="main-panel">
+        <div class="content">
+            <div class="container-fluid">
 
-                        @if (Session::has('success'))
-                            <div class="alert alert-success">{{ Session::get('success') }}</div>
-                        @endif
+                @if (Session::has('success'))
+                    <div class="alert alert-success">{{ Session::get('success') }}</div>
+                @endif
 
-                        @if (Session::has('failed'))
-                            <div class="alert alert-danger">{{ Session::get('failed') }}</div>
-                        @endif
+                @if (Session::has('failed'))
+                    <div class="alert alert-danger">{{ Session::get('failed') }}</div>
+                @endif
 
-						<h4 class="page-title">Dashboard</h4>
-						<div class="row">
-							<div class="col-md-3">
-								<div class="card card-stats card-warning">
-									<div class="card-body ">
-										<div class="row">
-											<div class="col-5">
-												<div class="icon-big text-center">
-													<i class="la la-users"></i>
-												</div>
-											</div>
-											<div class="col-7 d-flex align-items-center">
-												<div class="numbers">
-													<p class="card-category">Users</p>
-													<h4 class="card-title">{{ $userCount }}</h4>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="col-md-3">
-								<div class="card card-stats card-success">
-									<div class="card-body ">
-										<div class="row">
-											<div class="col-5">
-												<div class="icon-big text-center">
-													<i class="la la-bar-chart"></i>
-												</div>
-											</div>
-											<div class="col-7 d-flex align-items-center">
-												<div class="numbers">
-													<p class="card-category">Sales</p>
-													<h4 class="card-title">$ 1,345</h4>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="col-md-3">
+                <h4 class="page-title">Dashboard</h4>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card card-stats card-primary">
+                            <div class="card-body ">
+                                <div class="row">
+                                    <div class="col-5">
+                                        <div class="icon-big text-center">
+                                            <i class="la la-users"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-7 d-flex align-items-center">
+                                        <div class="numbers">
+                                            <p class="card-category">Users</p>
+                                            <h4 class="card-title">{{ $userCount }}</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card card-stats card-success">
+                            <div class="card-body ">
+                                <div class="row">
+                                    <div class="col-5">
+                                        <div class="icon-big text-center">
+                                            <i class="la la-bar-chart"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-7 d-flex align-items-center">
+                                        <div class="numbers">
+                                            <a href="{{ url('admin-panel/stores/listing') }}"
+                                                class="card-category">Stores</a>
+                                            <h4 class="card-title">{{ $store }}</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {{-- <div class="col-md-3">
 								<div class="card card-stats card-danger">
 									<div class="card-body">
 										<div class="row">
@@ -67,15 +68,36 @@
 											</div>
 											<div class="col-7 d-flex align-items-center">
 												<div class="numbers">
-													<p class="card-category">Total Posts</p>
-													<h4 class="card-title">{{ $postCount }}</h4>
+													<a href="{{ url('admin-panel/categories/listing') }}" class="card-category">Category</a>
+													<h4 class="card-title">{{ $cats }}</h4>
 												</div>
 											</div>
 										</div>
 									</div>
 								</div>
-							</div>
-							<div class="col-md-3">
+							</div> --}}
+                    <div class="col-md-3">
+                        <div class="card card-stats card-primary">
+                            <div class="card-body ">
+                                <div class="row">
+                                    <div class="col-5">
+                                        <div class="icon-big text-center">
+                                            <i class="la la-check-circle"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-7 d-flex align-items-center">
+                                        <div class="numbers">
+                                            <a href="{{ url('admin-panel/products/listing') }}"
+                                                class="card-category">Products</a>
+                                            <h4 class="card-title">{{ $products }}</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- <div class="col-md-3">
 								<div class="card card-stats card-primary">
 									<div class="card-body ">
 										<div class="row">
@@ -86,17 +108,160 @@
 											</div>
 											<div class="col-7 d-flex align-items-center">
 												<div class="numbers">
-													<p class="card-category">Order</p>
-													<h4 class="card-title">576</h4>
+                                                    <a href="{{ url('admin-panel/variants/listing') }}" class="card-category">Variants</a>
+                                                    <h4 class="card-title">{{ $variants }}</h4>
 												</div>
 											</div>
 										</div>
 									</div>
 								</div>
-							</div>
 
-						</div>
-						<div class="row">
+                            </div> --}}
+
+                    {{-- <div class="col-md-3">
+								<div class="card card-stats card-warning">
+									<div class="card-body ">
+										<div class="row">
+											<div class="col-5">
+												<div class="icon-big text-center">
+													<i class="la la-users"></i>
+												</div>
+											</div>
+											<div class="col-7 d-flex align-items-center">
+												<div class="numbers">
+													<a href="{{ url('admin-panel/suppliers/listing') }}" class="card-category">Suppliers</a>
+													<h4 class="card-title">{{ $suppliers }}</h4>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div> --}}
+
+                    {{-- <div class="col-md-3">
+								<div class="card card-stats card-danger">
+									<div class="card-body ">
+										<div class="row">
+											<div class="col-5">
+												<div class="icon-big text-center">
+													<i class="la la-users"></i>
+												</div>
+											</div>
+											<div class="col-7 d-flex align-items-center">
+												<div class="numbers">
+													<a href="{{ url('admin-panel/customers/listing') }}" class="card-category">Customers</a>
+													<h4 class="card-title">{{ $customers }}</h4>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div> --}}
+
+                    {{-- <div class="col-md-3">
+								<div class="card card-stats card-success">
+									<div class="card-body ">
+										<div class="row">
+											<div class="col-5">
+												<div class="icon-big text-center">
+													<i class="fas fa-credit-card"></i>
+												</div>
+											</div>
+											<div class="col-7 d-flex align-items-center">
+												<div class="numbers">
+													<a href="{{ url('admin-panel/taxes/listing') }}" class="card-category">Tax</a>
+													<h4 class="card-title">{{ $taxes }}</h4>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div> --}}
+
+                    {{-- <div class="col-md-3">
+								<div class="card card-stats card-danger">
+									<div class="card-body ">
+										<div class="row">
+											<div class="col-5">
+												<div class="icon-big text-center">
+													<i class="fas fa-credit-card"></i>
+												</div>
+											</div>
+											<div class="col-7 d-flex align-items-center">
+												<div class="numbers">
+													<a href="{{ url('admin-panel/purchases/listing') }}" class="card-category">Purchase</a>
+													<h4 class="card-title">{{ $purchases }}</h4>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div> --}}
+
+                    {{-- <div class="col-md-3">
+								<div class="card card-stats card-success">
+									<div class="card-body ">
+										<div class="row">
+											<div class="col-5">
+												<div class="icon-big text-center">
+													<i class="la la-newspaper-o"></i>
+												</div>
+											</div>
+											<div class="col-7 d-flex align-items-center">
+												<div class="numbers">
+													<a href="{{ url('admin-panel/purchase-items/listing') }}" class="card-category">Items</a>
+													<h4 class="card-title">{{ $items }}</h4>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div> --}}
+
+                    {{-- <div class="col-md-3">
+								<div class="card card-stats card-info">
+									<div class="card-body ">
+										<div class="row">
+											<div class="col-5">
+												<div class="icon-big text-center">
+													<i class="la la-bar-chart"></i>
+												</div>
+											</div>
+											<div class="col-7 d-flex align-items-center">
+												<div class="numbers">
+													<a href="{{ url('admin-panel/sales/listing') }}" class="card-category">Sales</a>
+													<h4 class="card-title">{{ $sales }}</h4>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div> --}}
+
+                    <div class="col-md-3">
+                        <div class="card card-stats card-success">
+                            <div class="card-body ">
+                                <div class="row">
+                                    <div class="col-5">
+                                        <div class="icon-big text-center">
+                                            <i class="fas fa-dollar"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-7 d-flex align-items-center">
+                                        <div class="numbers">
+                                            <a href="{{ url('admin-panel/payments/listing') }}"
+                                                class="card-category">Payment</a>
+                                            <h4 class="card-title">{{ $payments }}</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+                {{-- <div class="row">
 							<div class="col-md-3">
 								<div class="card">
 									<div class="card-header">
@@ -110,8 +275,8 @@
 										<div class="legend"><i class="la la-circle text-primary"></i> Completed</div>
 									</div>
 								</div>
-							</div>
-							<div class="col-md-9">
+							</div> --}}
+                {{-- <div class="col-md-9">
 								<div class="card">
 									<div class="card-header">
 										<h4 class="card-title">World Map</h4>
@@ -405,9 +570,45 @@
 									</div>
 								</div>
 							</div>
-						</div>
-					</div>
-				</div>
+						</div> --}}
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">Users Statistics</h4>
+                                <p class="card-category">Users statistics this month</p>
+                            </div>
+                            <div class="card-body">
+                                <!-- 🔹 Use canvas instead of div for Chart.js -->
+                                <canvas id="monthlyChart" width="200" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h4 class="card-title">Sales Report</h4>
+                                    <p class="card-category">Number of products sold</p>
+                                </div>
+                                <!-- 🔹 Filter -->
+                                <select id="salesFilter" class="form-control w-auto">
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                </select>
+                            </div>
+
+                            <div class="card-body">
+                                <canvas id="salesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
 
 
 @endsection

@@ -3,16 +3,19 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Role;
 
 class Permission extends Model
 {
-    public function roles(){
-        return $this->belongsToMany(Role::class);
+    protected $table = 'permissions';
+
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class,'role_permissions','permission_id','role_id');
     }
 
-    // Corrected relation
     public function permission_category()
     {
-        return $this->belongsTo(PermissionCategory::class, 'permission_category_id');
+        return $this->belongsTo(PermissionCategory::class);
     }
 }

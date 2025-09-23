@@ -6,7 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-
+use App\Models\Role;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -22,6 +22,7 @@ class User extends Authenticatable
         'email',
         'role_id',
         'password',
+        'phone',
         'profile_image',
     ];
 
@@ -52,9 +53,13 @@ class User extends Authenticatable
         return $this->hasMany(Post::class);
     }
 
-        public function roles()
-        {
-            return $this->belongsToMany(Role::class, 'role_users', 'user_id', 'role_id');
-        }
+  public function role()
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
 
+    public function sales()
+    {
+        return $this->hasMany(Sale::class); 
+    }
 }

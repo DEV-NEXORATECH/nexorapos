@@ -23,6 +23,14 @@
 
                                         <div class="card-body">
                                             <div class="form-group">
+                                                <label for="login_method">Choose Login Method</label>
+                                                <select name="login_method" id="login_method" class="form-control">
+                                                    <option value="phone" {{ old('login_method', $settings->where('key', 'login_method')->first()->value ?? '') == 'phone' ? 'selected' : '' }}>Phone</option>
+                                                    <option value="email" {{ old('login_method', $settings->where('key', 'login_method')->first()->value ?? '') == 'email' ? 'selected' : '' }}>Email</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group">
                                                 <label for="newsletter">News Letter</label>
                                                 <input type="text" name="newsletter" class="form-control" value="{{ $settings->where('key', 'newsletter')->first()->value ?? '' }}" placeholder="Enter News Letter Text Here...">
                                             </div>

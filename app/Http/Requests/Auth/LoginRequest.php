@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-
+use App\Models\Setting;
 class LoginRequest extends FormRequest
 {
     /**
@@ -24,13 +24,23 @@ class LoginRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-    public function rules(): array
-    {
+   public function rules(): array
+{
+    $loginMethod = Setting::where('key', 'login_method')->value('value') ?? 'email';
+
+    if ($loginMethod === 'phone') {
         return [
-            'email' => ['required', 'string', 'email'],
+            'phone' => ['required', 'string', 'exists:users,phone'],
             'password' => ['required', 'string'],
         ];
     }
+
+    return [
+        'email' => ['required', 'string', 'email', 'exists:users,email'],
+        'password' => ['required', 'string'],
+    ];
+}
+
 
     /**
      * Attempt to authenticate the request's credentials.
@@ -78,8 +88,10 @@ class LoginRequest extends FormRequest
     /**
      * Get the rate limiting throttle key for the request.
      */
-    public function throttleKey(): string
-    {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
-    }
+   public function throttleKey(): string
+{
+    $identifier = $this->input('email') ?? $this->input('phone');
+    return Str::transliterate(Str::lower($identifier) . '|' . $this->ip());
+}
+
 }

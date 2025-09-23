@@ -1,4 +1,6 @@
 
+
+
 <div class="logo-header">
 				<a href="index.html" class="logo">
 					Blog Website
@@ -26,7 +28,7 @@
 
 
 						<li class="nav-item dropdown">
-							<a class="dropdown-toggle profile-pic" data-toggle="dropdown" href="#" aria-expanded="false"> <img src="{{ asset('admin/profile_images/'. Auth::user()->profile_image)}}" alt="user-img" width="36" class="img-circle"><span >{{ Auth::user()->role }}</span></span> </a>
+							<a class="dropdown-toggle profile-pic" data-toggle="dropdown" href="#" aria-expanded="false"> <img src="{{ asset('admin/profile_images/'. Auth::user()->profile_image)}}" alt="user-img" width="36" class="img-circle"><span >{{ Auth::user()->name }}</span></span> </a>
 							<ul class="dropdown-menu dropdown-user">
 								<li>
 									<div class="user-box">

@@ -17,7 +17,26 @@ $(document).ready(function () {
 
         Swal.fire({
             title: 'Are you sure?',
-            text: "This category will be permanently deleted!",
+            text: "Would You Like to Delete This Item!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = link;
+            }
+        });
+    });
+
+     $(document).on('click', '.force-delete', function(e) {
+        e.preventDefault();
+        var link = $(this).attr('href');
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "Would You Really Like TO Delete Your Record Permanently?",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
@@ -31,12 +50,12 @@ $(document).ready(function () {
     });
 
     // SweetAlert Update (optional)
-    $(document).on('click', '.update-category', function(e) {
+    $(document).on('click', '.restore-category', function(e) {
         e.preventDefault();
         var link = $(this).attr('href');
 
         Swal.fire({
-            title: 'Are you sure you want to edit this category?',
+            title: 'Are you sure you want to restore this Item?',
             icon: 'question',
             showCancelButton: true,
             confirmButtonText: 'Yes',

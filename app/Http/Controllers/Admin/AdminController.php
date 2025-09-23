@@ -6,13 +6,13 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\Admin\AdminService;
 
-
 class AdminController extends Controller
 {
-    public $adminService;
+    protected $adminService;
 
-    public function __construct(){
-        $this->adminService = new AdminService();
+    public function __construct(AdminService $adminService)
+    {
+        $this->adminService = $adminService;
     }
 
     public function adminPanel()
@@ -20,4 +20,8 @@ class AdminController extends Controller
         return $this->adminService->adminPanel();
     }
 
+    public function getSalesData(Request $request)
+    {
+        return $this->adminService->getSalesData($request);
+    }
 }

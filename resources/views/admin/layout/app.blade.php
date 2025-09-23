@@ -5,8 +5,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <title>@yield('title', 'Dashboard')</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no">
-
-    <!-- Bootstrap CSS -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <!-- Bootstrap CSS (Ready Dashboard - Bootstrap 4) -->
     <link rel="stylesheet" href="{{ asset('admin/assets/css/bootstrap.min.css') }}">
 
     <!-- Google Fonts -->
@@ -15,17 +15,20 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ asset('admin/assets/css/ready.css') }}">
     <link rel="stylesheet" href="{{ asset('admin/assets/css/demo.css') }}">
+    <link rel="stylesheet" href="{{ asset('admin/pos/custome.css') }}">
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
 
     <!-- Select2 CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet">
 </head>
 <body>
+    @include('admin.layout.message')
     <div class="wrapper">
         <div class="main-header">
             @include('admin.layout.navbar')
@@ -40,7 +43,7 @@
                 <div class="modal-content">
                     <div class="modal-header bg-primary">
                         <h6 class="modal-title"><i class="la la-frown-o"></i> Under Development</h6>
-                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><!-- Bootstrap 4 -->
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -49,18 +52,18 @@
                         <p><b>We'll let you know when it's done</b></p>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button><!-- Bootstrap 4 -->
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- jQuery (Only Once!) -->
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
-    <!-- Bootstrap Bundle JS (includes Popper.js) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ asset('admin/custom/js/chart.js') }}"></script>
 
     <!-- TinyMCE -->
     <script src="https://cdn.tiny.cloud/1/ez5amijege3x6i86pqkqrsrc0uco69tco9lgfiyjs16uhvqf/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
@@ -68,10 +71,16 @@
     <!-- Select2 JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
 
-    <!-- DataTables JS -->
-    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <!-- DataTables JS + Export Buttons -->
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 
-    <!-- Ready Dashboard JS -->
+    <!-- Ready Dashboard Scripts (Bootstrap 4 + Plugins + Chartist) -->
     <script src="{{ asset('admin/assets/js/plugin/jquery-ui-1.12.1.custom/jquery-ui.min.js') }}"></script>
     <script src="{{ asset('admin/assets/js/core/popper.min.js') }}"></script>
     <script src="{{ asset('admin/assets/js/core/bootstrap.min.js') }}"></script>
@@ -86,21 +95,10 @@
     <script src="{{ asset('admin/assets/js/ready.min.js') }}"></script>
     <script src="{{ asset('admin/assets/js/demo.js') }}"></script>
 
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
-
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!-- Session Alerts -->
     @if(session('success'))
     <script>
         Swal.fire({
@@ -143,13 +141,15 @@
                     'searchreplace visualblocks code fullscreen',
                     'insertdatetime media table paste code help wordcount'
                 ],
-                toolbar: 'undo redo | formatselect | bold italic backcolor | \
-                          alignleft aligncenter alignright alignjustify | \
-                          bullist numlist outdent indent | removeformat | help'
+                toolbar: 'undo redo | formatselect | bold italic backcolor | ' +
+                         'alignleft aligncenter alignright alignjustify | ' +
+                         'bullist numlist outdent indent | removeformat | help'
             });
         });
     </script>
 
+    <!-- Custom Page Scripts -->
+    @stack('script')
     @yield('scripts')
 </body>
 </html>

@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Models\Permission;
+use App\Models\Role;
+use App\Models\User;
+use App\Models\RolePermission;
 use Symfony\Component\HttpFoundation\Response;
 
 class AdminMiddleware
@@ -25,30 +28,16 @@ class AdminMiddleware
             return redirect()->route('login');
         }
 
-        // Get the current authenticated user
-        $user = Auth::user();
+       $user = Auth::user();
+        $role = $user->role;
+        $permissions = $role->permissions->pluck('route')->toArray();
+        $currentUri = Route::current()->uri();
 
-        // Collect all permission IDs assigned to the user's roles
-        $userPermissionIds = $user->roles
-            ->flatMap(fn($role) => $role->permissions)
-            ->pluck('id')
-            ->unique()
-            ->toArray();
-
-        // Fetch all system permissions and filter only those the user has
-        $userRoutes = Permission::whereIn('id', $userPermissionIds)
-            ->pluck('route')
-            ->toArray();
-
-        // Get the current route URI
-       $currentUri = Route::getFacadeRoot()->current()->uri();
-
-        // Check if the user has permission to access this route
-        if (in_array($currentUri, $userRoutes)) {
+        if (in_array($currentUri, $permissions)) {
             return $next($request);
         }
 
-        // Redirect back if user has no permission
+        // Redirect if user has no permission
         return redirect()->back()->with('failed', 'You do not have permission to access this route.');
     }
 }

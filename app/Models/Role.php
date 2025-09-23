@@ -3,22 +3,20 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Permission;
+use App\Models\User;
 
 class Role extends Model
 {
+    protected $table = 'roles';
 
     public function permissions()
     {
-        return $this->belongsToMAny(Permission::class, 'role_permissions');
+        return $this->belongsToMany(Permission::class,'role_permissions','role_id','permission_id');
     }
 
-    /**
-     * The roles that belong to the Role
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
-     */
-    public function users(): BelongsToMany
+    public function users()
     {
-        return $this->belongsToMany(User::class, 'role_users', 'role_id', 'user_id');
+        return $this->hasMany(User::class);
     }
 }

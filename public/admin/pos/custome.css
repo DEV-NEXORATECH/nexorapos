@@ -1,0 +1,51 @@
+
+:root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            --success-gradient: linear-gradient(135deg, #4ecdc4, #44a08d);
+            --warning-gradient: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+            --info-gradient: linear-gradient(135deg, #45b7d1, #2196f3);
+            --purple-gradient: linear-gradient(135deg, #a8edea, #fed6e3);
+            --orange-gradient: linear-gradient(135deg, #ffecd2, #fcb69f);
+            --green-gradient: linear-gradient(135deg, #96ceb4, #85c1a3);
+            --pink-gradient: linear-gradient(135deg, #feca57, #ff9ff3);
+            
+            --text-primary: #333;
+            --text-secondary: #666;
+            --text-muted: #999;
+            --bg-white: rgba(255, 255, 255, 0.95);
+            --shadow-light: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --shadow-medium: 0 20px 40px rgba(0, 0, 0, 0.15);
+            --border-radius: 20px;
+            --border-radius-small: 12px;
+        }
+        /* Notification */
+            .notification {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: var(--border-radius-small);
+                color: white;
+                font-weight: 600;
+                z-index: 11000;
+                animation: slideInRight 0.3s ease;
+                max-width: 300px;
+            }
+
+            .notification.success {
+                background: var(--success-gradient);
+            }
+
+            .notification.error {
+                background: var(--secondary-gradient);
+            }
+
+            .notification.info {
+                background: var(--info-gradient);
+            }
+
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }

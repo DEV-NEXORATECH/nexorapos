@@ -1,14 +1,10 @@
 @php
     $data = modules(); // Get all categories with permissions
-    // Get unique permission IDs assigned to current user through roles
-    $userPermissions = Auth::user()
-        ->roles
-        ->flatMap(function ($role) {
-            return $role->permissions;
-        })
-        ->pluck('id')
-        ->unique()
-        ->toArray();
+
+    $user=Auth::user();
+    $role=$user->role;
+    $permissions=$role->permissions->pluck('id')->unique()->toArray();
+
 @endphp
 
 <div class="sidebar">
@@ -21,7 +17,7 @@
                 <a class="" data-toggle="collapse" href="#collapseExample" aria-expanded="true">
                     <span>
                         {{-- Assuming only one role per user, update if multiple --}}
-                        {{ Auth::user()->roles->first()->role ?? 'Role' }}
+
                         <span class="user-level">{{ Auth::user()->name }}</span>
                         <span class="caret"></span>
                     </span>
@@ -49,15 +45,16 @@
             @foreach ($data as $category)
                 @php
                     // Only show permissions that the user has
-                    $filteredPermissions = $category->permissions->whereIn('id', $userPermissions);
+                    $filteredPermissions = $category->permissions->whereIn('id', $permissions);
                 @endphp
 
                 @if ($filteredPermissions->isNotEmpty())
                     @php
-                        // Determine if any permission in this category is active
-                        $isCategoryActive = $filteredPermissions->contains(function($permission) {
-                            return request()->is($permission->route);
-                        });
+
+                    $currentRoute = Route::current()->uri();
+                    $allRoutes = $filteredPermissions->pluck('route')->toArray();
+                    $isCategoryActive = in_array($currentRoute, $allRoutes);
+
                     @endphp
                     <li class="nav-item dropdown {{ $isCategoryActive ? 'show' : '' }}">
                         <a href="#categoryDropdown{{ $category->id }}" class="nav-link dropdown-toggle" data-toggle="collapse" role="button" aria-expanded="{{ $isCategoryActive ? 'true' : 'false' }}" aria-controls="categoryDropdown{{ $category->id }}">

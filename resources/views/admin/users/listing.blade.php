@@ -26,7 +26,6 @@
                                         <th>ID</th>
                                         <th>User Name</th>
                                         <th>Email</th>
-                                        <th>Role</th>
                                         <th>Profile</th>
                                         <th class="min-w-120 text-nowrap">Action</th>
                                     </tr>
@@ -39,11 +38,6 @@
                                             <td>{{ $user->email }}</td>
                                             <td>
                                                 <img src="{{ asset('admin/profile_images/'. $user->profile_image) }}" alt="Profile Image" width="50" height="50">
-                                            </td>
-                                            <td>
-                                                @foreach ($user->roles as $role)
-                                                    {{ $role->role }}
-                                                @endforeach
                                             </td>
                                             <td>
                                                 <a href="{{ url('admin-panel/users/edit',$user->id) }}" class="btn btn-success"><i class="fas fa-edit"></i></a>
