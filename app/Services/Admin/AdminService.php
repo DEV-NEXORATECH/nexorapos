@@ -5,17 +5,17 @@ namespace App\Services\Admin;
 use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Models\User;
-use App\Models\Pos\Store;
-use App\Models\Pos\Product;
-use App\Models\Pos\ProductCategory;
-use App\Models\Pos\ProductVariant;
-use App\Models\Pos\Supplier;
-use App\Models\Pos\Customer;
-use App\Models\Pos\Tax;
-use App\Models\Pos\Purchase;
-use App\Models\Pos\PurchaseItem;
-use App\Models\Pos\Sale;
-use App\Models\Pos\Payment;
+use App\Models\POS\Store;
+use App\Models\POS\Product;
+use App\Models\POS\ProductCategory;
+use App\Models\POS\ProductVariant;
+use App\Models\POS\Supplier;
+use App\Models\POS\Customer;
+use App\Models\POS\Tax;
+use App\Models\POS\Purchase;
+use App\Models\POS\PurchaseItem;
+use App\Models\POS\Sale;
+use App\Models\POS\Payment;
 class AdminService
 {
     public function adminPanel()
