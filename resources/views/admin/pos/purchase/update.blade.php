@@ -8,16 +8,18 @@
 				<div class="content">
 					<div class="container-fluid">
 
-                         <h4 class="page-title">Purchase</h4>
+                                     <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-edit"></i> Purchase</h4>
+                <a href="javascript:history.back()" class="btn btn-secondary" style="border: none;">Cancel</a>
+            </div>
 						<div >
 							<div class="">
-								<div class="card">
-									<div class="card-header">
-										<div class="card-title">Update Purchase</div>
-									</div>
+								<div class="nexora-control-card is-success mb-4">
+                    <h5><i class="fas fa-folder"></i> Update Purchase</h5>
+                    
                                     <form action="{{ url('admin-panel/purchase/update/'. $purchase->id) }}" method="POST" id="purchaseForm">
                                         @csrf
-                                        <div class="card-body">
+                                                            <div class="card-body p-0 mt-3">
 										<div class="form-group">
 											<label for="supplier_id">Supplier Name</label>
                                             <select name="supplier_id" id="supplier_id" class="form-control" {{ strtoupper($purchase->status) === 'RECEIVED' ? 'disabled' : 'required' }}>
@@ -104,9 +106,9 @@
                                             @enderror
 										</div>
 
-                                        <div class="card-action">
+                                        <div class="nexora-form-actions mt-3">
                                             @if(strtoupper($purchase->status) !== 'RECEIVED')
-											    <button class="btn btn-success">Update</button>
+											    <button class="btn btn-primary">Update</button>
                                             @endif
 											 <a href="{{ url('admin-panel/purchase/listing') }}" class="btn btn-danger">{{ strtoupper($purchase->status) === 'RECEIVED' ? 'Back' : 'Cancel' }}</a>
 										</div>

@@ -9,16 +9,18 @@
 				<div class="content">
 					<div class="container-fluid">
 
-                         <h4 class="page-title">Permissions</h4>
+                                     <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-edit"></i> Permissions</h4>
+                <a href="javascript:history.back()" class="btn btn-secondary" style="border: none;">Cancel</a>
+            </div>
 						<div >
 							<div class="">
-								<div class="card">
-									<div class="card-header">
-										<div class="card-title">Update Permission</div>
-									</div>
+								<div class="nexora-control-card is-neutral mb-4">
+                    <h5><i class="fas fa-folder"></i> Update Permission</h5>
+                    
                                     <form action="{{ url('admin-panel/permissions/update', $permissions->id) }}" method="POST" id="categoryForm">
                                         @csrf
-                                        <div class="card-body">
+                                                            <div class="card-body p-0 mt-3">
 										<div class="form-group">
 											<label for="permission_category_id">Category Name</label>
                                             <select name="permission_category_id" id="permission_category_id" class="form-control select2">
@@ -51,8 +53,8 @@
                                                             </div>
                                                         </div>
 
-                                        <div class="card-action">
-											<button class="btn btn-success">Update</button>
+                                        <div class="nexora-form-actions mt-3">
+											<button class="btn btn-primary">Update</button>
 											 <a href="{{ url('admin-panel/permissions/listing') }}" class="btn btn-danger">Cancel</a>
 										</div>
 

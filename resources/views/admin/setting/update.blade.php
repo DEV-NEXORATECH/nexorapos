@@ -9,16 +9,18 @@
 				<div class="content">
 					<div class="container-fluid">
 
-                         <h4 class="page-title">Setting</h4>
+                                     <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-edit"></i> Setting</h4>
+                <a href="javascript:history.back()" class="btn btn-secondary" style="border: none;">Cancel</a>
+            </div>
 						<div >
 							<div class="">
-								<div class="card">
-									<div class="card-header">
-										<div class="card-title">Update Setting</div>
-									</div>
+								<div class="nexora-control-card is-warning mb-4">
+                    <h5><i class="fas fa-folder"></i> Update Setting</h5>
+                    
                                     <form action="{{ url('admin-panel/settings/update/'.$setting->id) }}" method="POST" id="categoryForm">
                                         @csrf
-                                        <div class="card-body">
+                                                            <div class="card-body p-0 mt-3">
 
 									    <div class="form-group">
 												<label for="key">Setting Key</label>
@@ -30,8 +32,8 @@
 												<input type="text" name="value" class="form-control" value="{{ $setting->value }}">
 										</div>
 
-                                        <div class="card-action">
-											<button class="btn btn-success">Update</button>
+                                        <div class="nexora-form-actions mt-3">
+											<button class="btn btn-primary">Update</button>
  										</div>
 
                                     </div>

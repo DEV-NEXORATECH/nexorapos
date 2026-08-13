@@ -16,7 +16,9 @@
                     <div class="alert alert-danger">{{ Session::get('failed') }}</div>
                 @endif
 
-                <h4 class="page-title">Dashboard</h4>
+                <div class="superadmin-header-card mb-4">
+                    <h4><i class="fas fa-chart-pie"></i> Dashboard</h4>
+                </div>
                 @php
                     $dashboardCompany = auth()->user()?->company;
                     $dashboardLicense = $dashboardCompany && ! auth()->user()?->isSuperAdmin()
@@ -63,9 +65,12 @@
                     </div>
                 @endif
 
-                {{-- ========== SUPER ADMIN: Platform Stats (Blue BG + White Font) ========== --}}
+                {{-- ========== SUPER ADMIN: Platform Stats (Colored Cards) ========== --}}
                 @if($platformStats)
                     <div class="row mb-3">
+                        @php
+                            $colors = ['is-success', 'is-warning', 'is-danger', 'is-neutral', 'is-success', 'is-warning'];
+                        @endphp
                         @foreach([
                             ['label' => 'Total Companies', 'value' => $platformStats['total_companies'], 'icon' => 'la la-building'],
                             ['label' => 'Active Companies', 'value' => $platformStats['active_companies'], 'icon' => 'la la-check-circle'],
@@ -73,9 +78,9 @@
                             ['label' => 'Expiring Licenses', 'value' => $platformStats['expiring_licenses'], 'icon' => 'la la-clock-o'],
                             ['label' => 'Total Users', 'value' => $platformStats['total_users'], 'icon' => 'la la-users'],
                             ['label' => 'Enabled Features', 'value' => $platformStats['enabled_features'], 'icon' => 'la la-toggle-on'],
-                        ] as $stat)
+                        ] as $index => $stat)
                             <div class="col-md-4 col-xl-2 mb-3">
-                                <div class="nexora-blue-card">
+                                <div class="nexora-blue-card {{ $colors[$index] }}">
                                     <div class="nexora-blue-card-icon">
                                         <i class="{{ $stat['icon'] }}"></i>
                                     </div>
@@ -293,12 +298,12 @@
 document.addEventListener('DOMContentLoaded', function () {
     if (typeof Chart === 'undefined') return;
 
-    var white = '#FFFFFF';
-    var whiteGrid = 'rgba(255,255,255,0.15)';
-    var whiteTick = '#FFFFFF';
-    var whiteFill = 'rgba(255,255,255,0.15)';
+    var chartTextColor = '#000000';
+    var chartGridColor = 'rgba(0, 0, 0, 0.05)';
+    var chartPrimaryColor = '#6366F1'; 
+    var chartFillColor = 'rgba(99, 102, 241, 0.1)';
     
-    Chart.defaults.color = '#FFFFFF';
+    Chart.defaults.color = chartTextColor;
 
     // ===== 1. SALES TREND CHART =====
     var salesChartInstance = null;
@@ -319,12 +324,12 @@ document.addEventListener('DOMContentLoaded', function () {
                         datasets: [{
                             label: 'Revenue',
                             data: values,
-                            borderColor: white,
-                            backgroundColor: whiteFill,
+                            borderColor: chartPrimaryColor,
+                            backgroundColor: chartFillColor,
                             fill: true,
                             tension: 0.4,
-                            pointBackgroundColor: white,
-                            pointBorderColor: '#0058A6',
+                            pointBackgroundColor: chartPrimaryColor,
+                            pointBorderColor: '#FFFFFF',
                             pointBorderWidth: 2,
                             pointRadius: 5,
                             pointHoverRadius: 7,
@@ -335,9 +340,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         plugins: {
                             legend: { display: false },
                             tooltip: {
-                                backgroundColor: '#002E58',
-                                titleColor: white,
-                                bodyColor: white,
+                                backgroundColor: '#1E1E1E',
+                                titleColor: '#FFFFFF',
+                                bodyColor: '#FFFFFF',
                                 padding: 12,
                                 cornerRadius: 8,
                                 callbacks: {
@@ -350,15 +355,15 @@ document.addEventListener('DOMContentLoaded', function () {
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                grid: { color: whiteGrid },
+                                grid: { color: chartGridColor },
                                 ticks: {
-                                    color: whiteTick,
+                                    color: chartTextColor,
                                     callback: function (v) { return 'Rp ' + Number(v).toLocaleString('id-ID'); }
                                 }
                             },
                             x: {
                                 grid: { display: false },
-                                ticks: { color: whiteTick }
+                                ticks: { color: chartTextColor }
                             }
                         }
                     }
@@ -390,15 +395,15 @@ document.addEventListener('DOMContentLoaded', function () {
                         {{ $cats }}
                     ],
                     backgroundColor: [
-                        '#FFFFFF',
-                        'rgba(255,255,255,0.75)',
-                        'rgba(255,255,255,0.55)',
-                        'rgba(255,255,255,0.4)',
-                        '#A0D2FF',
-                        '#5BA3D9',
+                        '#6366F1',
+                        '#3B82F6',
+                        '#10B981',
+                        '#F59E0B',
+                        '#EF4444',
+                        '#8B5CF6'
                     ],
                     borderWidth: 2,
-                    borderColor: '#0058A6',
+                    borderColor: '#FFFFFF',
                     hoverOffset: 8,
                 }]
             },
@@ -409,7 +414,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     legend: {
                         position: 'bottom',
                         labels: {
-                            color: white,
+                            color: chartTextColor,
                             padding: 12,
                             usePointStyle: true,
                             pointStyle: 'circle',
@@ -417,9 +422,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     },
                     tooltip: {
-                        backgroundColor: '#002E58',
-                        titleColor: white,
-                        bodyColor: white,
+                        backgroundColor: '#1E1E1E',
+                        titleColor: '#FFFFFF',
+                        bodyColor: '#FFFFFF',
                         padding: 10,
                         cornerRadius: 8,
                     }
@@ -438,7 +443,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 datasets: [{
                     label: 'Count',
                     data: [{{ $purchases }}, {{ $sales }}, {{ $payments > 0 ? 1 : 0 }}],
-                    backgroundColor: [white, 'rgba(255,255,255,0.7)', 'rgba(255,255,255,0.45)'],
+                    backgroundColor: ['#6366F1', '#3B82F6', '#10B981'],
                     borderRadius: 8,
                     barThickness: 40,
                 }]
@@ -448,9 +453,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 plugins: {
                     legend: { display: false },
                     tooltip: {
-                        backgroundColor: '#002E58',
-                        titleColor: white,
-                        bodyColor: white,
+                        backgroundColor: '#1E1E1E',
+                        titleColor: '#FFFFFF',
+                        bodyColor: '#FFFFFF',
                         padding: 10,
                         cornerRadius: 8,
                         callbacks: {
@@ -466,12 +471,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 scales: {
                     y: {
                         beginAtZero: true,
-                        grid: { color: whiteGrid },
-                        ticks: { color: whiteTick, stepSize: 1 }
+                        grid: { color: chartGridColor },
+                        ticks: { color: chartTextColor, stepSize: 1 }
                     },
                     x: {
                         grid: { display: false },
-                        ticks: { color: white, font: { weight: '600' } }
+                        ticks: { color: chartTextColor, font: { weight: '600' } }
                     }
                 }
             }
@@ -489,11 +494,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     label: 'Count',
                     data: [{{ $products }}, {{ $variants }}, {{ $items }}, {{ $cats }}, {{ $taxes }}],
                     backgroundColor: [
-                        white,
-                        'rgba(255,255,255,0.8)',
-                        'rgba(255,255,255,0.6)',
-                        '#A0D2FF',
-                        '#5BA3D9',
+                        '#6366F1',
+                        '#3B82F6',
+                        '#10B981',
+                        '#F59E0B',
+                        '#EF4444'
                     ],
                     borderRadius: 6,
                     barThickness: 24,
@@ -505,9 +510,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 plugins: {
                     legend: { display: false },
                     tooltip: {
-                        backgroundColor: '#002E58',
-                        titleColor: white,
-                        bodyColor: white,
+                        backgroundColor: '#1E1E1E',
+                        titleColor: '#FFFFFF',
+                        bodyColor: '#FFFFFF',
                         padding: 10,
                         cornerRadius: 8,
                     }
@@ -515,12 +520,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 scales: {
                     x: {
                         beginAtZero: true,
-                        grid: { color: whiteGrid },
-                        ticks: { color: whiteTick, stepSize: 1 }
+                        grid: { color: chartGridColor },
+                        ticks: { color: chartTextColor, stepSize: 1 }
                     },
                     y: {
                         grid: { display: false },
-                        ticks: { color: white, font: { weight: '600', size: 12 } }
+                        ticks: { color: chartTextColor, font: { weight: '600', size: 12 } }
                     }
                 }
             }

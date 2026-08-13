@@ -6,18 +6,10 @@
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
-            <h4 class="page-title">Customers</h4>
-            <div class="row">
-                <div class="col">
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <div class="card-title">Customers</div>
-                            <div>
-                                <a href="{{ url('admin-panel/customer/add') }}" class="btn btn-primary">Add New Customer</a>
-                            </div>
-                        </div>
-
-                        <div class="card-body">
+                        <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-list"></i> Customers</h4>
+                <a href="{{ url('admin-panel/customer/add') }}" class="btn btn-secondary" style="border: none;">Add New Customer</a>
+            </div>
                             <table class="table table-bordered" id="customersTable">
                                 <thead>
                                     <tr>
@@ -60,10 +52,6 @@
                                     @endforelse
                                 </tbody>
                             </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </div>

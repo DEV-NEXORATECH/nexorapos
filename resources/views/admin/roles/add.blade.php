@@ -6,21 +6,16 @@
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <h4 class="page-title mb-1">Create Role</h4>
-                    <p class="card-category mb-0">Buat role dan langsung tentukan permission aksesnya.</p>
-                </div>
-                <a href="{{ url('admin-panel/roles/listing') }}" class="btn btn-secondary">Back</a>
+            <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-user-shield"></i> Create Role</h4>
+                <a href="{{ url('admin-panel/roles/listing') }}" class="btn btn-secondary" style="border: none;">Cancel</a>
             </div>
 
             <form action="{{ url('admin-panel/roles/add') }}" method="POST">
                 @csrf
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">Role Information</div>
-                    </div>
-                    <div class="card-body">
+                <div class="nexora-control-card is-neutral mb-4">
+                    <h5><i class="fas fa-folder"></i> Role Information</h5>
+                                        <div class="card-body p-0 mt-3">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -29,18 +24,13 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <div class="card mt-3">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="card-title mb-1">Access / Permissions</div>
-                            <p class="card-category mb-0">Checklist permission sesuai fitur yang aktif di company.</p>
-                        </div>
-                        <button type="button" class="btn btn-secondary btn-sm" id="selectAllPermissions">Select All</button>
-                    </div>
-                    <div class="card-body">
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h4 class="section-title mb-0"><span>Access / Permissions</span></h4>
+                                    <button type="button" class="btn btn-secondary btn-sm" id="selectAllPermissions">Select All</button>
+                                </div>
                         @forelse($permissionCategories as $category)
                             <div class="nexora-permission-group mb-3">
                                 <div class="nexora-permission-group-head">
@@ -64,8 +54,10 @@
                                 <span>Seed permission terlebih dahulu agar role bisa diberi akses.</span>
                             </div>
                         @endforelse
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-footer">
+                    <div class="nexora-form-actions mt-3">
                         <button type="submit" class="btn btn-primary">Save Role</button>
                         <a href="{{ url('admin-panel/roles/listing') }}" class="btn btn-secondary">Cancel</a>
                     </div>

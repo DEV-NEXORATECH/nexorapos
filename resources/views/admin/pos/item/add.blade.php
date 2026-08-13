@@ -9,19 +9,21 @@
         <div class="container-fluid">
 
             {{-- Page title --}}
-            <h4 class="page-title">Purchase</h4>
+                        <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-edit"></i> Purchase</h4>
+                <a href="javascript:history.back()" class="btn btn-secondary" style="border: none;">Cancel</a>
+            </div>
 
             <div>
                 <div class="">
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">Add New Purchase</div>
-                        </div>
+                    <div class="nexora-control-card is-neutral mb-4">
+                    <h5><i class="fas fa-folder"></i> Add New Purchase</h5>
+                    
 
                         {{-- Form to add new purchase item --}}
                         <form action="{{ url('admin-panel/purchase-item/add') }}" method="POST" id="categoryForm">
                             @csrf {{-- Laravel CSRF protection --}}
-                            <div class="card-body">
+                                                <div class="card-body p-0 mt-3">
 
                                 {{-- Dropdown to select purchase (status shown) --}}
                                 <div class="form-group">
@@ -69,8 +71,8 @@
                                 </div>
 
                                 {{-- Submit and cancel buttons --}}
-                                <div class="card-action">
-                                    <button class="btn btn-success">Submit</button>
+                                <div class="nexora-form-actions mt-3">
+                                    <button class="btn btn-primary">Submit</button>
 
                                     {{-- Updated cancel link to correct route --}}
                                     <a href="{{ url('admin-panel/purchase-items/listing') }}" class="btn btn-danger">Cancel</a>

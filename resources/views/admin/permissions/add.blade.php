@@ -9,16 +9,18 @@
 				<div class="content">
 					<div class="container-fluid">
 
-                         <h4 class="page-title">Permissions</h4>
+                                     <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-edit"></i> Permissions</h4>
+                <a href="javascript:history.back()" class="btn btn-secondary" style="border: none;">Cancel</a>
+            </div>
 						<div >
 							<div class="">
-								<div class="card">
-									<div class="card-header">
-										<div class="card-title">Add New Permission</div>
-									</div>
+								<div class="nexora-control-card is-neutral mb-4">
+                    <h5><i class="fas fa-folder"></i> Add New Permission</h5>
+                    
                                     <form action="{{ url('admin-panel/permissions/add') }}" method="POST" id="categoryForm">
                                         @csrf
-                                        <div class="card-body">
+                                                            <div class="card-body p-0 mt-3">
 
                                         <div class="form-group">
 											<label for="name">Category</label>
@@ -52,8 +54,8 @@
                                                             </div>
                                                         </div>
 
-                                            <div class="card-action">
-											<button class="btn btn-success">Submit</button>
+                                            <div class="nexora-form-actions mt-3">
+											<button class="btn btn-primary">Submit</button>
 											 <a href="{{ url('admin-panel/permissions/listing') }}" class="btn btn-danger">Cancel</a>
 										</div>
 

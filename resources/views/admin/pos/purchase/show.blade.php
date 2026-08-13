@@ -11,7 +11,7 @@
                 <div>
                     <a href="{{ url('admin-panel/purchases') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
                     @if($purchase->status !== 'RECEIVED' && $purchase->status !== 'CANCELLED')
-                        <a href="{{ url('admin-panel/purchase/edit', $purchase->id) }}" class="btn btn-primary"><i class="fas fa-edit"></i> Edit</a>
+                        <a href="{{ url('admin-panel/purchase/edit', $purchase->id) }}" class="nexora-action-btn is-warning" title="Edit"><i class="fas fa-edit"></i></a>
                     @endif
                     <button class="btn btn-info print"><i class="fas fa-print"></i> Print</button>
                 </div>

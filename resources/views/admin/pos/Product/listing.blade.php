@@ -6,10 +6,10 @@
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
-            <div class="superadmin-header-card mb-4" style="align-items: center;">
-                <h4 class="mt-1 mb-2" style="color: #fff;"><i class="fas fa-box"></i> Products</h4>
+            <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-box"></i> Products</h4>
                 <div class="d-flex" style="gap: 10px;">
-                    <a href="{{ url('admin-panel/products/add') }}" class="btn" style="background-color: #FFFFFF !important; color: #0058A6 !important; border: none !important; white-space: nowrap; font-weight: 600; padding: 8px 16px; border-radius: 6px;">
+                    <a href="{{ url('admin-panel/products/add') }}" class="btn btn-secondary" style="border: none;">
                         <i class="fas fa-plus"></i> Add New Product
                     </a>
                     <a href="{{ url('admin-panel/products/recycle') }}" class="btn btn-danger" style="white-space: nowrap; font-weight: 600; padding: 8px 16px; border-radius: 6px;">

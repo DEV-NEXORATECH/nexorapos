@@ -6,16 +6,18 @@
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
-            <h4 class="page-title">Create Company</h4>
+                        <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-edit"></i> Create Company</h4>
+                <a href="javascript:history.back()" class="btn btn-secondary" style="border: none;">Cancel</a>
+            </div>
             <div class="row">
                 <div class="col-md-8">
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">Set up a new SaaS tenant</div>
-                        </div>
+                    <div class="nexora-control-card is-success mb-4">
+                    <h5><i class="fas fa-folder"></i> Set up a new SaaS tenant</h5>
+                    
                         <form action="{{ url('admin-panel/companies/add') }}" method="POST" enctype="multipart/form-data">
                             @csrf
-                            <div class="card-body">
+                                                <div class="card-body p-0 mt-3">
                                 @if ($errors->any())
                                     <div class="alert alert-danger">
                                         <ul>
@@ -90,7 +92,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="card-action">
+                            <div class="nexora-form-actions mt-3">
                                 <button type="submit" class="btn btn-success">Create Company</button>
                                 <a href="{{ url('admin-panel/companies/listing') }}" class="btn btn-danger">Cancel</a>
                             </div>

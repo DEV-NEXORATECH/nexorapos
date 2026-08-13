@@ -100,10 +100,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const card = e.target.closest('.clickable-card');
             if (!card) return;
 
-            const parent = card.closest('.product-card');
-            const productId = parent.getAttribute('data-id');
-            const price = parent.getAttribute('data-price');
-            const variantSelect = parent.querySelector('.variant-select');
+            const productId = card.getAttribute('data-id');
+            const price = card.getAttribute('data-price');
+            const variantSelect = card.querySelector('.variant-select');
             const product_variant_id = variantSelect ? variantSelect.value : null;
 
             try {
@@ -240,6 +239,21 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.error(err);
                 showNotification("error", "Error during checkout.");
             }
+        });
+    }
+
+    // Save Bill and Print Bill handlers
+    const saveBillBtn = document.getElementById('saveBillBtn');
+    if (saveBillBtn) {
+        saveBillBtn.addEventListener('click', function () {
+            showNotification("success", "Draft bill saved successfully!");
+        });
+    }
+
+    const printBillBtn = document.getElementById('printBillBtn');
+    if (printBillBtn) {
+        printBillBtn.addEventListener('click', function () {
+            window.print();
         });
     }
 

@@ -47,6 +47,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckCompanyLicense::class, 'Adm
     Route::get('admin-panel/sales-data', [AdminController::class, 'getSalesData']);
     Route::get('admin-panel/features', [FeatureController::class, 'index']);
     Route::get('admin-panel/features/create', [FeatureController::class, 'create']);
+    Route::get('admin-panel/features/{id}/manage', [FeatureController::class, 'show']);
     Route::post('admin-panel/features/company', [FeatureController::class, 'storeCompany']);
     Route::post('admin-panel/features/update', [FeatureController::class, 'update']);
     Route::post('admin-panel/features/billing', [FeatureController::class, 'updateBilling']);
@@ -186,7 +187,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckCompanyLicense::class, 'Adm
 
     //Route for multiple stores
     Route::get('admin-panel/stores/listing', [StoreController::class, 'index']);
-    Route::get('admin-panel/stores/add', [StoreController::class, 'create']);
+    Route::get('admin-panel/stores/add', [StoreController::class, 'add']);
     Route::post('admin-panel/stores/add', [StoreController::class, 'store']);
     Route::get('admin-panel/stores/show/{id}', [StoreController::class, 'show']);
     Route::get('admin-panel/stores/edit/{id}', [StoreController::class, 'edit']);

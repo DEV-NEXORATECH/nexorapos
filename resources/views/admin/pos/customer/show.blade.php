@@ -10,7 +10,7 @@
                 <h4 class="page-title mb-0">Customer Detail</h4>
                 <div>
                     <a href="{{ url('admin-panel/customer/listing') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
-                    <a href="{{ url('admin-panel/customer/edit', $customer->id) }}" class="btn btn-primary"><i class="fas fa-edit"></i> Edit</a>
+                    <a href="{{ url('admin-panel/customer/edit', $customer->id) }}" class="nexora-action-btn is-warning" title="Edit"><i class="fas fa-edit"></i></a>
                 </div>
             </div>
 

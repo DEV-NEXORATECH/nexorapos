@@ -6,18 +6,10 @@
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
-            <h4 class="page-title">Taxes</h4>
-            <div class="row">
-                <div class="col">
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <div class="card-title">Tax</div>
-                            <div>
-                                <a href="{{ url('admin-panel/tax/add') }}" class="btn btn-primary">Add New Tax</a>
-                            </div>
-                        </div>
-
-                        <div class="card-body">
+                        <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-percent"></i> Taxes</h4>
+                <a href="{{ url('admin-panel/tax/add') }}" class="btn btn-secondary" style="border: none;">Add New Tax</a>
+            </div>
 
                             {{-- Actual Categories Table --}}
                             <table class="table table-bordered table-striped" id="categoriesTable">
@@ -35,17 +27,11 @@
                                         <td>{{ $tax->name }}</td>
                                         <td>{{ $tax->rate }}%</td>
                                         <td>
-                                            <a href="{{ url('admin-panel/tax/edit', $tax->id) }}" class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></a>
-                                            <a href="{{ url('admin-panel/tax/delete', $tax->id) }}" class="btn btn-sm btn-danger delete-category"><i class="fas fa-trash"></i></a>
+                                            <a href="{{ url('admin-panel/tax/edit', $tax->id) }}" class="nexora-action-btn is-warning" title="Edit"><i class="fas fa-edit"></i></a>
+                                            <a href="{{ url('admin-panel/tax/delete', $tax->id) }}" class="nexora-action-btn is-danger delete-category" title="Delete"><i class="fas fa-trash"></i></a>
                                     @endforeach
                                 </tbody>
                             </table>
-
-
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </div>

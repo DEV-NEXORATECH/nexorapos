@@ -6,21 +6,16 @@
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
-            <div class="nexora-page-head">
-                <div>
-                    <h4 class="page-title mb-1">Edit User</h4>
-                    <p class="card-category mb-0">Update data user. Password boleh dikosongkan jika tidak diganti.</p>
-                </div>
-                <a href="{{ url('admin-panel/users/listing') }}" class="btn btn-secondary">Cancel</a>
+            <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-user-edit"></i> Edit User</h4>
+                <a href="{{ url('admin-panel/users/listing') }}" class="btn btn-secondary" style="border: none;">Cancel</a>
             </div>
 
             <form action="{{ url('admin-panel/users/update', $user->id) }}" method="POST" enctype="multipart/form-data" class="nexora-form">
                 @csrf
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">User Information</div>
-                    </div>
-                    <div class="card-body">
+                <div class="nexora-control-card is-success mb-4">
+                    <h5><i class="fas fa-user"></i> User Information</h5>
+                    <div class="card-body p-0 mt-3">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -78,11 +73,9 @@
                     </div>
                 </div>
 
-                <div class="card mt-3">
-                    <div class="card-header">
-                        <div class="card-title">Security & Profile</div>
-                    </div>
-                    <div class="card-body">
+                <div class="nexora-control-card is-warning mb-4">
+                    <h5><i class="fas fa-shield-alt"></i> Security & Profile</h5>
+                    <div class="card-body p-0 mt-3">
                         <div class="row align-items-end">
                             <div class="col-md-4">
                                 <div class="form-group">
@@ -119,7 +112,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card-footer nexora-form-actions">
+                    <div class="nexora-form-actions mt-3">
                         <a href="{{ url('admin-panel/users/listing') }}" class="btn btn-secondary">Cancel</a>
                         <button class="btn btn-primary" type="submit">Update User</button>
                     </div>

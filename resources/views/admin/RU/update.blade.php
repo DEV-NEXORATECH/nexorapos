@@ -6,17 +6,19 @@
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
-            <h4 class="page-title">Update Roles for User: {{ $user->name }}</h4>
+                        <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-edit"></i> Update Roles for User: {{ $user->name }}</h4>
+                <a href="javascript:history.back()" class="btn btn-secondary" style="border: none;">Cancel</a>
+            </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">Edit Roles</div>
-                </div>
+            <div class="nexora-control-card is-success mb-4">
+                    <h5><i class="fas fa-folder"></i> Edit Roles</h5>
+                    
 
                 <form action="{{ url('admin-panel/user-role/update', $user->id) }}" method="POST">
                     @csrf
 
-                    <div class="card-body">
+                                        <div class="card-body p-0 mt-3">
 
                         {{-- User Selector (Wrong in original code: allowed selecting other users, may override $user variable) --}}
                         {{-- Fixed: Use hidden input instead of dropdown if updating a single user --}}
@@ -62,7 +64,7 @@
                         </div>
 
                         {{-- Submit --}}
-                        <div class="card-action">
+                        <div class="nexora-form-actions mt-3">
                             <button type="submit" class="btn btn-success">Update</button>
                             <a href="{{ url('admin-panel/user-role/listing') }}" class="btn btn-danger">Cancel</a>
                         </div>

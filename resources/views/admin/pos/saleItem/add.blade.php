@@ -9,16 +9,18 @@
 				<div class="content">
 					<div class="container-fluid">
 
-                         <h4 class="page-title">Sale</h4>
+                                     <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-edit"></i> Sale</h4>
+                <a href="javascript:history.back()" class="btn btn-secondary" style="border: none;">Cancel</a>
+            </div>
 						<div >
 							<div class="">
-								<div class="card">
-									<div class="card-header">
-										<div class="card-title">Add New Sale</div>
-									</div>
+								<div class="nexora-control-card is-neutral mb-4">
+                    <h5><i class="fas fa-folder"></i> Add New Sale</h5>
+                    
                                     <form action="{{ url('admin-panel/sale-items/add') }}" method="POST" id="categoryForm">
                                         @csrf
-                                        <div class="card-body">
+                                                            <div class="card-body p-0 mt-3">
 										<div class="form-group">
 											<label for="sale_id">Sale Status</label>
 											<select name="sale_id" id="sale_id" class="form-control">
@@ -88,8 +90,8 @@
                                             @enderror
 										</div>
 
-                                        <div class="card-action">
-											<button class="btn btn-success">Submit</button>
+                                        <div class="nexora-form-actions mt-3">
+											<button class="btn btn-primary">Submit</button>
 											 <a href="{{ url('admin-panel/sale-items/listing') }}" class="btn btn-danger">Cancel</a>
 										</div>
 

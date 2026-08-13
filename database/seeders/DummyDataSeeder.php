@@ -14,6 +14,13 @@ use App\Models\Pos\Sale;
 use App\Models\Pos\SaleItem;
 use App\Models\Pos\Store;
 use App\Models\Pos\Tax;
+use App\Models\Pos\Supplier;
+use App\Models\Pos\Discount;
+use App\Models\Pos\ProductVariant;
+use App\Models\Pos\Purchase;
+use App\Models\Pos\PurchaseItem;
+use App\Models\Pos\StockMovement;
+use App\Models\Setting;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -166,6 +173,106 @@ class DummyDataSeeder extends Seeder
                     'track_stock' => true,
                 ]);
             }
+
+            // Supplier
+            $supplier = Supplier::withoutGlobalScopes()->firstOrCreate([
+                'company_id' => $company->id,
+                'email' => 'supplier' . $cData['code'] . '@example.com',
+            ], [
+                'name' => 'Supplier Utama ' . $cData['code'],
+                'phone' => '0821' . rand(10000000, 99999999),
+                'address' => 'Gudang Supplier No ' . rand(1, 10),
+            ]);
+
+            // Discount
+            Discount::withoutGlobalScopes()->firstOrCreate([
+                'company_id' => $company->id,
+                'name' => 'DISKON10',
+            ], [
+                'type' => 'percentage',
+                'value' => 10,
+            ]);
+            Discount::withoutGlobalScopes()->firstOrCreate([
+                'company_id' => $company->id,
+                'name' => 'POTONGAN5K',
+            ], [
+                'type' => 'fixed',
+                'value' => 5000,
+            ]);
+
+            // Setting
+            $settingsData = [
+                'login_method' => 'email',
+                'newsletter' => 'Dapatkan info promo pos menarik setiap minggu!',
+                'about_us' => 'Nexorapos adalah solusi manajemen kasir pintar untuk bisnis Anda.',
+                'facebook' => 'https://facebook.com/nexorapos',
+                'instagram' => 'https://instagram.com/nexorapos',
+                'youtube' => 'https://youtube.com/nexorapos',
+                'twitter' => 'https://twitter.com/nexorapos',
+            ];
+            foreach ($settingsData as $key => $val) {
+                Setting::withoutGlobalScopes()->updateOrCreate(
+                    ['company_id' => $company->id, 'key' => $key],
+                    ['value' => $val]
+                );
+            }
+
+            // ProductVariant
+            $variants = [];
+            foreach ($products as $prod) {
+                $variants[] = ProductVariant::withoutGlobalScopes()->firstOrCreate([
+                    'company_id' => $company->id,
+                    'product_id' => $prod->id,
+                    'sku' => $prod->sku . '-V1',
+                ], [
+                    'name' => 'Ukuran L',
+                    'barcode' => $prod->barcode . 'V1',
+                    'price' => $prod->price + 2000,
+                    'cost' => $prod->cost + 1000,
+                ]);
+                $variants[] = ProductVariant::withoutGlobalScopes()->firstOrCreate([
+                    'company_id' => $company->id,
+                    'product_id' => $prod->id,
+                    'sku' => $prod->sku . '-V2',
+                ], [
+                    'name' => 'Ukuran M',
+                    'barcode' => $prod->barcode . 'V2',
+                    'price' => $prod->price,
+                    'cost' => $prod->cost,
+                ]);
+            }
+
+            // Purchase & PurchaseItem
+            $purchase = Purchase::withoutGlobalScopes()->create([
+                'company_id' => $company->id,
+                'supplier_id' => $supplier->id,
+                'reference' => 'PO-' . $cData['code'] . '-' . date('Ymd') . '-' . rand(100, 999),
+                'total_amount' => 0,
+                'status' => 'received',
+            ]);
+            $pSubtotal = 0;
+            foreach (array_slice($products, 0, 3) as $prod) {
+                $qty = rand(10, 50);
+                $pSubtotal += $qty * $prod->cost;
+                PurchaseItem::withoutGlobalScopes()->create([
+                    'company_id' => $company->id,
+                    'purchase_id' => $purchase->id,
+                    'product_id' => $prod->id,
+                    'quantity' => $qty,
+                    'cost' => $prod->cost,
+                ]);
+                
+                // Stock movement for purchase (in)
+                StockMovement::withoutGlobalScopes()->create([
+                    'company_id' => $company->id,
+                    'store_id' => $store->id,
+                    'product_id' => $prod->id,
+                    'quantity' => $qty,
+                    'type' => 'in',
+                    'status' => 'completed',
+                ]);
+            }
+            $purchase->update(['total_amount' => $pSubtotal]);
 
             // Sales
             for ($i = 1; $i <= 5; $i++) {

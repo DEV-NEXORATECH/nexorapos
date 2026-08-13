@@ -9,16 +9,18 @@
 				<div class="content">
 					<div class="container-fluid">
 
-                         <h4 class="page-title">Stock</h4>
+                                     <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-edit"></i> Stock</h4>
+                <a href="javascript:history.back()" class="btn btn-secondary" style="border: none;">Cancel</a>
+            </div>
 						<div >
 							<div class="">
-								<div class="card">
-									<div class="card-header">
-										<div class="card-title">Move Stock To ...</div>
-									</div>
+								<div class="nexora-control-card is-neutral mb-4">
+                    <h5><i class="fas fa-folder"></i> Move Stock To ...</h5>
+                    
                                     <form action="{{ url('admin-panel/stock/add') }}" method="POST" id="categoryForm">
                                         @csrf
-                                        <div class="card-body">
+                                                            <div class="card-body p-0 mt-3">
 										<div class="form-group">
 											<label for="store_id">Store Name</label>
 											<select name="store_id" id="store_id" class="form-control">
@@ -74,7 +76,7 @@
                                             @enderror
 										</div>
 
-                                        <div class="card-action">
+                                        <div class="nexora-form-actions mt-3">
 											<button class="btn btn-primary">Submit</button>
 											 <a href="{{ url('admin-panel/stock/listing') }}" class="btn btn-secondary">Cancel</a>
 										</div>

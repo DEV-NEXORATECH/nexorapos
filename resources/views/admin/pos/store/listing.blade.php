@@ -6,10 +6,9 @@
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
-            <div class="superadmin-header-card mb-4" style="align-items: center;">
-                <h4 class="mt-1 mb-2" style="color: #fff;"><i class="fas fa-store"></i> All Stores</h4>
-                <a href="{{ url('admin-panel/stores/add') }}" class="btn" style="background-color: #FFFFFF !important; color: #0058A6 !important; border: none !important; white-space: nowrap; font-weight: 600; padding: 8px 16px; border-radius: 6px;">
-                    + Add New Store
+            <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-store"></i> All Stores</h4>
+                <a href="{{ url('admin-panel/stores/add') }}" class="btn btn-secondary" style="border: none;">Add New Store
                 </a>
             </div>
 

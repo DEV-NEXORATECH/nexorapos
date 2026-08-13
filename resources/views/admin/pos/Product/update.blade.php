@@ -6,21 +6,18 @@
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
-            <div class="nexora-page-head">
-                <div>
-                    <h4 class="page-title mb-1">Edit Product</h4>
-                    <p class="card-category mb-0">Pastikan relasi kategori dan tax tetap sesuai company.</p>
-                </div>
+                        <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-edit"></i> Edit Product</h4>
+                <a href="javascript:history.back()" class="btn btn-secondary" style="border: none;">Cancel</a>
+            </div>
                 <a href="{{ url('admin-panel/products/listing') }}" class="btn btn-secondary">Cancel</a>
             </div>
 
             <form action="{{ url('admin-panel/products/update', $product->id) }}" method="POST" class="nexora-form">
                 @csrf
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">Product Information</div>
-                    </div>
-                    <div class="card-body">
+                <div class="nexora-control-card is-neutral mb-4">
+                    <h5><i class="fas fa-folder"></i> Product Information</h5>
+                                        <div class="card-body p-0 mt-3">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -59,11 +56,9 @@
                     </div>
                 </div>
 
-                <div class="card mt-3">
-                    <div class="card-header">
-                        <div class="card-title">Pricing</div>
-                    </div>
-                    <div class="card-body">
+                <div class="nexora-control-card is-neutral mb-4">
+                    <h5><i class="fas fa-folder"></i> Pricing</h5>
+                                        <div class="card-body p-0 mt-3">
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
@@ -95,11 +90,9 @@
                     </div>
                 </div>
 
-                <div class="card mt-3">
-                    <div class="card-header">
-                        <div class="card-title">Inventory</div>
-                    </div>
-                    <div class="card-body">
+                <div class="nexora-control-card is-neutral mb-4">
+                    <h5><i class="fas fa-folder"></i> Inventory</h5>
+                                        <div class="card-body p-0 mt-3">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -113,7 +106,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card-footer nexora-form-actions">
+                    <div class="nexora-form-actions mt-3">
                         <a href="{{ url('admin-panel/products/listing') }}" class="btn btn-secondary">Cancel</a>
                         <button type="submit" class="btn btn-primary">Update Product</button>
                     </div>

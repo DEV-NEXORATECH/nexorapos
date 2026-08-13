@@ -9,16 +9,18 @@
 				<div class="content">
 					<div class="container-fluid">
 
-                         <h4 class="page-title">Taxes</h4>
+                                     <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-edit"></i> Taxes</h4>
+                <a href="javascript:history.back()" class="btn btn-secondary" style="border: none;">Cancel</a>
+            </div>
 						<div >
 							<div class="">
-								<div class="card">
-									<div class="card-header">
-										<div class="card-title">Update Tax</div>
-									</div>
+								<div class="nexora-control-card is-warning mb-4">
+                    <h5><i class="fas fa-folder"></i> Update Tax</h5>
+                    
                                     <form action="{{ url('admin-panel/tax/update', $tax->id) }}" method="POST" id="categoryForm">
                                         @csrf
-                                        <div class="card-body">
+                                                            <div class="card-body p-0 mt-3">
 										<div class="form-group">
 											<label for="name">Tax Type</label>
 											<input type="text" class="form-control" name="name" id="name"  value="{{ $tax->name }}">
@@ -38,7 +40,7 @@
                                                 <div class="text-danger mt-2">{{ $message }}</div>
                                             @enderror
                                         </div>
-                                        <div class="card-action">
+                                        <div class="nexora-form-actions mt-3">
 											<button class="btn btn-primary">Update</button>
 											 <a href="{{ url('admin-panel/tax/listing') }}" class="btn btn-secondary">Cancel</a>
 										</div>

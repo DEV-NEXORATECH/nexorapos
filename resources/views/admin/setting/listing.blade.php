@@ -7,11 +7,9 @@
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
-            <div class="superadmin-header-card mb-4" style="align-items: center;">
-                <h4 class="mt-1 mb-2" style="color: #fff;"><i class="fas fa-sliders-h"></i> System Settings</h4>
-                <a href="{{ url('admin-panel/settings/add') }}" class="btn" style="background-color: #FFFFFF !important; color: #0058A6 !important; border: none !important; white-space: nowrap; font-weight: 600; padding: 8px 16px; border-radius: 6px;">
-                    + Add New Setting
-                </a>
+            <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-sliders-h"></i> System Settings</h4>
+                <a href="{{ url('admin-panel/settings/add') }}" class="btn btn-secondary" style="border: none;">Add New Setting</a>
             </div>
 
             <table class="table nexora-data-table" id="categoriesTable" style="width:100%">
@@ -30,8 +28,8 @@
                                             <td>{{ $setting->key }}</td>
                                             <td>{{ $setting->value }}</td>
                                             <td class="text-nowrap">
-                                                <a href="{{ url('admin-panel/settings/edit', $setting->id) }}" class="btn btn-success me-2"><i class="fas fa-edit"></i></a>
-                                                <a href="{{ url('admin-panel/settings/delete', $setting->id) }}" class="btn btn-danger delete-category"><i class="fas fa-trash"></i></a>
+                                                <a href="{{ url('admin-panel/settings/edit', $setting->id) }}" class="nexora-action-btn is-warning" title="Edit"><i class="fas fa-edit"></i></a>
+                                                <a href="{{ url('admin-panel/settings/delete', $setting->id) }}" class="nexora-action-btn is-danger delete-category" title="Delete"><i class="fas fa-trash"></i></a>
                                             </td>
                                         </tr>
                                     @endforeach

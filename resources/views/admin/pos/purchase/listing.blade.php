@@ -6,18 +6,10 @@
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
-            <h4 class="page-title">Purchase</h4>
-            <div class="row">
-                <div class="col">
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <div class="card-title">Purchase</div>
-                            <div>
-                                <a href="{{ url('admin-panel/purchase/add') }}" class="btn btn-primary">Add New Purchase</a>
-                            </div>
-                        </div>
-
-                        <div class="card-body">
+                        <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-list"></i> Purchase</h4>
+                <a href="{{ url('admin-panel/purchase/add') }}" class="btn btn-secondary" style="border: none;">Add New Purchase</a>
+            </div>
 
                             {{-- Actual Categories Table --}}
                             <table class="table table-bordered" id="purchasesTable">
@@ -72,12 +64,6 @@
                                     @endforelse
                                 </tbody>
                             </table>
-
-
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </div>

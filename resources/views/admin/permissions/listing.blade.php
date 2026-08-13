@@ -6,18 +6,10 @@
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
-            <h4 class="page-title">Permissions</h4>
-            <div class="row">
-                <div class="col">
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <div class="card-title">Permissions</div>
-                            <div>
-                                <a href="{{ url('admin-panel/permissions/add') }}" class="btn btn-primary">Add New Permission</a>
-                            </div>
-                        </div>
-
-                        <div class="card-body">
+                        <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-list"></i> Permissions</h4>
+                <a href="{{ url('admin-panel/permissions/add') }}" class="btn btn-secondary" style="border: none;">Add New Permission</a>
+            </div>
 
                             {{-- Actual Categories Table --}}
                             <table class="table table-bordered table-striped" id="categoriesTable">
@@ -46,19 +38,13 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <a href="{{ url('admin-panel/permissions/edit', $permission->id) }}" class="btn btn-success"><i class="fas fa-edit"></i></a>
-                                            <a href="{{ url('admin-panel/permissions/delete', $permission->id) }}" class="btn btn-danger delete-category"><i class="fas fa-trash"></i></a>
+                                            <a href="{{ url('admin-panel/permissions/edit', $permission->id) }}" class="nexora-action-btn is-warning" title="Edit"><i class="fas fa-edit"></i></a>
+                                            <a href="{{ url('admin-panel/permissions/delete', $permission->id) }}" class="nexora-action-btn is-danger delete-category" title="Delete"><i class="fas fa-trash"></i></a>
                                         </td>
                                     </tr>
                                     @endforeach
                                 </tbody>
                             </table>
-
-
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </div>

@@ -6,18 +6,20 @@
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
-            <h4 class="page-title">Update Permissions for Role: {{ $role->role }}</h4>
+                        <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-edit"></i> Update Permissions for Role: {{ $role->role }}</h4>
+                <a href="javascript:history.back()" class="btn btn-secondary" style="border: none;">Cancel</a>
+            </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">Edit Permissions</div>
-                </div>
+            <div class="nexora-control-card is-neutral mb-4">
+                    <h5><i class="fas fa-folder"></i> Edit Permissions</h5>
+                    
 
                 <form action="{{ url('admin-panel/role-permissions/update' , $role->id) }}" method="POST">
                     @csrf
 
 
-                    <div class="card-body">
+                                        <div class="card-body p-0 mt-3">
 
                         {{-- Role (Read-only display) --}}
                         <div class="form-group">
@@ -66,7 +68,7 @@
                         </div>
 
                         {{-- Submit --}}
-                        <div class="card-action">
+                        <div class="nexora-form-actions mt-3">
                             <button type="submit" class="btn btn-success">Update</button>
                             <a href="{{ url('admin-panel/role-permissions/listing') }}" class="btn btn-danger">Cancel</a>
                         </div>

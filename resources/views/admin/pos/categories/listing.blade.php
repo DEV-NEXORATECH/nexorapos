@@ -6,10 +6,9 @@
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
-            <div class="superadmin-header-card mb-4" style="align-items: center;">
-                <h4 class="mt-1 mb-2" style="color: #fff;"><i class="fas fa-tags"></i> Categories</h4>
-                <a href="{{ url('admin-panel/categories/add') }}" class="btn" style="background-color: #FFFFFF !important; color: #0058A6 !important; border: none !important; white-space: nowrap; font-weight: 600; padding: 8px 16px; border-radius: 6px;">
-                    + Add New Category
+            <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-tags"></i> Categories</h4>
+                <a href="{{ url('admin-panel/categories/add') }}" class="btn btn-secondary" style="border: none;">Add New Category
                 </a>
             </div>
 
@@ -27,8 +26,8 @@
                                             <td>{{ $category->id }}</td>
                                             <td>{{ $category->name }}</td>
                                             <td>
-                                                <a href="{{ url('admin-panel/categories/edit/'.$category->id) }}" class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></a>
-                                                <a href="{{ url('admin-panel/categories/delete/'.$category->id) }}" class="btn btn-sm btn-danger delete-category"><i class="fas fa-trash"></i></a>
+                                                <a href="{{ url('admin-panel/categories/edit/'.$category->id) }}" class="nexora-action-btn is-warning" title="Edit"><i class="fas fa-edit"></i></a>
+                                                <a href="{{ url('admin-panel/categories/delete/'.$category->id) }}" class="nexora-action-btn is-danger delete-category" title="Delete"><i class="fas fa-trash"></i></a>
                                             </td>
                                         </tr>
 

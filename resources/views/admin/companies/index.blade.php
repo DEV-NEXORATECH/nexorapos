@@ -7,18 +7,10 @@
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
-            <h4 class="page-title">Companies</h4>
-            <div class="row">
-                <div class="col">
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <div class="card-title">Companies (Tenants)</div>
-                            <div>
-                                <a href="{{ url('admin-panel/companies/add') }}" class="btn btn-primary">Add New Company</a>
-                            </div>
-                        </div>
-
-                        <div class="card-body">
+                        <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-list"></i> Companies</h4>
+                <a href="{{ url('admin-panel/companies/add') }}" class="btn btn-secondary" style="border: none;">Add New Company</a>
+            </div>
                             @if(session('success'))
                                 <div class="alert alert-success">{{ session('success') }}</div>
                             @endif
@@ -79,18 +71,14 @@
                                             </td>
                                             <td>
                                                 <div class="nexora-action-group">
-                                                    <a href="{{ url('admin-panel/companies/show', $company->id) }}" class="nexora-action-btn" title="Detail"><i class="fas fa-eye"></i></a>
-                                                    <a href="{{ url('admin-panel/companies/edit', $company->id) }}" class="nexora-action-btn" title="Edit"><i class="fas fa-edit"></i></a>
+                                                    <a href="{{ url('admin-panel/companies/show', $company->id) }}" class="nexora-action-btn is-info" title="Detail"><i class="fas fa-eye"></i></a>
+                                                    <a href="{{ url('admin-panel/companies/edit', $company->id) }}" class="nexora-action-btn is-warning" title="Edit"><i class="fas fa-edit"></i></a>
                                                 </div>
                                             </td>
                                         </tr>
                                     @endforeach
                                 </tbody>
                             </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </div>

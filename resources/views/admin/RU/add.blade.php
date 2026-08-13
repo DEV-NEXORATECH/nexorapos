@@ -6,17 +6,19 @@
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
-            <h4 class="page-title">Assign Roles</h4>
+                        <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-edit"></i> Assign Roles</h4>
+                <a href="javascript:history.back()" class="btn btn-secondary" style="border: none;">Cancel</a>
+            </div>
             <div>
                 <div>
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">Assign Role</div>
-                        </div>
+                    <div class="nexora-control-card is-success mb-4">
+                    <h5><i class="fas fa-folder"></i> Assign Role</h5>
+                    
 
                         <form action="{{ url('admin-panel/user-role/add') }}" method="POST">
                             @csrf
-                            <div class="card-body">
+                                                <div class="card-body p-0 mt-3">
 
                                 {{-- Select Role --}}
                                 <div class="form-group">
@@ -55,7 +57,7 @@
                                 </div>
 
                                 {{-- Submit --}}
-                                <div class="card-action">
+                                <div class="nexora-form-actions mt-3">
                                     <button type="submit" class="btn btn-success">Submit</button>
                                     <a href="{{ url('admin-panel/user-role/listing') }}" class="btn btn-danger">Cancel</a>
                                 </div>

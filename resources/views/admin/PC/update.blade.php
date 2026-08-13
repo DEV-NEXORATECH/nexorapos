@@ -9,16 +9,18 @@
 					<div class="container-fluid">
 
 
-                         <h4 class="page-title">Category</h4>
+                                     <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-edit"></i> Category</h4>
+                <a href="javascript:history.back()" class="btn btn-secondary" style="border: none;">Cancel</a>
+            </div>
 						<div>
 							<div >
-								<div class="card">
-									<div class="card-header">
-										<div class="card-title">Add New Category</div>
-									</div>
+								<div class="nexora-control-card is-success mb-4">
+                    <h5><i class="fas fa-folder"></i> Add New Category</h5>
+                    
                                     <form action="{{ url('admin-panel/permission-categories/update' , $category->id )}}" method="POST" id="categoryForm">
                                         @csrf
-                                        <div class="card-body">
+                                                            <div class="card-body p-0 mt-3">
 										<div class="form-group">
 											<label for="name">Name</label>
 											<input type="text" class="form-control" name="name" id="name" value="{{ $category->name }}" placeholder="Enter Category Name">
@@ -34,8 +36,8 @@
 											<input type="text" class="form-control" name="icons" id="icons" value="{{ $category->icons }}"  placeholder="Add Category Icon">
 										</div>
 
-                                        <div class="card-action">
-											<button class="btn btn-success">Update</button>
+                                        <div class="nexora-form-actions mt-3">
+											<button class="btn btn-primary">Update</button>
                                             <a href="{{ url('admin-panel/permission-categories/listing') }}" class="btn btn-danger">Cancel</a>
 										</div>
 

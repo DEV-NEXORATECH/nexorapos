@@ -62,6 +62,23 @@ class FeatureController extends Controller
         return view('admin.features.create');
     }
 
+    public function show($id)
+    {
+        if (! auth()->user()?->isSuperAdmin()) {
+            abort(403, 'Only Super Admin can manage company features.');
+        }
+
+        $company = Company::findOrFail($id);
+        $features = Schema::hasTable('features')
+            ? Feature::orderBy('display_order')->orderBy('name')->get()
+            : collect();
+        $companyFeatures = Schema::hasTable('company_features')
+            ? CompanyFeature::where('company_id', $id)->get()->keyBy('feature_key')
+            : collect();
+
+        return view('admin.features.show', compact('company', 'features', 'companyFeatures'));
+    }
+
     public function storeCompany(Request $request)
     {
         if (! auth()->user()?->isSuperAdmin()) {

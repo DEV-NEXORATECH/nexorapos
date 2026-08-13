@@ -6,17 +6,19 @@
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
-            <h4 class="page-title">Purchase</h4>
+                        <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-edit"></i> Purchase</h4>
+                <a href="javascript:history.back()" class="btn btn-secondary" style="border: none;">Cancel</a>
+            </div>
             <div>
                 <div class="">
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">Update Purchase</div>
-                        </div>
+                    <div class="nexora-control-card is-neutral mb-4">
+                    <h5><i class="fas fa-folder"></i> Update Purchase</h5>
+                    
 
                         <form action="{{ url('admin-panel/purchase-items/update', $item->id) }}" method="POST" id="categoryForm">
                             @csrf
-                            <div class="card-body">
+                                                <div class="card-body p-0 mt-3">
                                 {{-- Purchase Dropdown --}}
                                 <div class="form-group">
                                     <label for="purchase_id">Purchase Status</label>
@@ -70,8 +72,8 @@
                                 </div>
 
                                 {{-- Buttons --}}
-                                <div class="card-action">
-                                    <button class="btn btn-success">Update</button>
+                                <div class="nexora-form-actions mt-3">
+                                    <button class="btn btn-primary">Update</button>
                                     <a href="{{ url('admin-panel/purchase-items/listing') }}" class="btn btn-danger">Cancel</a>
                                 </div>
                             </div>

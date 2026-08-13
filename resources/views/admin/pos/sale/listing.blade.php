@@ -6,19 +6,10 @@
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
-            <h4 class="page-title">Sales</h4>
-            <div class="row">
-                <div class="col">
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <div class="card-title">Sales</div>
-                            <div>
-                                <a href="{{ url('admin-panel/sales/reconciliation') }}" class="btn btn-secondary">Daily Reconciliation</a>
-                                <a href="{{ url('admin-panel/pos/sell') }}" class="btn btn-primary">Add New Sale</a>
-                            </div>
-                        </div>
-
-                        <div class="card-body">
+                        <div class="superadmin-header-card mb-4">
+                <h4><i class="fas fa-list"></i> Sales</h4>
+                <a href="{{ url('admin-panel/pos/sell') }}" class="btn btn-secondary" style="border: none;">Add New Sale</a>
+            </div>
                             <table class="table table-bordered" id="salesTable">
                                 <thead>
                                     <tr>
@@ -112,11 +103,6 @@
                                     @endforelse
                                 </tbody>
                             </table>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </div>

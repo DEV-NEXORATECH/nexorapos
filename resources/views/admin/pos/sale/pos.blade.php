@@ -124,8 +124,8 @@
             </div>
 
             <div class="d-flex mt-3 mb-2" style="gap: 10px;">
-                <button class="btn pos-action-btn flex-fill">Save Bill</button>
-                <button class="btn pos-action-btn flex-fill">Print Bill</button>
+                <button id="saveBillBtn" class="btn pos-action-btn flex-fill">Save Bill</button>
+                <button id="printBillBtn" class="btn pos-action-btn flex-fill">Print Bill</button>
             </div>
             
             <div class="d-flex">
