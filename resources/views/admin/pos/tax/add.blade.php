@@ -28,14 +28,19 @@
 										</div>
                                         <div class="form-group">
                                             <label for="rate">Tax Rate (%)</label>
-                                            <input type="text" class="form-control" name="rate" id="rate"  placeholder="Enter Tax Rate">
+                                            <div class="input-group">
+                                                <input type="number" min="0" max="100" step="0.01" class="form-control" name="rate" id="rate"  placeholder="Enter Tax Rate">
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text">%</span>
+                                                </div>
+                                            </div>
                                             @error('rate')
                                                 <div class="text-danger mt-2">{{ $message }}</div>
                                             @enderror
                                         </div>
                                         <div class="card-action">
-											<button class="btn btn-success">Submit</button>
-											 <a href="{{ url('admin-panel/tax/listing') }}" class="btn btn-danger">Cancel</a>
+											<button class="btn btn-primary">Submit</button>
+											 <a href="{{ url('admin-panel/tax/listing') }}" class="btn btn-secondary">Cancel</a>
 										</div>
 
                                     </div>

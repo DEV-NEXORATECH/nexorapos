@@ -15,7 +15,7 @@ class CustomerService{
     }
     public function index()
     {
-        $customers=Customer::all();
+        $customers = Customer::where('company_id', auth()->user()?->company_id)->get();
         return view('admin.pos.customer.listing', compact('customers'));
     }
 
@@ -34,6 +34,7 @@ class CustomerService{
             return redirect()->back()->withErrors($errorMessage)->withInput();
         }
         $customer = new Customer();
+        $customer->company_id = auth()->user()?->company_id;
         $customer->name = $request->name;
         $customer->email = $request->email;
         $customer->phone = $request->phone;
@@ -50,12 +51,23 @@ class CustomerService{
 
     public function edit(Request $request, $id)
     {
-        $customer=Customer::find($id);
+        $customer = Customer::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
         if($customer)
         {
             return view('admin.pos.customer.update', compact('customer'));
         }else{
-            return redirect()->back()->with('failed', 'Record Not Found');
+            return redirect()->back()->with('failed', 'Record Not Found or Unauthorized');
+        }
+    }
+
+    public function show(Request $request, $id)
+    {
+        $customer = Customer::with('sales')->where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
+        if($customer)
+        {
+            return view('admin.pos.customer.show', compact('customer'));
+        }else{
+            return redirect()->back()->with('failed', 'Record Not Found or Unauthorized');
         }
     }
 
@@ -68,7 +80,10 @@ class CustomerService{
         if($errorMessage !== true) {
             return redirect()->back()->withErrors($errorMessage)->withInput();
         }
-        $customer=Customer::find($id);
+        $customer = Customer::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
+        if (!$customer) {
+            return redirect()->back()->with('failed', 'Record Not Found or Unauthorized');
+        }
         $customer->name = $request->name;
         $customer->email = $request->email;
         $customer->phone = $request->phone;
@@ -85,13 +100,13 @@ class CustomerService{
 
     public function destroy($id)
     {
-        $customer=Customer::find($id);
+        $customer = Customer::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
         if($customer)
         {
             $customer->delete();
             return redirect()->back()->with('success', 'Record Deleted Successfully');
         }else{
-            return redirect()->back()->with('failed', "Record Not Found");
+            return redirect()->back()->with('failed', 'Record Not Found or Unauthorized');
         }
     }
 }

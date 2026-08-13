@@ -5,9 +5,12 @@ namespace App\Services\Admin;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Models\Role;
+use App\Models\Company;
 use Illuminate\Support\Facades\Hash;
+use App\Support\AuditLogger;
 use App\Validations\Admin\User\UserStoreValidation;
 use App\Validations\Admin\User\UserUpdateValidation;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class UserService
 {
@@ -23,32 +26,64 @@ class UserService
     // List all users
     public function index()
     {
-        $users = User::with('role')->get(); // role() relationship exists
+        $currentUser = auth()->user();
+        $users = User::with('role')
+            ->when(! $currentUser?->isSuperAdmin(), fn ($query) => $query->where('company_id', $currentUser?->company_id))
+            ->get();
         return view('admin.users.listing', compact('users'));
     }
 
     // Show add user form
     public function post()
     {
-        $roles = Role::all();
-        return view('admin.users.add', compact('roles'));
+        $currentUser = auth()->user();
+        $roles = $currentUser?->isSuperAdmin()
+            ? Role::withoutGlobalScopes()->orderBy('role')->get()
+            : Role::all();
+        $companies = $currentUser?->isSuperAdmin()
+            ? Company::orderBy('name')->get()
+            : collect();
+
+        return view('admin.users.add', compact('roles', 'companies'));
     }
 
     // Store new user
     public function store(Request $request)
     {
         try {
+            $currentUser = auth()->user();
+            if (! $currentUser?->isSuperAdmin() && $request->boolean('is_super_admin')) {
+                abort(403, 'Admin company tidak boleh membuat Super Admin.');
+            }
+
             $inputs = $request->all();
             $errorMessage = $this->userStoreValidation->validate($inputs);
             if ($errorMessage) {
                 return redirect()->back()->with('failed', $errorMessage);
             }
 
+            $companyId = $currentUser?->isSuperAdmin()
+                ? $request->company_id
+                : $currentUser?->company_id;
+            $company = Company::findOrFail($companyId);
+
+            if (! $currentUser?->isSuperAdmin() && $company->userLimitReached()) {
+                return redirect()->back()->with('failed', 'User limit has been reached.')->withInput();
+            }
+
+            $role = Role::findOrFail($request->role_id);
+            if (! $currentUser?->isSuperAdmin() && (int) $role->company_id !== (int) $currentUser->company_id) {
+                abort(403, 'Role tidak tersedia untuk company ini.');
+            }
+
             $user = new User();
             $user->name = $request->name;
             $user->email = $request->email;
+            $user->phone = $request->phone;
             $user->password = Hash::make($request->password);
-            $user->role_id = $request->role_id; // assign role directly
+            $user->role_id = $role->id;
+            $user->company_id = $company->id;
+            $user->is_super_admin = $currentUser?->isSuperAdmin() && $request->boolean('is_super_admin');
 
             // Handle profile image
             if ($request->hasFile('image')) {
@@ -61,10 +96,13 @@ class UserService
             $saved = $user->save();
 
             if ($saved) {
+                AuditLogger::log('create', 'users', $user, [], $user->only(['id', 'name', 'email', 'company_id', 'role_id', 'is_super_admin']));
                 return redirect()->to('admin-panel/users/listing')->with('success', 'User Registered Successfully');
             } else {
                 return redirect()->back()->with('failed', 'Something went wrong');
             }
+        } catch (HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             return redirect()->back()->with('failed', 'Something went wrong: ' . $e->getMessage());
         }
@@ -73,10 +111,19 @@ class UserService
     // Show edit user form
     public function edit(Request $request, $id)
     {
-        $user = User::with('role')->find($id);
-        $roles = Role::all();
+        $currentUser = auth()->user();
+        $user = User::with('role')->findOrFail($id);
+        if (! $currentUser?->isSuperAdmin() && (int) $user->company_id !== (int) $currentUser?->company_id) {
+            abort(403, 'User bukan milik company kamu.');
+        }
+        $roles = $currentUser?->isSuperAdmin()
+            ? Role::withoutGlobalScopes()->orderBy('role')->get()
+            : Role::all();
+        $companies = $currentUser?->isSuperAdmin()
+            ? Company::orderBy('name')->get()
+            : collect();
         if ($user) {
-            return view('admin.users.update', compact('user', 'roles'));
+            return view('admin.users.update', compact('user', 'roles', 'companies'));
         }
         return redirect()->back()->with('failed', 'User not found');
     }
@@ -91,10 +138,32 @@ class UserService
                 return redirect()->back()->with('failed', $errorMessage);
             }
 
-            $user = User::with('role')->find($id);
+            $currentUser = auth()->user();
+            $user = User::with('role')->findOrFail($id);
+            if (! $currentUser?->isSuperAdmin() && (int) $user->company_id !== (int) $currentUser?->company_id) {
+                abort(403, 'User bukan milik company kamu.');
+            }
+            if (! $currentUser?->isSuperAdmin() && ($request->boolean('is_super_admin') || $user->isSuperAdmin())) {
+                abort(403, 'Admin company tidak boleh mengubah privilege Super Admin.');
+            }
+            $role = Role::findOrFail($request->role_id);
+            if (! $currentUser?->isSuperAdmin() && (int) $role->company_id !== (int) $currentUser?->company_id) {
+                abort(403, 'Role tidak tersedia untuk company ini.');
+            }
+            $oldValue = $user->only(['name', 'email', 'phone', 'role_id', 'is_super_admin']);
+            $companyId = $currentUser?->isSuperAdmin()
+                ? $request->input('company_id', $user->company_id)
+                : $user->company_id;
+            $company = Company::findOrFail($companyId);
+
             $user->name = $request->name;
             $user->email = $request->email;
-            $user->role_id = $request->role_id; // update role
+            $user->phone = $request->phone;
+            $user->role_id = $role->id;
+            $user->company_id = $company->id;
+            if ($request->filled('password')) {
+                $user->password = Hash::make($request->password);
+            }
 
             // Handle profile image
             if ($request->hasFile('image')) {
@@ -105,8 +174,11 @@ class UserService
             }
 
             $user->save();
+            AuditLogger::log('update', 'users', $user, $oldValue, $user->only(['name', 'email', 'phone', 'role_id', 'is_super_admin']));
 
             return redirect()->to('admin-panel/users/listing')->with('success', 'User Updated Successfully');
+        } catch (HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             return redirect()->back()->with('failed', 'Something went wrong: ' . $e->getMessage());
         }
@@ -116,13 +188,24 @@ class UserService
     public function destroy(Request $request, $id)
     {
         try {
-            $user = User::find($id);
+            $currentUser = auth()->user();
+            $user = User::findOrFail($id);
+            if (! $currentUser?->isSuperAdmin() && (int) $user->company_id !== (int) $currentUser?->company_id) {
+                abort(403, 'User bukan milik company kamu.');
+            }
+            if (! $currentUser?->isSuperAdmin() && $user->isSuperAdmin()) {
+                abort(403, 'Admin company tidak boleh menghapus Super Admin.');
+            }
             if ($user) {
+                $oldValue = $user->only(['id', 'name', 'email', 'company_id', 'role_id', 'is_super_admin']);
                 $user->delete();
+                AuditLogger::log('delete', 'users', $user, $oldValue, []);
                 return redirect()->to('admin-panel/users/listing')->with('success', 'User Deleted Successfully');
             } else {
                 return redirect()->back()->with('failed', 'User not found');
             }
+        } catch (HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             return redirect()->back()->with('failed', 'Something went wrong: ' . $e->getMessage());
         }

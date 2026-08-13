@@ -21,6 +21,11 @@ class StoreController extends Controller
     {
         return $this->store->add();
     }
+    
+    public function show($id)
+    {
+        return $this->store->show($id);
+    }
 
     public function store(Request $request)
     {

@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->foreignId('role_id')->constrained('roles')->onDelete('cascade');
+            $table->unsignedBigInteger('role_id')->nullable();
+            $table->boolean('is_super_admin')->default(false);
             $table->string('phone');
             $table->string('email')->unique();
             $table->string('profile_image')->nullable();

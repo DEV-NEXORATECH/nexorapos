@@ -5,7 +5,7 @@ class SaleStoreValidation{
     public function validate($inputs){
         $validator=Validator::make($inputs, [
             'store_id' => 'required',
-            'customer_id' => 'required',
+            'customer_id' => 'nullable',
             'user_id' => 'required',
             'subtotal' => 'required',
             'tax' => 'nullable',

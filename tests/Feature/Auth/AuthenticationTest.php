@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Company;
 use App\Models\User;
 
 test('login screen can be rendered', function () {
@@ -8,10 +9,38 @@ test('login screen can be rendered', function () {
     $response->assertStatus(200);
 });
 
-test('users can authenticate using the login screen', function () {
-    $user = User::factory()->create();
+test('super admin can authenticate without company code', function () {
+    $user = User::factory()->create([
+        'is_super_admin' => true,
+        'company_id' => null,
+    ]);
 
     $response = $this->post('/login', [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+
+    $this->assertAuthenticated();
+    $response->assertRedirect(route('dashboard', absolute: false));
+});
+
+test('company user cannot authenticate without company code', function () {
+    $user = User::factory()->create();
+
+    $this->post('/login', [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+
+    $this->assertGuest();
+});
+
+test('company user can authenticate with company code', function () {
+    $user = User::factory()->create();
+    $company = Company::find($user->company_id);
+
+    $response = $this->post('/login', [
+        'company_code' => $company->company_code,
         'email' => $user->email,
         'password' => 'password',
     ]);

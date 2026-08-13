@@ -3,13 +3,17 @@
 namespace App\Models\Pos;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToCompany;
 
 class Store extends Model
 {
+    use BelongsToCompany;
+
     protected $table='stores';
     protected $fillable=[
-        'namme',
+        'name',
         'code',
+        'company_id',
     ];
     public function stock_movements()
     {

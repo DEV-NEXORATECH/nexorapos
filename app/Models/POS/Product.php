@@ -1,27 +1,26 @@
 <?php
 
-namespace App\Models\POS;
+namespace App\Models\Pos;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Concerns\BelongsToCompany;
 class Product extends Model
 {
+ use BelongsToCompany;
  use SoftDeletes;
  protected $fillable = [
     'name',
-    'code',
+    'sku',
+    'barcode',
     'category_id',
     'tax_id',
     'price',
     'cost',
-    'unit',
-    'alert_quantity',
-    'image',
-    'details',
-    'is_active',
-    'created_by',
-    'updated_by',
-    'deleted_at',
+    'track_stock',
+    'stock_quantity',
+    'minimum_stock',
+    'company_id',
    ];
    public function tax()
    {

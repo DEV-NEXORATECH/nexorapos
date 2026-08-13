@@ -51,8 +51,8 @@
 										</div>
 
                                         <div class="card-action">
-											<button class="btn btn-success">Submit</button>
-											 <a href="{{ url('admin-panel/customer/listing') }}" class="btn btn-danger">Cancel</a>
+											<button class="btn btn-primary">Submit</button>
+											 <a href="{{ url('admin-panel/customer/listing') }}" class="btn btn-outline-primary">Cancel</a>
 										</div>
 
                                     </div>

@@ -45,6 +45,7 @@
 										<div class="form-group">
 											<label for="product_variant_id">Variant Name</label>
 											<select name="product_variant_id" id="product_variant_id" class="form-control">
+                                                <option value="">No Variant</option>
                                                 @foreach ($variants as $var)
                                                     <option value="{{ $var->id }}" {{ $var->id == $stock->product_variant_id ? 'selected' : '' }}>{{ $var->name }}</option>
                                                 @endforeach
@@ -56,7 +57,7 @@
 
 										<div class="form-group">
 											<label for="quantity">Quantity</label>
-											<input type="text" class="form-control" name="quantity" id="quantity" value="{{ $stock->quantity }}">
+											<input type="number" min="0" step="1" class="form-control" name="quantity" id="quantity" value="{{ $stock->quantity }}">
                                             @error('quantity')
                                                 <div class="text-danger mt-2">{{ $message }}</div>
                                             @enderror
@@ -64,15 +65,18 @@
 
 										<div class="form-group">
 											<label for="type">Type</label>
-											<input type="text" class="form-control" name="type" id="type" value="{{ $stock->type }}">
+											<select name="type" id="type" class="form-control">
+                                                <option value="in" {{ $stock->type === 'in' ? 'selected' : '' }}>Stock In</option>
+                                                <option value="out" {{ $stock->type === 'out' ? 'selected' : '' }}>Stock Out</option>
+                                            </select>
                                             @error('type')
                                                 <div class="text-danger mt-2">{{ $message }}</div>
                                             @enderror
 										</div>
 
                                         <div class="card-action">
-											<button class="btn btn-success">Submit</button>
-											 <a href="{{ url('admin-panel/stock/listing') }}" class="btn btn-danger">Cancel</a>
+											<button class="btn btn-primary">Submit</button>
+											 <a href="{{ url('admin-panel/stock/listing') }}" class="btn btn-secondary">Cancel</a>
 										</div>
 
                                     </div>

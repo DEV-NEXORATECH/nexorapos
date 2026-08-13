@@ -4,7 +4,7 @@ namespace App\Http\Controllers\POS;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\POS\Method;
+use App\Models\Pos\Method;
 class MethodController extends Controller
 {
    public function index()
@@ -44,6 +44,9 @@ class MethodController extends Controller
 
     public function update(Request $request,$id)
     {
+        $request->validate([
+            'name' => 'required',
+        ]);
         $method=Method::find($id);
         if($method){
             $method->name=$request->name;

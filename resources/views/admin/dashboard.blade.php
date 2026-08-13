@@ -1,6 +1,6 @@
 @extends('admin.layout.app')
 
-@section('title', 'DashBoard')
+@section('title', 'Dashboard')
 
 @section('content')
 
@@ -17,598 +17,515 @@
                 @endif
 
                 <h4 class="page-title">Dashboard</h4>
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="card card-stats card-primary">
-                            <div class="card-body ">
-                                <div class="row">
-                                    <div class="col-5">
-                                        <div class="icon-big text-center">
-                                            <i class="la la-users"></i>
-                                        </div>
+                @php
+                    $dashboardCompany = auth()->user()?->company;
+                    $dashboardLicense = $dashboardCompany && ! auth()->user()?->isSuperAdmin()
+                        ? $dashboardCompany->licenseSnapshot()
+                        : null;
+                @endphp
+
+                @if($dashboardLicense)
+                    <div class="nexora-license-card nexora-license-card-{{ $dashboardLicense['badge_class'] }} mb-4">
+                        <div class="nexora-license-card-head">
+                            <div>
+                                <span>License Status</span>
+                                <h5>{{ $dashboardCompany->name }}</h5>
+                                <p>{{ $dashboardLicense['package'] }} • {{ $dashboardLicense['payment_status'] }}</p>
+                            </div>
+                            <a href="{{ url('admin-panel/settings/license') }}" class="btn btn-secondary btn-sm">View Detail</a>
+                        </div>
+                        <div class="nexora-license-card-grid">
+                            <div>
+                                <small>Status</small>
+                                <strong class="text-{{ $dashboardLicense['badge_class'] }}">{{ $dashboardLicense['label'] }}</strong>
+                            </div>
+                            <div>
+                                <small>Start</small>
+                                <strong>{{ optional($dashboardLicense['started_at'])->format('d M Y') ?? '-' }}</strong>
+                            </div>
+                            <div>
+                                <small>Expiry</small>
+                                <strong>{{ optional($dashboardLicense['expiry_date'])->format('d M Y') ?? '-' }}</strong>
+                            </div>
+                            <div>
+                                <small>Grace</small>
+                                <strong>{{ $dashboardLicense['grace_period_days'] }} days</strong>
+                            </div>
+                            <div>
+                                <small>Features</small>
+                                <strong>{{ $dashboardLicense['active_features'] }} / {{ $dashboardLicense['total_features'] }}</strong>
+                            </div>
+                            <div>
+                                <small>User Limit</small>
+                                <strong>{{ $dashboardLicense['current_users'] }} / {{ $dashboardLicense['max_users'] ?: 'Unlimited' }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- ========== SUPER ADMIN: Platform Stats (Blue BG + White Font) ========== --}}
+                @if($platformStats)
+                    <div class="row mb-3">
+                        @foreach([
+                            ['label' => 'Total Companies', 'value' => $platformStats['total_companies'], 'icon' => 'la la-building'],
+                            ['label' => 'Active Companies', 'value' => $platformStats['active_companies'], 'icon' => 'la la-check-circle'],
+                            ['label' => 'Active Licenses', 'value' => $platformStats['active_licenses'], 'icon' => 'la la-certificate'],
+                            ['label' => 'Expiring Licenses', 'value' => $platformStats['expiring_licenses'], 'icon' => 'la la-clock-o'],
+                            ['label' => 'Total Users', 'value' => $platformStats['total_users'], 'icon' => 'la la-users'],
+                            ['label' => 'Enabled Features', 'value' => $platformStats['enabled_features'], 'icon' => 'la la-toggle-on'],
+                        ] as $stat)
+                            <div class="col-md-4 col-xl-2 mb-3">
+                                <div class="nexora-blue-card">
+                                    <div class="nexora-blue-card-icon">
+                                        <i class="{{ $stat['icon'] }}"></i>
                                     </div>
-                                    <div class="col-7 d-flex align-items-center">
-                                        <div class="numbers">
-                                            <p class="card-category">Users</p>
-                                            <h4 class="card-title">{{ $userCount }}</h4>
-                                        </div>
+                                    <div class="nexora-blue-card-info">
+                                        <span class="nexora-blue-card-label">{{ $stat['label'] }}</span>
+                                        <span class="nexora-blue-card-value">{{ $stat['value'] }}</span>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        @endforeach
                     </div>
-                    <div class="col-md-3">
-                        <div class="card card-stats card-success">
-                            <div class="card-body ">
-                                <div class="row">
-                                    <div class="col-5">
-                                        <div class="icon-big text-center">
-                                            <i class="la la-bar-chart"></i>
-                                        </div>
-                                    </div>
-                                    <div class="col-7 d-flex align-items-center">
-                                        <div class="numbers">
-                                            <a href="{{ url('admin-panel/stores/listing') }}"
-                                                class="card-category">Stores</a>
-                                            <h4 class="card-title">{{ $store }}</h4>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {{-- <div class="col-md-3">
-								<div class="card card-stats card-danger">
-									<div class="card-body">
-										<div class="row">
-											<div class="col-5">
-												<div class="icon-big text-center">
-													<i class="la la-newspaper-o"></i>
-												</div>
-											</div>
-											<div class="col-7 d-flex align-items-center">
-												<div class="numbers">
-													<a href="{{ url('admin-panel/categories/listing') }}" class="card-category">Category</a>
-													<h4 class="card-title">{{ $cats }}</h4>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div> --}}
-                    <div class="col-md-3">
-                        <div class="card card-stats card-primary">
-                            <div class="card-body ">
-                                <div class="row">
-                                    <div class="col-5">
-                                        <div class="icon-big text-center">
-                                            <i class="la la-check-circle"></i>
-                                        </div>
-                                    </div>
-                                    <div class="col-7 d-flex align-items-center">
-                                        <div class="numbers">
-                                            <a href="{{ url('admin-panel/products/listing') }}"
-                                                class="card-category">Products</a>
-                                            <h4 class="card-title">{{ $products }}</h4>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- <div class="col-md-3">
-								<div class="card card-stats card-primary">
-									<div class="card-body ">
-										<div class="row">
-											<div class="col-5">
-												<div class="icon-big text-center">
-													<i class="la la-check-circle"></i>
-												</div>
-											</div>
-											<div class="col-7 d-flex align-items-center">
-												<div class="numbers">
-                                                    <a href="{{ url('admin-panel/variants/listing') }}" class="card-category">Variants</a>
-                                                    <h4 class="card-title">{{ $variants }}</h4>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-
-                            </div> --}}
-
-                    {{-- <div class="col-md-3">
-								<div class="card card-stats card-warning">
-									<div class="card-body ">
-										<div class="row">
-											<div class="col-5">
-												<div class="icon-big text-center">
-													<i class="la la-users"></i>
-												</div>
-											</div>
-											<div class="col-7 d-flex align-items-center">
-												<div class="numbers">
-													<a href="{{ url('admin-panel/suppliers/listing') }}" class="card-category">Suppliers</a>
-													<h4 class="card-title">{{ $suppliers }}</h4>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div> --}}
-
-                    {{-- <div class="col-md-3">
-								<div class="card card-stats card-danger">
-									<div class="card-body ">
-										<div class="row">
-											<div class="col-5">
-												<div class="icon-big text-center">
-													<i class="la la-users"></i>
-												</div>
-											</div>
-											<div class="col-7 d-flex align-items-center">
-												<div class="numbers">
-													<a href="{{ url('admin-panel/customers/listing') }}" class="card-category">Customers</a>
-													<h4 class="card-title">{{ $customers }}</h4>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div> --}}
-
-                    {{-- <div class="col-md-3">
-								<div class="card card-stats card-success">
-									<div class="card-body ">
-										<div class="row">
-											<div class="col-5">
-												<div class="icon-big text-center">
-													<i class="fas fa-credit-card"></i>
-												</div>
-											</div>
-											<div class="col-7 d-flex align-items-center">
-												<div class="numbers">
-													<a href="{{ url('admin-panel/taxes/listing') }}" class="card-category">Tax</a>
-													<h4 class="card-title">{{ $taxes }}</h4>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div> --}}
-
-                    {{-- <div class="col-md-3">
-								<div class="card card-stats card-danger">
-									<div class="card-body ">
-										<div class="row">
-											<div class="col-5">
-												<div class="icon-big text-center">
-													<i class="fas fa-credit-card"></i>
-												</div>
-											</div>
-											<div class="col-7 d-flex align-items-center">
-												<div class="numbers">
-													<a href="{{ url('admin-panel/purchases/listing') }}" class="card-category">Purchase</a>
-													<h4 class="card-title">{{ $purchases }}</h4>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div> --}}
-
-                    {{-- <div class="col-md-3">
-								<div class="card card-stats card-success">
-									<div class="card-body ">
-										<div class="row">
-											<div class="col-5">
-												<div class="icon-big text-center">
-													<i class="la la-newspaper-o"></i>
-												</div>
-											</div>
-											<div class="col-7 d-flex align-items-center">
-												<div class="numbers">
-													<a href="{{ url('admin-panel/purchase-items/listing') }}" class="card-category">Items</a>
-													<h4 class="card-title">{{ $items }}</h4>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div> --}}
-
-                    {{-- <div class="col-md-3">
-								<div class="card card-stats card-info">
-									<div class="card-body ">
-										<div class="row">
-											<div class="col-5">
-												<div class="icon-big text-center">
-													<i class="la la-bar-chart"></i>
-												</div>
-											</div>
-											<div class="col-7 d-flex align-items-center">
-												<div class="numbers">
-													<a href="{{ url('admin-panel/sales/listing') }}" class="card-category">Sales</a>
-													<h4 class="card-title">{{ $sales }}</h4>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div> --}}
-
-                    <div class="col-md-3">
-                        <div class="card card-stats card-success">
-                            <div class="card-body ">
-                                <div class="row">
-                                    <div class="col-5">
-                                        <div class="icon-big text-center">
-                                            <i class="fas fa-dollar"></i>
-                                        </div>
-                                    </div>
-                                    <div class="col-7 d-flex align-items-center">
-                                        <div class="numbers">
-                                            <a href="{{ url('admin-panel/payments/listing') }}"
-                                                class="card-category">Payment</a>
-                                            <h4 class="card-title">{{ $payments }}</h4>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                @endif
 
 
-                </div>
-                {{-- <div class="row">
-							<div class="col-md-3">
-								<div class="card">
-									<div class="card-header">
-										<h4 class="card-title">Task</h4>
-										<p class="card-category">Complete</p>
-									</div>
-									<div class="card-body">
-										<div id="task-complete" class="chart-circle mt-4 mb-3"></div>
-									</div>
-									<div class="card-footer">
-										<div class="legend"><i class="la la-circle text-primary"></i> Completed</div>
-									</div>
-								</div>
-							</div> --}}
-                {{-- <div class="col-md-9">
-								<div class="card">
-									<div class="card-header">
-										<h4 class="card-title">World Map</h4>
-										<p class="card-category">
-										Map of the distribution of users around the world</p>
-									</div>
-									<div class="card-body">
-										<div class="mapcontainer">
-											<div class="map">
-												<span>Alternative content for the map</span>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-						<div class="row row-card-no-pd">
-							<div class="col-md-4">
-								<div class="card">
-									<div class="card-body">
-										<p class="fw-bold mt-1">My Balance</p>
-										<h4><b>$ 3,018</b></h4>
-										<a href="#" class="btn btn-primary btn-full text-left mt-3 mb-3"><i class="la la-plus"></i> Add Balance</a>
-									</div>
-									<div class="card-footer">
-										<ul class="nav">
-											<li class="nav-item"><a class="btn btn-default btn-link" href="#"><i class="la la-history"></i> History</a></li>
-											<li class="nav-item ml-auto"><a class="btn btn-default btn-link" href="#"><i class="la la-refresh"></i> Refresh</a></li>
-										</ul>
-									</div>
-								</div>
-							</div>
-							<div class="col-md-5">
-								<div class="card">
-									<div class="card-body">
-										<div class="progress-card">
-											<div class="d-flex justify-content-between mb-1">
-												<span class="text-muted">Profit</span>
-												<span class="text-muted fw-bold"> $3K</span>
-											</div>
-											<div class="progress mb-2" style="height: 7px;">
-												<div class="progress-bar bg-success" role="progressbar" style="width: 78%" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100" data-toggle="tooltip" data-placement="top" title="78%"></div>
-											</div>
-										</div>
-										<div class="progress-card">
-											<div class="d-flex justify-content-between mb-1">
-												<span class="text-muted">Orders</span>
-												<span class="text-muted fw-bold"> 576</span>
-											</div>
-											<div class="progress mb-2" style="height: 7px;">
-												<div class="progress-bar bg-info" role="progressbar" style="width: 65%" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" data-toggle="tooltip" data-placement="top" title="65%"></div>
-											</div>
-										</div>
-										<div class="progress-card">
-											<div class="d-flex justify-content-between mb-1">
-												<span class="text-muted">Tasks Complete</span>
-												<span class="text-muted fw-bold"> 70%</span>
-											</div>
-											<div class="progress mb-2" style="height: 7px;">
-												<div class="progress-bar bg-primary" role="progressbar" style="width: 70%" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" data-toggle="tooltip" data-placement="top" title="70%"></div>
-											</div>
-										</div>
-										<div class="progress-card">
-											<div class="d-flex justify-content-between mb-1">
-												<span class="text-muted">Open Rate</span>
-												<span class="text-muted fw-bold"> 60%</span>
-											</div>
-											<div class="progress mb-2" style="height: 7px;">
-												<div class="progress-bar bg-warning" role="progressbar" style="width: 60%" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" data-toggle="tooltip" data-placement="top" title="60%"></div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="col-md-3">
-								<div class="card card-stats">
-									<div class="card-body">
-										<p class="fw-bold mt-1">Statistic</p>
-										<div class="row">
-											<div class="col-5">
-												<div class="icon-big text-center icon-warning">
-													<i class="la la-pie-chart text-warning"></i>
-												</div>
-											</div>
-											<div class="col-7 d-flex align-items-center">
-												<div class="numbers">
-													<p class="card-category">Number</p>
-													<h4 class="card-title">150GB</h4>
-												</div>
-											</div>
-										</div>
-										<hr/>
-										<div class="row">
-											<div class="col-5">
-												<div class="icon-big text-center">
-													<i class="la la-heart-o text-primary"></i>
-												</div>
-											</div>
-											<div class="col-7 d-flex align-items-center">
-												<div class="numbers">
-													<p class="card-category">Followers</p>
-													<h4 class="card-title">+45K</h4>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-						<div class="row">
-							<div class="col-md-4">
-								<div class="card">
-									<div class="card-header">
-										<h4 class="card-title">Users Statistics</h4>
-										<p class="card-category">
-										Users statistics this month</p>
-									</div>
-									<div class="card-body">
-										<div id="monthlyChart" class="chart chart-pie"></div>
-									</div>
-								</div>
-							</div>
-							<div class="col-md-8">
-								<div class="card">
-									<div class="card-header">
-										<h4 class="card-title">2018 Sales</h4>
-										<p class="card-category">
-										Number of products sold</p>
-									</div>
-									<div class="card-body">
-										<div id="salesChart" class="chart"></div>
-									</div>
-								</div>
-							</div>
-							<div class="col-md-6">
-								<div class="card">
-									<div class="card-header ">
-										<h4 class="card-title">Table</h4>
-										<p class="card-category">Users Table</p>
-									</div>
-									<div class="card-body">
-										<table class="table table-head-bg-success table-striped table-hover">
-											<thead>
-												<tr>
-													<th scope="col">#</th>
-													<th scope="col">First</th>
-													<th scope="col">Last</th>
-													<th scope="col">Handle</th>
-												</tr>
-											</thead>
-											<tbody>
-												<tr>
-													<td>1</td>
-													<td>Mark</td>
-													<td>Otto</td>
-													<td>@mdo</td>
-												</tr>
-												<tr>
-													<td>2</td>
-													<td>Jacob</td>
-													<td>Thornton</td>
-													<td>@fat</td>
-												</tr>
-												<tr>
-													<td>3</td>
-													<td colspan="2">Larry the Bird</td>
-													<td>@twitter</td>
-												</tr>
-											</tbody>
-										</table>
-									</div>
-								</div>
-							</div>
-							<div class="col-md-6">
-								<div class="card card-tasks">
-									<div class="card-header ">
-										<h4 class="card-title">Tasks</h4>
-										<p class="card-category">To Do List</p>
-									</div>
-									<div class="card-body ">
-										<div class="table-full-width">
-											<table class="table">
-												<thead>
-													<tr>
-														<th>
-															<div class="form-check">
-																<label class="form-check-label">
-																	<input class="form-check-input  select-all-checkbox" type="checkbox" data-select="checkbox" data-target=".task-select">
-																	<span class="form-check-sign"></span>
-																</label>
-															</div>
-														</th>
-														<th>Task</th>
-														<th>Action</th>
-													</tr>
-												</thead>
-												<tbody>
-													<tr>
-														<td>
-															<div class="form-check">
-																<label class="form-check-label">
-																	<input class="form-check-input task-select" type="checkbox">
-																	<span class="form-check-sign"></span>
-																</label>
-															</div>
-														</td>
-														<td>Planning new project structure</td>
-														<td class="td-actions text-right">
-															<div class="form-button-action">
-																<button type="button" data-toggle="tooltip" title="Edit Task" class="btn btn-link <btn-simple-primary">
-																	<i class="la la-edit"></i>
-																</button>
-																<button type="button" data-toggle="tooltip" title="Remove" class="btn btn-link btn-simple-danger">
-																	<i class="la la-times"></i>
-																</button>
-															</div>
-														</td>
-													</tr>
-													<tr>
-														<td>
-															<div class="form-check">
-																<label class="form-check-label">
-																	<input class="form-check-input task-select" type="checkbox">
-																	<span class="form-check-sign"></span>
-																</label>
-															</div>
-														</td>
-														<td>Update Fonts</td>
-														<td class="td-actions text-right">
-															<div class="form-button-action">
-																<button type="button" data-toggle="tooltip" title="Edit Task" class="btn btn-link <btn-simple-primary">
-																	<i class="la la-edit"></i>
-																</button>
-																<button type="button" data-toggle="tooltip" title="Remove" class="btn btn-link btn-simple-danger">
-																	<i class="la la-times"></i>
-																</button>
-															</div>
-														</td>
-													</tr>
-													<tr>
-														<td>
-															<div class="form-check">
-																<label class="form-check-label">
-																	<input class="form-check-input task-select" type="checkbox">
-																	<span class="form-check-sign"></span>
-																</label>
-															</div>
-														</td>
-														<td>Add new Post
-														</td>
-														<td class="td-actions text-right">
-															<div class="form-button-action">
-																<button type="button" data-toggle="tooltip" title="Edit Task" class="btn btn-link <btn-simple-primary">
-																	<i class="la la-edit"></i>
-																</button>
-																<button type="button" data-toggle="tooltip" title="Remove" class="btn btn-link btn-simple-danger">
-																	<i class="la la-times"></i>
-																</button>
-															</div>
-														</td>
-													</tr>
-													<tr>
-														<td>
-															<div class="form-check">
-																<label class="form-check-label">
-																	<input class="form-check-input task-select" type="checkbox">
-																	<span class="form-check-sign"></span>
-																</label>
-															</div>
-														</td>
-														<td>Finalise the design proposal</td>
-														<td class="td-actions text-right">
-															<div class="form-button-action">
-																<button type="button" data-toggle="tooltip" title="Edit Task" class="btn btn-link <btn-simple-primary">
-																	<i class="la la-edit"></i>
-																</button>
-																<button type="button" data-toggle="tooltip" title="Remove" class="btn btn-link btn-simple-danger">
-																	<i class="la la-times"></i>
-																</button>
-															</div>
-														</td>
-													</tr>
-												</tbody>
-											</table>
-										</div>
-									</div>
-									<div class="card-footer ">
-										<div class="stats">
-											<i class="now-ui-icons loader_refresh spin"></i> Updated 3 minutes ago
-										</div>
-									</div>
-								</div>
-							</div>
-						</div> --}}
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="card">
-                            <div class="card-header">
-                                <h4 class="card-title">Users Statistics</h4>
-                                <p class="card-category">Users statistics this month</p>
-                            </div>
-                            <div class="card-body">
-                                <!-- 🔹 Use canvas instead of div for Chart.js -->
-                                <canvas id="monthlyChart" width="200" height="200"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-8">
-                        <div class="card">
+                {{-- ========== Charts Section ========== --}}
+                <div class="row mt-3">
+                    {{-- Sales Trend Chart --}}
+                    <div class="col-md-8 mb-3">
+                        <div class="card dashboard-chart-card">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h4 class="card-title">Sales Report</h4>
-                                    <p class="card-category">Number of products sold</p>
+                                    <h4 class="card-title">Sales Trend</h4>
+                                    <p class="card-category">Revenue overview</p>
                                 </div>
-                                <!-- 🔹 Filter -->
                                 <select id="salesFilter" class="form-control w-auto">
                                     <option value="daily">Daily</option>
                                     <option value="weekly">Weekly</option>
-                                    <option value="monthly">Monthly</option>
+                                    <option value="monthly" selected>Monthly</option>
                                 </select>
                             </div>
-
                             <div class="card-body">
-                                <canvas id="salesChart"></canvas>
+                                <canvas id="salesChart" height="100"></canvas>
                             </div>
                         </div>
                     </div>
 
+                    {{-- Data Composition Donut --}}
+                    <div class="col-md-4 mb-3">
+                        <div class="card dashboard-chart-card">
+                            <div class="card-header">
+                                <h4 class="card-title">Data Composition</h4>
+                                <p class="card-category">Master data breakdown</p>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="compositionChart" height="220"></canvas>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <div class="row">
+                    {{-- Transaction Summary Bar --}}
+                    <div class="col-md-6 mb-3">
+                        <div class="card dashboard-chart-card">
+                            <div class="card-header">
+                                <h4 class="card-title">Transaction Summary</h4>
+                                <p class="card-category">Purchases vs Sales vs Payments</p>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="transactionChart" height="160"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Inventory Overview --}}
+                    <div class="col-md-6 mb-3">
+                        <div class="card dashboard-chart-card">
+                            <div class="card-header">
+                                <h4 class="card-title">Inventory Overview</h4>
+                                <p class="card-category">Products, Variants & Stock Items</p>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="inventoryChart" height="160"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
 
-
 @endsection
+
+@push('script')
+<style>
+    /* ===== Blue Background Cards (Platform Stats) ===== */
+    .nexora-blue-card {
+        background: #0058A6;
+        border-radius: 12px;
+        padding: 20px 16px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        height: 100%;
+        transition: all 0.2s ease;
+    }
+    .nexora-blue-card:hover {
+        background: #003F7D;
+        box-shadow: 0 6px 20px rgba(0, 88, 166, 0.25);
+        transform: translateY(-2px);
+    }
+    .nexora-blue-card-icon {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.18);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .nexora-blue-card-icon i {
+        font-size: 20px;
+        color: #FFFFFF !important;
+    }
+    .nexora-blue-card-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    .nexora-blue-card-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.75) !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .nexora-blue-card-value {
+        font-size: 22px;
+        font-weight: 700;
+        color: #FFFFFF !important;
+        line-height: 1.2;
+    }
+
+    /* ===== White Stat Cards (POS Management) ===== */
+    .nexora-stat-card {
+        display: flex;
+        align-items: center;
+        background: #FFFFFF;
+        border: 1px solid #DCEEFF;
+        border-radius: 12px;
+        padding: 18px 16px;
+        transition: all 0.2s ease;
+        gap: 14px;
+        height: 100%;
+    }
+    .nexora-stat-card:hover {
+        border-color: #0058A6;
+        box-shadow: 0 4px 16px rgba(0, 88, 166, 0.08);
+        transform: translateY(-2px);
+    }
+    .nexora-stat-icon {
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+        border-radius: 12px;
+        background: #EAF5FF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .nexora-stat-icon i {
+        font-size: 22px;
+        color: #0058A6;
+    }
+    .nexora-stat-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+    }
+    .nexora-stat-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #1976C9;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .nexora-stat-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: #002E58;
+        line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .nexora-stat-link {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        border-radius: 8px;
+        background: #F4FAFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+    .nexora-stat-link i {
+        font-size: 16px;
+        color: #0058A6 !important;
+    }
+    .nexora-stat-link:hover {
+        background: #0058A6;
+    }
+    .nexora-stat-link:hover i {
+        color: #FFFFFF !important;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (typeof Chart === 'undefined') return;
+
+    var white = '#FFFFFF';
+    var whiteGrid = 'rgba(255,255,255,0.15)';
+    var whiteTick = '#FFFFFF';
+    var whiteFill = 'rgba(255,255,255,0.15)';
+    
+    Chart.defaults.color = '#FFFFFF';
+
+    // ===== 1. SALES TREND CHART =====
+    var salesChartInstance = null;
+    function loadSalesChart(filter) {
+        filter = filter || 'monthly';
+        fetch('/admin-panel/sales-data?filter=' + encodeURIComponent(filter))
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                var labels = data.map(function (d) { return d.label; });
+                var values = data.map(function (d) { return d.value; });
+
+                if (salesChartInstance) salesChartInstance.destroy();
+
+                salesChartInstance = new Chart(document.getElementById('salesChart'), {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Revenue',
+                            data: values,
+                            borderColor: white,
+                            backgroundColor: whiteFill,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: white,
+                            pointBorderColor: '#0058A6',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                        }],
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: '#002E58',
+                                titleColor: white,
+                                bodyColor: white,
+                                padding: 12,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: function (ctx) {
+                                        return 'Rp ' + Number(ctx.parsed.y).toLocaleString('id-ID');
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: whiteGrid },
+                                ticks: {
+                                    color: whiteTick,
+                                    callback: function (v) { return 'Rp ' + Number(v).toLocaleString('id-ID'); }
+                                }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: whiteTick }
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(function (e) { console.error('Sales chart error:', e); });
+    }
+
+    var salesFilter = document.getElementById('salesFilter');
+    if (salesFilter) {
+        loadSalesChart(salesFilter.value);
+        salesFilter.addEventListener('change', function () { loadSalesChart(this.value); });
+    }
+
+    // ===== 2. DATA COMPOSITION DONUT =====
+    var compCtx = document.getElementById('compositionChart');
+    if (compCtx) {
+        new Chart(compCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Products', 'Variants', 'Customers', 'Suppliers', 'Stores', 'Categories'],
+                datasets: [{
+                    data: [
+                        {{ $products }},
+                        {{ $variants }},
+                        {{ $customers }},
+                        {{ $suppliers }},
+                        {{ $store }},
+                        {{ $cats }}
+                    ],
+                    backgroundColor: [
+                        '#FFFFFF',
+                        'rgba(255,255,255,0.75)',
+                        'rgba(255,255,255,0.55)',
+                        'rgba(255,255,255,0.4)',
+                        '#A0D2FF',
+                        '#5BA3D9',
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#0058A6',
+                    hoverOffset: 8,
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: white,
+                            padding: 12,
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            font: { size: 11 }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#002E58',
+                        titleColor: white,
+                        bodyColor: white,
+                        padding: 10,
+                        cornerRadius: 8,
+                    }
+                }
+            }
+        });
+    }
+
+    // ===== 3. TRANSACTION SUMMARY BAR =====
+    var txCtx = document.getElementById('transactionChart');
+    if (txCtx) {
+        new Chart(txCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Purchases', 'Sales', 'Payments'],
+                datasets: [{
+                    label: 'Count',
+                    data: [{{ $purchases }}, {{ $sales }}, {{ $payments > 0 ? 1 : 0 }}],
+                    backgroundColor: [white, 'rgba(255,255,255,0.7)', 'rgba(255,255,255,0.45)'],
+                    borderRadius: 8,
+                    barThickness: 40,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#002E58',
+                        titleColor: white,
+                        bodyColor: white,
+                        padding: 10,
+                        cornerRadius: 8,
+                        callbacks: {
+                            afterBody: function (ctx) {
+                                if (ctx[0].label === 'Payments') {
+                                    return 'Total: Rp {{ number_format($payments, 0, ",", ".") }}';
+                                }
+                                return '';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: whiteGrid },
+                        ticks: { color: whiteTick, stepSize: 1 }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: white, font: { weight: '600' } }
+                    }
+                }
+            }
+        });
+    }
+
+    // ===== 4. INVENTORY OVERVIEW HORIZONTAL BAR =====
+    var invCtx = document.getElementById('inventoryChart');
+    if (invCtx) {
+        new Chart(invCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Products', 'Variants', 'Purchase Items', 'Categories', 'Taxes'],
+                datasets: [{
+                    label: 'Count',
+                    data: [{{ $products }}, {{ $variants }}, {{ $items }}, {{ $cats }}, {{ $taxes }}],
+                    backgroundColor: [
+                        white,
+                        'rgba(255,255,255,0.8)',
+                        'rgba(255,255,255,0.6)',
+                        '#A0D2FF',
+                        '#5BA3D9',
+                    ],
+                    borderRadius: 6,
+                    barThickness: 24,
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#002E58',
+                        titleColor: white,
+                        bodyColor: white,
+                        padding: 10,
+                        cornerRadius: 8,
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: { color: whiteGrid },
+                        ticks: { color: whiteTick, stepSize: 1 }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: { color: white, font: { weight: '600', size: 12 } }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+@endpush

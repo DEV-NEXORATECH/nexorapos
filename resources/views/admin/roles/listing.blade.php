@@ -1,17 +1,20 @@
 @extends('admin.layout.app')
 
-@section('title', 'Roles')
+@section('title', 'Roles & Access')
 
 @section('content')
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
-            <h4 class="page-title">Roles</h4>
+            <h4 class="page-title">Roles & Access</h4>
             <div class="row">
                 <div class="col">
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center">
-                            <div class="card-title">Roles</div>
+                            <div>
+                                <div class="card-title mb-1">Roles & Access</div>
+                                <p class="card-category mb-0">Kelola role lalu buka edit untuk checklist permission akses menu.</p>
+                            </div>
                             <div>
                                 <a href="{{ url('admin-panel/roles/add') }}" class="btn btn-primary">Add New Role</a>
                             </div>
@@ -20,22 +23,32 @@
                         <div class="card-body">
 
                             {{-- Actual Categories Table --}}
-                            <table class="table table-bordered table-striped" id="categoriesTable">
+                            <table class="table nexora-data-table" id="categoriesTable">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Name</th>
+                                        <th>Role</th>
+                                        <th>Users</th>
+                                        <th>Access</th>
+                                        <th>Status</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($roles as $role)
                                         <tr>
-                                            <td>{{ $role->id }}</td>
                                             <td>{{ $role->role }}</td>
+                                            <td>{{ $role->users_count }} users</td>
                                             <td>
-                                                <a href="{{ url('admin-panel/roles/edit', $role->id) }}" class="btn btn-success"><i class="fas fa-edit"></i></a>
-                                                <a href="{{ url('admin-panel/roles/delete', $role->id) }}" class="btn btn-danger delete-category"><i class="fas fa-trash"></i></a>
+                                                <span class="badge badge-primary">{{ $role->permissions_count }} permissions</span>
+                                            </td>
+                                            <td>
+                                                <span class="nexora-status nexora-status-success">Active</span>
+                                            </td>
+                                            <td>
+                                                <div class="nexora-action-group">
+                                                    <a href="{{ url('admin-panel/roles/edit', $role->id) }}" class="nexora-action-btn" title="Edit role"><i class="fas fa-edit"></i></a>
+                                                    <a href="{{ url('admin-panel/roles/delete', $role->id) }}" class="nexora-action-btn is-danger delete-category" title="Delete role"><i class="fas fa-trash"></i></a>
+                                                </div>
                                             </td>
                                         </tr>
                                     @endforeach

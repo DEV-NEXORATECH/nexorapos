@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tax_is')->constrained('taxes')->onDelete('cascade');
+            $table->foreignId('tax_id')->constrained('taxes')->onDelete('cascade');
             $table->string('name');
             $table->string('sku')->unique();
             $table->string('barcode')->unique();

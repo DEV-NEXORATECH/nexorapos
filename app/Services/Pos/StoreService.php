@@ -1,7 +1,7 @@
 <?php
 namespace App\Services\Pos;
 use Illuminate\Http\Request;
-use App\Models\POS\Store;
+use App\Models\Pos\Store;
 use App\Pos\Store\StoreValidation;
 class StoreService{
 
@@ -12,13 +12,22 @@ class StoreService{
     }
     public function index()
     {
-        $stores=Store::all();
+        $stores = Store::where('company_id', auth()->user()?->company_id)->get();
         return view('admin.pos.store.listing', compact('stores'));
     }
 
     public function add()
     {
         return view('admin.pos.store.add');
+    }
+
+    public function show($id)
+    {
+        $store = Store::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
+        if($store) {
+            return view('admin.pos.store.show', compact('store'));
+        }
+        return redirect()->back()->with('failed', 'Record Not Found or Unauthorized');
     }
 
     public function store(Request $request)
@@ -31,6 +40,7 @@ class StoreService{
             }
 
             $store=new Store();
+            $store->company_id=auth()->user()?->company_id;
             $store->name=$request->name;
             $store->code=$request->code;
             $store->save();
@@ -47,18 +57,18 @@ class StoreService{
 
     public function edit($id)
     {
-        $store=Store::find($id);
+        $store=Store::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
         if($store)
         {
             return view('admin.pos.store.update', compact('store'));
         }
 
-        return redirect()->back()->with('failed', 'Record Not Found');
+        return redirect()->back()->with('failed', 'Record Not Found or Unauthorized');
     }
 
     public function update(Request $request,$id)
     {
-        $store=Store::find($id);
+        $store=Store::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
         if($store)
         {
             $inputs=$request->all();
@@ -74,18 +84,18 @@ class StoreService{
                 return redirect()->to('admin-panel/stores/listing')->with('success', 'Store Updated Successfully');
             }
         }else{
-            return redirect()->back()->with('failed', 'Record Not Found');
+            return redirect()->back()->with('failed', 'Record Not Found or Unauthorized');
         }
     }
 
     public function destroy($id)
     {
-        $store=Store::find($id);
+        $store=Store::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
         if($store){
             $store->delete();
             return redirect()->back()->with('success', 'Record Deleted Successfully');
         }
 
-        return redirect()->back()->with('failed', 'Record Not Found');
+        return redirect()->back()->with('failed', 'Record Not Found or Unauthorized');
     }
 }

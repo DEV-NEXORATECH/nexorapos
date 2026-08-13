@@ -1,124 +1,194 @@
 <?php
+
 namespace App\Services\Admin;
-use Illuminate\Http\Request;
+
+use App\Models\PermissionCategory;
 use App\Models\Role;
 use App\Models\Permission;
-use App\Models\PermissionCategory;
-use App\Models\RolePermission;
 use App\Validations\Admin\Roles\RoleStoreValidation;
 use App\Validations\Admin\Roles\RoleUpdateValidation;
-class RoleService{
+use App\Support\AuditLogger;
+use Illuminate\Http\Request;
 
-    public $roleStoreValidation;
-    public $roleUpdateValidation;
-    public function __construct(){
-        $this->roleStoreValidation=new RoleStoreValidation();
-        $this->roleUpdateValidation=new RoleUpdateValidation();
+class RoleService
+{
+    public RoleStoreValidation $roleStoreValidation;
+    public RoleUpdateValidation $roleUpdateValidation;
+
+    public function __construct()
+    {
+        $this->roleStoreValidation = new RoleStoreValidation();
+        $this->roleUpdateValidation = new RoleUpdateValidation();
     }
 
     public function index()
     {
-        $roles=Role::all();
-        return view('admin.roles.listing',compact('roles'));
+        $roles = Role::withCount(['permissions', 'users'])->get();
+
+        return view('admin.roles.listing', compact('roles'));
     }
 
     public function add()
     {
-        return view('admin.roles.add');
+        $permissionCategories = PermissionCategory::with('permissions')
+            ->orderBy('display_order', 'asc')
+            ->get();
+
+        return view('admin.roles.add', compact('permissionCategories'));
     }
 
-    public function store(Request $request){
-        try{
-            $inputs=$request->all();
-            $errorMessage=$this->roleStoreValidation->validate($inputs);
-            if($errorMessage){
-                return redirect()->back()->with('failed', $errorMessage);
+    public function store(Request $request)
+    {
+        $errorMessage = $this->roleStoreValidation->validate($request->all());
+        if ($errorMessage) {
+            return redirect()->back()->with('failed', $errorMessage);
+        }
+
+        $currentUser = auth()->user();
+        $requestedPermissions = collect($request->input('permissions', []))
+            ->map(fn ($permissionId) => (int) $permissionId)
+            ->all();
+
+        if (! $currentUser?->isSuperAdmin()) {
+            $allowedPermissionIds = $currentUser->role?->permissions()
+                ->pluck('permissions.id')
+                ->map(fn ($permissionId) => (int) $permissionId)
+                ->all() ?? [];
+
+            if (array_diff($requestedPermissions, $allowedPermissionIds) !== []) {
+                abort(403, 'Admin tidak boleh memberikan permission yang tidak dimiliki.');
             }
 
-            $roles=new Role();
-            $roles->role=$request->role;
-            $roles->save();
-            if($roles){
-                return redirect()->to('admin-panel/roles/listing')->with('success', 'Role Added Successfully');
-            }else{
-                return redirect()->back()->with('failed', 'Something went wrong');
+            $disabledFeaturePermissions = Permission::with('permission_category')
+                ->whereIn('id', $requestedPermissions)
+                ->get()
+                ->filter(function ($permission) use ($currentUser) {
+                    $featureKey = $permission->permission_category?->feature_key;
+
+                    return $featureKey && ! $currentUser->company?->hasFeature($featureKey);
+                });
+
+            if ($disabledFeaturePermissions->isNotEmpty()) {
+                abort(403, 'Admin tidak boleh memberikan permission dari fitur company yang nonaktif.');
             }
-        }catch(\Exception $e){
-            return redirect()->back()->with('failed', $e->getMessage());
         }
+
+        $role = new Role();
+        $role->role = $request->role;
+
+        if (! $currentUser?->isSuperAdmin()) {
+            $role->company_id = $currentUser?->company_id;
+        }
+
+        $role->save();
+        $role->permissions()->sync($requestedPermissions);
+        AuditLogger::log('create', 'roles', $role, [], [
+            'id' => $role->id,
+            'role' => $role->role,
+            'company_id' => $role->company_id,
+            'permissions' => $requestedPermissions,
+        ]);
+
+        return redirect()->to('admin-panel/roles/listing')->with('success', 'Role Added Successfully');
     }
 
     public function edit(Request $request, $id)
-{
-    $permissionCategories = PermissionCategory::with('permissions')->orderBy('display_order', 'asc')->get();
-    try {
-        $roles = Role::find($id);
-        if ($roles) {
-            // ✅ Get assigned permissions of the role
-          $assignedPermissions = $roles->permissions()->pluck('permissions.id')->toArray();
-            // ✅ Pass it to the view
-            return view('admin.roles.update', compact('roles', 'permissionCategories', 'assignedPermissions'));
-        } else {
-            return redirect()->back()->with('failed', 'Data Not Found');
+    {
+        $currentUser = auth()->user();
+        $role = Role::findOrFail($id);
+
+        if (! $currentUser?->isSuperAdmin() && (int) $role->company_id !== (int) $currentUser?->company_id) {
+            abort(403, 'Role bukan milik company kamu.');
         }
-    } catch (\Exception $e) {
-        return redirect()->back()->with('failed', $e->getMessage());
+
+        $permissionCategories = PermissionCategory::with('permissions')
+            ->orderBy('display_order', 'asc')
+            ->get();
+        $assignedPermissions = $role->permissions()->pluck('permissions.id')->toArray();
+
+        return view('admin.roles.update', [
+            'roles' => $role,
+            'permissionCategories' => $permissionCategories,
+            'assignedPermissions' => $assignedPermissions,
+        ]);
     }
-}
 
+    public function update(Request $request, $id)
+    {
+        $errorMessage = $this->roleUpdateValidation->validate($request->all());
+        if ($errorMessage) {
+            return redirect()->back()->with('failed', $errorMessage);
+        }
 
-    //update function
+        $currentUser = auth()->user();
+        $role = Role::findOrFail($id);
 
+        if (! $currentUser?->isSuperAdmin() && (int) $role->company_id !== (int) $currentUser?->company_id) {
+            abort(403, 'Role bukan milik company kamu.');
+        }
 
-        public function update(Request $request, $id)
-        {
-            try {
-                // 1. VALIDATION
-                $inputs = $request->all();
-                $errorMessage = $this->roleUpdateValidation->validate($inputs);
+        $requestedPermissions = collect($request->input('permissions', []))
+            ->map(fn ($permissionId) => (int) $permissionId)
+            ->all();
 
-                if ($errorMessage) {
-                    return redirect()->back()->with('failed', $errorMessage);
-                }
+        if (! $currentUser?->isSuperAdmin()) {
+            $allowedPermissionIds = $currentUser->role?->permissions()
+                ->pluck('permissions.id')
+                ->map(fn ($permissionId) => (int) $permissionId)
+                ->all() ?? [];
 
-                // 2. FIND THE ROLE
-                $role = Role::findOrFail($id);
+            if (array_diff($requestedPermissions, $allowedPermissionIds) !== []) {
+                abort(403, 'Admin tidak boleh memberikan permission yang tidak dimiliki.');
+            }
 
-                // 3. UPDATE ROLE NAME
-                $role->role = $request->role;
-                $role->save(); // Save the name change first
+            $disabledFeaturePermissions = Permission::with('permission_category')
+                ->whereIn('id', $requestedPermissions)
+                ->get()
+                ->filter(function ($permission) use ($currentUser) {
+                    $featureKey = $permission->permission_category?->feature_key;
 
-                // 4. SYNC PERMISSIONS (PIVOT TABLE)
-                if ($request->has('permissions')) {
-                    $role->permissions()->sync($request->permissions);
-                } else {
-                    // If no permissions selected, detach all
-                    $role->permissions()->detach();
-                }
+                    return $featureKey && ! $currentUser->company?->hasFeature($featureKey);
+                });
 
-                // 5. RETURN RESPONSE
-                return redirect()->to('admin-panel/roles/listing')
-                    ->with('success', 'Role and permissions updated successfully');
-
-            } catch (\Exception $e) {
-                return redirect()->back()
-                    ->with('failed', 'Error: ' . $e->getMessage());
+            if ($disabledFeaturePermissions->isNotEmpty()) {
+                abort(403, 'Admin tidak boleh memberikan permission dari fitur company yang nonaktif.');
             }
         }
 
-        //delete function
+        $oldValue = [
+            'role' => $role->role,
+            'permissions' => $role->permissions()->pluck('permissions.id')->all(),
+        ];
 
-    public function destroy(Request $request,$id){
-        try{
-            $roles=Role::find($id);
-            $roles->delete();
-            if($roles){
-                return redirect()->to('admin-panel/roles/listing')->with('success', 'Role Deleted Successfully');
-            }else{
-                return redirect()->back()->with('failed', 'Something Went Wrong');
-            }
-        }catch(\Exception $e){
-            return redirect()->back()->with('failed', $e->getMessage());
+        $role->role = $request->role;
+        $role->save();
+        $role->permissions()->sync($requestedPermissions);
+        AuditLogger::log('update', 'roles', $role, $oldValue, [
+            'role' => $role->role,
+            'permissions' => $requestedPermissions,
+        ]);
+
+        return redirect()->to('admin-panel/roles/listing')
+            ->with('success', 'Role and permissions updated successfully');
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        $currentUser = auth()->user();
+        $role = Role::findOrFail($id);
+
+        if (! $currentUser?->isSuperAdmin() && (int) $role->company_id !== (int) $currentUser?->company_id) {
+            abort(403, 'Role bukan milik company kamu.');
         }
+
+        if ($role->users()->exists()) {
+            return redirect()->back()->with('failed', 'Role masih digunakan user.');
+        }
+
+        $oldValue = $role->only(['id', 'role', 'company_id']);
+        $role->delete();
+        AuditLogger::log('delete', 'roles', $role, $oldValue, []);
+
+        return redirect()->to('admin-panel/roles/listing')->with('success', 'Role Deleted Successfully');
     }
 }

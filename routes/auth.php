@@ -7,15 +7,14 @@ use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
-use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
-    Route::get('register', [RegisteredUserController::class, 'create'])
+    Route::get('register', fn () => redirect()->route('login')->with('failed', 'Registrasi publik dinonaktifkan. User dibuat dan diberi akses oleh Super Admin.'))
         ->name('register');
 
-    Route::post('register', [RegisteredUserController::class, 'store']);
+    Route::post('register', fn () => redirect()->route('login')->with('failed', 'Registrasi publik dinonaktifkan. User dibuat dan diberi akses oleh Super Admin.'));
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
@@ -57,6 +56,5 @@ Route::middleware('auth')->group(function () {
     Route::get('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 
-    Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
-        ->name('logout');
+    Route::post('logout', [AuthenticatedSessionController::class, 'destroy']);
 });

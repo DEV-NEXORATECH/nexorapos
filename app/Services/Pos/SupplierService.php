@@ -15,7 +15,7 @@ class SupplierService{
     }
     public function index()
     {
-        $suppliers=Supplier::all();
+        $suppliers = Supplier::where('company_id', auth()->user()?->company_id)->get();
         return view('admin.pos.supplier.listing', compact('suppliers'));
     }
 
@@ -34,6 +34,7 @@ class SupplierService{
             return redirect()->back()->withErrors($errorMessage)->withInput();
         }
         $supplier = new Supplier();
+        $supplier->company_id = auth()->user()?->company_id;
         $supplier->name = $request->name;
         $supplier->email = $request->email;
         $supplier->phone = $request->phone;
@@ -50,12 +51,12 @@ class SupplierService{
 
     public function edit(Request $request, $id)
     {
-        $supplier=Supplier::find($id);
+        $supplier = Supplier::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
         if($supplier)
         {
             return view('admin.pos.supplier.update', compact('supplier'));
         }else{
-            return redirect()->back()->with('failed', 'Record Not Found');
+            return redirect()->back()->with('failed', 'Record Not Found or Unauthorized');
         }
     }
 
@@ -68,7 +69,10 @@ class SupplierService{
         if($errorMessage !== true) {
             return redirect()->back()->withErrors($errorMessage)->withInput();
         }
-        $supplier=Supplier::find($id);
+        $supplier = Supplier::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
+        if (!$supplier) {
+            return redirect()->back()->with('failed', 'Record Not Found or Unauthorized');
+        }
         $supplier->name = $request->name;
         $supplier->email = $request->email;
         $supplier->phone = $request->phone;
@@ -85,13 +89,13 @@ class SupplierService{
 
     public function destroy($id)
     {
-        $supplier=Supplier::find($id);
+        $supplier = Supplier::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
         if($supplier)
         {
             $supplier->delete();
             return redirect()->back()->with('success', 'Record Deleted Successfully');
         }else{
-            return redirect()->back()->with('failed', "Record Not Found");
+            return redirect()->back()->with('failed', 'Record Not Found or Unauthorized');
         }
     }
 }

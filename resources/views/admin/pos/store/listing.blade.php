@@ -6,49 +6,47 @@
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
-            <h4 class="page-title">All Stores</h4>
-            <div class="row">
-                <div class="col">
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <div class="card-title">All Stores</div>
-                            <div>
-                                <a href="{{ url('admin-panel/stores/add') }}" class="btn btn-primary">Add New Store</a>
-                            </div>
-                        </div>
+            <div class="superadmin-header-card mb-4" style="align-items: center;">
+                <h4 class="mt-1 mb-2" style="color: #fff;"><i class="fas fa-store"></i> All Stores</h4>
+                <a href="{{ url('admin-panel/stores/add') }}" class="btn" style="background-color: #FFFFFF !important; color: #0058A6 !important; border: none !important; white-space: nowrap; font-weight: 600; padding: 8px 16px; border-radius: 6px;">
+                    + Add New Store
+                </a>
+            </div>
 
-                        <div class="card-body">
-
-                            {{-- Actual Categories Table --}}
-                            <table class="table table-bordered table-striped" id="categoriesTable">
-                                <thead>
+            <table class="table nexora-data-table" id="storesTable" style="width:100%">
+                <thead>
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Store Name</th>
                                         <th>Store Code</th>
+                                        <th>Store Name</th>
+                                        <th>Created At</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($stores as $store)
+                                    @forelse ($stores as $store)
                                         <tr>
-                                            <td>{{ $store->id }}</td>
+                                            <td><strong>{{ $store->store_code ?? $store->code ?? '-' }}</strong></td>
                                             <td>{{ $store->name }}</td>
-                                            <td>{{ $store->code }}</td>
-                                            <td>
-                                                <a href="{{ url('admin-panel/stores/edit', $store->id) }}" class="btn-sm btn-primary"><i class="fas fa-edit"></i></a>
-                                                <a href="{{ url('admin-panel/stores/delete', $store->id) }}" class="btn-sm btn-danger delete-category"><i class="fas fa-trash"></i></a>
+                                            <td>{{ $store->created_at?->format('d M Y') }}</td>
+                                            <td style="white-space:nowrap;">
+                                                <a href="{{ url('admin-panel/stores/show', $store->id) }}" class="btn btn-sm btn-info" title="View"><i class="fas fa-eye"></i></a>
+                                                <a href="{{ url('admin-panel/stores/edit', $store->id) }}" class="btn btn-sm btn-primary" title="Edit"><i class="fas fa-edit"></i></a>
+                                                <form action="{{ url('admin-panel/stores/delete', $store->id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Yakin ingin menghapus store ini?');">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-danger" title="Delete"><i class="fas fa-trash"></i></button>
+                                                </form>
                                             </td>
                                         </tr>
-                                    @endforeach
+                                    @empty
+                                        <tr>
+                                            <td colspan="4" class="text-center py-4">
+                                                <i class="fas fa-store fa-2x mb-2" style="color:var(--color-blue-500)"></i>
+                                                <p>Belum ada store.</p>
+                                            </td>
+                                        </tr>
+                                    @endforelse
                                 </tbody>
-                            </table>
-
-
-                        </div>
-                    </div>
-                </div>
-            </div>
+            </table>
         </div>
     </div>
 </div>

@@ -17,6 +17,11 @@ class SaleController extends Controller
         return $this->sale->index();
     }
 
+    public function reconciliation(Request $request)
+    {
+        return $this->sale->reconciliation($request);
+    }
+
     public function add()
     {
         return $this->sale->add();

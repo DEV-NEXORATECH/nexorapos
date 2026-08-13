@@ -7,20 +7,15 @@
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
-            <h4 class="page-title">Settings</h4>
-            <div class="row">
-                <div class="col">
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <div class="card-title">Setting</div>
-                            <div>
-                                <a href="{{ url('admin-panel/settings/add') }}" class="btn btn-primary">Add New Setting</a>
-                            </div>
-                        </div>
+            <div class="superadmin-header-card mb-4" style="align-items: center;">
+                <h4 class="mt-1 mb-2" style="color: #fff;"><i class="fas fa-sliders-h"></i> System Settings</h4>
+                <a href="{{ url('admin-panel/settings/add') }}" class="btn" style="background-color: #FFFFFF !important; color: #0058A6 !important; border: none !important; white-space: nowrap; font-weight: 600; padding: 8px 16px; border-radius: 6px;">
+                    + Add New Setting
+                </a>
+            </div>
 
-                        <div class="card-body">
-                            <table class="table table-bordered table-striped" id="categoriesTable">
-                                <thead>
+            <table class="table nexora-data-table" id="categoriesTable" style="width:100%">
+                <thead>
                                     <tr>
                                         <th>ID</th>
                                         <th>Key</th>
@@ -41,12 +36,7 @@
                                         </tr>
                                     @endforeach
                                 </tbody>
-                            </table>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
+            </table>
         </div>
     </div>
 </div>

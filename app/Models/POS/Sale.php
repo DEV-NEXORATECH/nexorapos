@@ -4,11 +4,14 @@ namespace App\Models\Pos;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
+use App\Models\Concerns\BelongsToCompany;
 class Sale extends Model
 {
+    use BelongsToCompany;
+
     protected $table='sales';
 
-    protected $fillables=[
+    protected $fillable=[
         'store_id',
         'customer_id',
         'user_id',
@@ -16,7 +19,23 @@ class Sale extends Model
         'tax',
         'discount',
         'total',
+        'paid_amount',
+        'change_amount',
         'status',
+        'payment_status',
+        'invoice_number',
+        'cancelled_at',
+        'company_id',
+    ];
+
+    protected $casts = [
+        'cancelled_at' => 'datetime',
+        'subtotal' => 'decimal:2',
+        'tax' => 'decimal:2',
+        'discount' => 'decimal:2',
+        'total' => 'decimal:2',
+        'paid_amount' => 'decimal:2',
+        'change_amount' => 'decimal:2',
     ];
 
     public function customer()

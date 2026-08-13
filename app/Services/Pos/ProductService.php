@@ -15,14 +15,15 @@ class ProductService
         $this->productUpdateValidation=new ProductUpdateValidation();
     }
     public function index(){
-        $products=Product::with('tax')->get();
+        $products = Product::with('tax')->where('company_id', auth()->user()?->company_id)->get();
         return view('admin.pos.Product.listing', compact('products'));
     }
 
     public function add()
     {
-        $taxes=Tax::all();
-        $categories=ProductCategory::all();
+        $companyId = auth()->user()?->company_id;
+        $taxes = Tax::where('company_id', $companyId)->get();
+        $categories = ProductCategory::where('company_id', $companyId)->get();
         return view('admin.pos.Product.add', compact('taxes', 'categories'));
     }
 
@@ -31,10 +32,18 @@ class ProductService
         try{
              $inputs=$request->all();
             $validator=$this->productStoreValidation->validate($inputs);
-            if($validator){
+        if($validator){
             return redirect()->back()->withErrors($validator)->withInput();
         }
+        $companyId = auth()->user()?->company_id;
+        if ($request->filled('tax_id') && ! Tax::whereKey($request->tax_id)->where('company_id', $companyId)->exists()) {
+            return redirect()->back()->with('failed', 'Tax tidak valid untuk company ini.')->withInput();
+        }
+        if ($request->filled('category_id') && ! ProductCategory::whereKey($request->category_id)->where('company_id', $companyId)->exists()) {
+            return redirect()->back()->with('failed', 'Category tidak valid untuk company ini.')->withInput();
+        }
         $product=new Product();
+        $product->company_id = $companyId;
         $product->name=$request->name;
         $product->tax_id=$request->tax_id;
         $product->category_id=$request->category_id;
@@ -55,9 +64,13 @@ class ProductService
 
     public function edit(Request $request, $id)
     {
-        $product = Product::with('tax', 'category')->find($id);
-        $taxes = Tax::all();
-        $categories = ProductCategory::all();
+        $companyId = auth()->user()?->company_id;
+        $product = Product::with('tax', 'category')->where('company_id', $companyId)->find($id);
+        if (!$product) {
+            return redirect()->back()->with('failed', 'Product not found or unauthorized');
+        }
+        $taxes = Tax::where('company_id', $companyId)->get();
+        $categories = ProductCategory::where('company_id', $companyId)->get();
         return view('admin.pos.Product.update', compact('product', 'taxes', 'categories'));
     }
 
@@ -71,7 +84,17 @@ class ProductService
             if($validator){
                 return redirect()->back()->withErrors($validator)->withInput();
             }
-            $product=Product::find($id);
+            $companyId = auth()->user()?->company_id;
+            $product = Product::where('company_id', $companyId)->find($id);
+            if (! $product) {
+                return redirect()->back()->with('failed', 'Product not found or unauthorized');
+            }
+            if ($request->filled('tax_id') && ! Tax::whereKey($request->tax_id)->where('company_id', $companyId)->exists()) {
+                return redirect()->back()->with('failed', 'Tax tidak valid untuk company ini.')->withInput();
+            }
+            if ($request->filled('category_id') && ! ProductCategory::whereKey($request->category_id)->where('company_id', $companyId)->exists()) {
+                return redirect()->back()->with('failed', 'Category tidak valid untuk company ini.')->withInput();
+            }
             $product->name=$request->name;
             $product->tax_id=$request->tax_id;
             $product->category_id=$request->category_id;
@@ -92,9 +115,9 @@ class ProductService
     public function destroy($id)
     {
         try{
-            $product=Product::find($id);
+            $product = Product::where('company_id', auth()->user()?->company_id)->find($id);
             if(!$product){
-                return redirect()->back()->with('failed','Product not found');
+                return redirect()->back()->with('failed','Product not found or unauthorized');
             }
             $product->delete();
             return redirect()->to('admin-panel/products/listing')->with('success','Product deleted successfully');
@@ -106,16 +129,16 @@ class ProductService
     // Soft deleted products listing
     public function deletedProducts()
     {
-        $deletedProducts = Product::onlyTrashed()->with('tax')->get();
+        $deletedProducts = Product::onlyTrashed()->with('tax')->where('company_id', auth()->user()?->company_id)->get();
         return view('admin.pos.Product.archieve', compact('deletedProducts'));
     }
 
     public function restore($id)
     {
-        $product=Product::withTrashed()->find($id);
+        $product = Product::withTrashed()->where('company_id', auth()->user()?->company_id)->find($id);
         if(!$product)
         {
-            return redirect()->back()->with('failed', 'Product Not Found');
+            return redirect()->back()->with('failed', 'Product Not Found or Unauthorized');
         }
         $product->restore();
         return redirect()->to('admin-panel/products/listing')->with('success', 'Product Restored Successfully');
@@ -123,16 +146,23 @@ class ProductService
 
     public function forceDelete($id)
     {
-        $product=Product::find($id);
-        $product->forceDelete();
-        return redirect()->back()->with('success', 'Your Record Deleted Permanently');
+        try {
+            $product = Product::withTrashed()->where('company_id', auth()->user()?->company_id)->find($id);
+            if (!$product) {
+                return redirect()->back()->with('failed', 'Product Not Found or Unauthorized');
+            }
+            $product->forceDelete();
+            return redirect()->back()->with('success', 'Your Record Deleted Permanently');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('failed', 'Produk tidak dapat dihapus permanen karena masih terkait dengan riwayat transaksi.');
+        }
     }
 
     // Export Products to Excel File 
     public function export(){
         try{
             $fileName = 'products.xlsx';
-            $products = Product::with('tax', 'category')->get();
+            $products = Product::with('tax', 'category')->where('company_id', auth()->user()?->company_id)->get();
             $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
             // Set header row
@@ -198,6 +228,11 @@ class ProductService
             'path' => $path
         ]);
     }
-}
 
+    public function show($id)
+    {
+        $product = Product::with('tax', 'category', 'product_variants')->where('company_id', auth()->user()?->company_id)->findOrFail($id);
+        return view('admin.pos.Product.show', compact('product'));
+    }
+}
 

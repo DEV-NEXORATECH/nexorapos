@@ -2,8 +2,8 @@
 namespace App\Services\Pos;
 
 use Illuminate\Http\Request;
-use App\Models\POS\ProductVariant;
-use App\Models\POS\Product;
+use App\Models\Pos\ProductVariant;
+use App\Models\Pos\Product;
 use App\Pos\Variant\VariantStoreValidation;
 class ProductVariantService{
     public $variant;
@@ -13,19 +13,24 @@ class ProductVariantService{
     }
     public function index()
     {
-        $variants=ProductVariant::with('product')->get();
+        $companyId = auth()->user()?->company_id;
+        $variants = ProductVariant::with('product')
+            ->where('company_id', $companyId)
+            ->get();
         return view('admin.pos.variant.listing', compact('variants'));
     }
 
     public function add()
     {
-        $products=Product::all();
+        $companyId = auth()->user()?->company_id;
+        $products = Product::where('company_id', $companyId)->get();
         return view('admin.pos.variant.add', compact('products'));
     }
 
     public function store(Request $request)
     {
         try{
+            $companyId = auth()->user()?->company_id;
             $inputs=$request->all();
             $errorMessage=$this->variant->validate($inputs);
             if($errorMessage)
@@ -33,7 +38,12 @@ class ProductVariantService{
                 return redirect()->back()->with('failed', $errorMessage);
             }
 
+            if (! Product::whereKey($request->product_id)->where('company_id', $companyId)->exists()) {
+                return redirect()->back()->with('failed', 'Product tidak valid untuk company ini.')->withInput();
+            }
+
             $product=new ProductVariant();
+            $product->company_id = $companyId;
             $product->product_id=$request->product_id;
             $product->name=$request->name;
             $product->sku=$request->sku;
@@ -52,22 +62,34 @@ class ProductVariantService{
 
     public function edit($id)
     {
-        $products=Product::all();
-        $product=ProductVariant::with('product')->find($id);
+        $companyId = auth()->user()?->company_id;
+        $products = Product::where('company_id', $companyId)->get();
+        $product = ProductVariant::with('product')
+            ->where('company_id', $companyId)
+            ->find($id);
         if($product){
             return view('admin.pos.variant.update', compact('product', 'products'));
         }
+
+        return redirect()->back()->with('failed', 'Record Not Found or Unauthorized');
     }
 
     public function update(Request $request, $id){
         try{
-            $product=ProductVariant::find($id);
+            $companyId = auth()->user()?->company_id;
+            $product = ProductVariant::where('company_id', $companyId)->find($id);
             if($product){
                 $inputs=$request->all();
                 $errorMessage=$this->variant->validate($inputs);
                 if($errorMessage){
                     return redirect()->back()->with('failed', $errorMessage);
                 }
+            } else {
+                return redirect()->back()->with('failed', 'Record Not Found or Unauthorized');
+            }
+
+            if (! Product::whereKey($request->product_id)->where('company_id', $companyId)->exists()) {
+                return redirect()->back()->with('failed', 'Product tidak valid untuk company ini.')->withInput();
             }
 
             $product->product_id=$request->product_id;
@@ -89,13 +111,14 @@ class ProductVariantService{
 
     public function destroy($id)
     {
-        $product=ProductVariant::find($id);
+        $companyId = auth()->user()?->company_id;
+        $product = ProductVariant::where('company_id', $companyId)->find($id);
         if($product)
         {
             $product->delete();
             return redirect()->back()->with('success', 'Record Deleted Successfully');
         }
 
-        return redirect()->back()->with('failed', 'Record Not Found');
+        return redirect()->back()->with('failed', 'Record Not Found or Unauthorized');
     }
 }

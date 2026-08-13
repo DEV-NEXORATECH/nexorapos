@@ -15,6 +15,24 @@ document.addEventListener('DOMContentLoaded', function () {
     // ✅ Notification function
     // ------------------------
     function showNotification(type, message) {
+        if (window.NexoraPopup) {
+            if (type === 'error') {
+                window.NexoraPopup.error({
+                    title: 'POS Error',
+                    message,
+                    detail: 'Aksi POS gagal diproses. Cek item, metode bayar, atau coba ulang.',
+                });
+            } else {
+                window.NexoraPopup.success({
+                    title: type === 'info' ? 'POS Updated' : 'POS Success',
+                    message,
+                    detail: 'Cart dan total transaksi sudah diperbarui.',
+                    timer: 1800,
+                });
+            }
+            return;
+        }
+
         const el = document.querySelector(`.notification.${type}`);
         if (!el) return;
 
@@ -57,6 +75,23 @@ document.addEventListener('DOMContentLoaded', function () {
         discountEl.textContent = Number(t.discount).toFixed(2);
         taxEl.textContent = Number(t.tax).toFixed(2);
         totalEl.textContent = Number(t.total).toFixed(2);
+        calculateChange();
+    }
+
+    function calculateChange() {
+        const total = parseFloat(totalEl?.textContent || 0);
+        const paidInput = document.getElementById('paidAmount');
+        const changeInput = document.getElementById('changeAmount');
+        if (paidInput && changeInput) {
+            const paid = parseFloat(paidInput.value || 0);
+            const change = paid - total;
+            changeInput.value = change > 0 ? change.toFixed(2) : "0.00";
+        }
+    }
+
+    const paidAmountInput = document.getElementById('paidAmount');
+    if (paidAmountInput) {
+        paidAmountInput.addEventListener('input', calculateChange);
     }
 
     // Add product by clicking on card
@@ -92,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     updateTotals(data.totals);
 
                     // flash border
-                    card.style.border = "2px solid green";
+                    card.style.border = "2px solid #0058A6";
                     setTimeout(() => card.style.border = "", 500);
 
                     // ✅ Notification
@@ -174,8 +209,14 @@ document.addEventListener('DOMContentLoaded', function () {
         checkoutBtn.addEventListener('click', async function () {
             const customerInput = document.getElementById('customerId');
             const storeInput = document.getElementById('storeId');
+            const methodInput = document.getElementById('methodId');
             const customer_id = customerInput ? customerInput.value : null;
             const store_id = storeInput ? storeInput.value : null;
+            const method_id = methodInput ? methodInput.value : null;
+            const paidInput = document.getElementById('paidAmount');
+            const paid_amount = paidInput ? parseFloat(paidInput.value || 0) : 0;
+            const changeInput = document.getElementById('changeAmount');
+            const change_amount = changeInput ? parseFloat(changeInput.value || 0) : 0;
 
             try {
                 const res = await fetch(`/admin-panel/pos/checkout`, {
@@ -185,7 +226,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         'X-CSRF-TOKEN': token,
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify({ customer_id, store_id })
+                    body: JSON.stringify({ customer_id, store_id, method_id, paid_amount, change_amount })
                 });
 
                 const data = await res.json();

@@ -9,7 +9,12 @@ class UserUpdateValidation{
         $validator=Validator::make($inputs, [
         'name'     => 'required|string|max:255',
         'email'    => 'required|email|unique:users,email,' .$id,
-        'profile_image' => 'nullable|mimes:jpeg,png,jpg,gif|max:2048',
+        'phone'    => 'required|string|max:30',
+        'role_id'  => 'required|exists:roles,id',
+        'company_id' => (auth()->user()?->isSuperAdmin() ? 'required' : 'nullable').'|exists:companies,id',
+        'password' => 'nullable|string|min:8|confirmed',
+        'password_confirmation' => 'nullable|string|min:8',
+        'image' => 'nullable|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         if($validator->fails()){

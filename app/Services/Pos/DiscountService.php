@@ -1,6 +1,6 @@
 <?php
 namespace App\Services\Pos;
-use App\Models\POS\Discount;
+use App\Models\Pos\Discount;
 use Illuminate\Http\Request;
 use App\Pos\Discount\DiscountStoreValidation;
 class DiscountService{
@@ -11,7 +11,7 @@ class DiscountService{
     }
     public function index()
     {
-        $discounts=Discount::all();
+        $discounts = Discount::where('company_id', auth()->user()?->company_id)->get();
         return view('admin.pos.discount.listing', compact('discounts'));
     }
 
@@ -30,6 +30,7 @@ class DiscountService{
             }
 
             $discount= new Discount();
+            $discount->company_id = auth()->user()?->company_id;
             $discount->name=$request->name;
             $discount->type=$request->type;
             $discount->value=$request->value;
@@ -45,21 +46,24 @@ class DiscountService{
 
     public function edit($id)
     {
-        $discount=Discount::find($id);
+        $discount = Discount::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
         if($discount){
             return view('admin.pos.discount.update', compact('discount'));
         }
+
+        return redirect()->back()->with('failed', 'Record Not Found or Unauthorized');
     }
 
     public function update(Request $request,$id){
         try{
-            $discount=Discount::find($id);
-            if($discount){
-                $inputs=$request->all();
-                $errorMessage=$this->discount->validate($inputs);
-                if($errorMessage){
-                    return redirect()->back()->with('failed', $errorMessage);
-                }
+            $discount = Discount::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
+            if(!$discount){
+                return redirect()->back()->with('failed', 'Record Not Found or Unauthorized');
+            }
+            $inputs=$request->all();
+            $errorMessage=$this->discount->validate($inputs);
+            if($errorMessage){
+                return redirect()->back()->with('failed', $errorMessage);
             }
 
             $discount->name=$request->name;
@@ -75,12 +79,12 @@ class DiscountService{
     }
 
     public function destroy($id){
-        $discount=Discount::find($id);
+        $discount = Discount::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
         if($discount){
             $discount->delete();
             return redirect()->back()->with('success', 'Record Deleted Successfully');
         }
 
-        return redirect()->back()->with('failed', 'Record Not Found');
+        return redirect()->back()->with('failed', 'Record Not Found or Unauthorized');
     }
 }

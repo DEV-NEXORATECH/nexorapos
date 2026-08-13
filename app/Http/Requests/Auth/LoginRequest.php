@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use App\Models\Setting;
+
 class LoginRequest extends FormRequest
 {
     /**
@@ -27,17 +28,18 @@ class LoginRequest extends FormRequest
    public function rules(): array
 {
     $loginMethod = Setting::where('key', 'login_method')->value('value') ?? 'email';
+    $baseRules = [
+        'password' => ['required', 'string'],
+    ];
 
     if ($loginMethod === 'phone') {
-        return [
+        return $baseRules + [
             'phone' => ['required', 'string', 'exists:users,phone'],
-            'password' => ['required', 'string'],
         ];
     }
 
-    return [
+    return $baseRules + [
         'email' => ['required', 'string', 'email', 'exists:users,email'],
-        'password' => ['required', 'string'],
     ];
 }
 
@@ -51,11 +53,16 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $loginMethod = Setting::where('key', 'login_method')->value('value') ?? 'email';
+        $credentials = $loginMethod === 'phone'
+            ? $this->only('phone', 'password')
+            : $this->only('email', 'password');
+
+        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'login' => trans('auth.failed'),
             ]);
         }
 

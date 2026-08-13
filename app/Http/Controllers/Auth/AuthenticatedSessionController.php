@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use App\Models\Setting;
+
 class AuthenticatedSessionController extends Controller
 {
     /**
@@ -16,37 +17,68 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        return view('auth.login');
+        $loginMethod = Setting::cachedValue('login_method', 'email');
+
+        return view('auth.login', compact('loginMethod'));
     }
 
     /**
      * Handle an incoming authentication request.
      */
-  public function store(LoginRequest $request): RedirectResponse
-{
-    \Log::info('Login attempt:', $request->all());
+    public function store(LoginRequest $request): RedirectResponse
+    {
+        $loginMethod = Setting::cachedValue('login_method', 'email');
+        
+        $credentials = [
+            'password' => $request->input('password'),
+        ];
+        
+        if ($loginMethod === 'phone') {
+            $credentials['phone'] = $request->input('phone');
+        } else {
+            $credentials['email'] = $request->input('email');
+        }
 
-    $loginMethod = Setting::where('key', 'login_method')->value('value') ?? 'email';
+        $companyCode = trim((string) $request->input('company_code'));
+        
+        if ($companyCode) {
+            $company = \App\Models\Company::where('company_code', $companyCode)->first();
+            if (!$company) {
+                return back()->withErrors(['company_code' => 'Company Code tidak ditemukan.'])->onlyInput('email', 'phone', 'company_code');
+            }
+            $credentials['company_id'] = $company->id;
+        } else {
+            // Platform Super Admin can login without tenant company code.
+            $credentials['is_super_admin'] = 1;
+        }
 
-    if ($loginMethod === 'phone') {
-        $credentials = ['phone' => $request->input('phone'), 'password' => $request->input('password')];
-    } else {
-        $credentials = ['email' => $request->input('email'), 'password' => $request->input('password')];
+        if (Auth::attempt($credentials, $request->filled('remember'))) {
+            $user = Auth::user();
+            $company = $user->company;
+
+            if (!$user->isSuperAdmin() && !$company) {
+                Auth::guard('web')->logout();
+                return back()->withErrors([
+                    'company' => 'Akun belum terhubung ke company.',
+                ])->onlyInput('email', 'phone');
+            }
+
+            $request->session()->regenerate();
+            if ($company) {
+                $request->session()->put('company_id', $company->id);
+            }
+
+            if ($user->role && strtolower($user->role->role) === 'kasir') {
+                return redirect()->intended('admin-panel/pos/sell');
+            }
+
+            return redirect()->intended('admin-panel/dashboard');
+        }
+
+        return back()->withErrors([
+            'login' => __('auth.failed'),
+        ])->onlyInput('email', 'phone', 'company_code');
     }
-
-    \Log::info('Credentials:', $credentials);
-
-    if (Auth::attempt($credentials, $request->filled('remember'))) {
-        $request->session()->regenerate();
-        return redirect()->intended('admin-panel/dashboard');
-    }
-
-    \Log::warning('Authentication failed for credentials:', $credentials);
-
-    return back()->withErrors([
-        'login' => __('auth.failed'),
-    ]);
-}
 
     /**
      * Destroy an authenticated session.

@@ -5,34 +5,53 @@ namespace App\Services\Admin;
 use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Models\User;
-use App\Models\POS\Store;
-use App\Models\POS\Product;
-use App\Models\POS\ProductCategory;
-use App\Models\POS\ProductVariant;
-use App\Models\POS\Supplier;
-use App\Models\POS\Customer;
-use App\Models\POS\Tax;
-use App\Models\POS\Purchase;
-use App\Models\POS\PurchaseItem;
-use App\Models\POS\Sale;
-use App\Models\POS\Payment;
+use App\Models\Pos\Store;
+use App\Models\Pos\Product;
+use App\Models\Pos\ProductCategory;
+use App\Models\Pos\ProductVariant;
+use App\Models\Pos\Supplier;
+use App\Models\Pos\Customer;
+use App\Models\Pos\Tax;
+use App\Models\Pos\Purchase;
+use App\Models\Pos\PurchaseItem;
+use App\Models\Pos\Sale;
+use App\Models\Pos\Payment;
+use App\Models\Company;
+use App\Models\CompanyFeature;
+use App\Models\Feature;
 class AdminService
 {
     public function adminPanel()
     {
-        $userCount=User::count();
-        $store=Store::count();
-        $cats=ProductCategory::count();
-        $products=Product::count();
-        $variants=ProductVariant::count();
-        $suppliers=Supplier::count();
-        $customers=Customer::count();
-        $taxes=Tax::count();
-        $purchases=Purchase::count();
-        $items=PurchaseItem::count();
-        $sales=Sale::count();
-        $payments=Sale::where('status','completed')->sum('total');
-        return view('admin.dashboard', compact('userCount', 'store', 'cats', 'products', 'variants', 'suppliers', 'customers', 'taxes', 'purchases', 'items', 'sales', 'payments'));
+        $user = auth()->user();
+        $companyId = auth()->user()?->company_id;
+        $userCount=User::when($companyId, fn ($query) => $query->where('company_id', $companyId))->count();
+        $store=Store::when($companyId, fn ($query) => $query->where('company_id', $companyId))->count();
+        $cats=ProductCategory::when($companyId, fn ($query) => $query->where('company_id', $companyId))->count();
+        $products=Product::when($companyId, fn ($query) => $query->where('company_id', $companyId))->count();
+        $variants=ProductVariant::when($companyId, fn ($query) => $query->where('company_id', $companyId))->count();
+        $suppliers=Supplier::when($companyId, fn ($query) => $query->where('company_id', $companyId))->count();
+        $customers=Customer::when($companyId, fn ($query) => $query->where('company_id', $companyId))->count();
+        $taxes=Tax::when($companyId, fn ($query) => $query->where('company_id', $companyId))->count();
+        $purchases=Purchase::when($companyId, fn ($query) => $query->where('company_id', $companyId))->count();
+        $items=PurchaseItem::when($companyId, fn ($query) => $query->where('company_id', $companyId))->count();
+        $sales=Sale::when($companyId, fn ($query) => $query->where('company_id', $companyId))->count();
+        $payments=Payment::when($companyId, fn ($query) => $query->where('company_id', $companyId))->sum('amount');
+        $platformStats = null;
+
+        if ($user?->isSuperAdmin()) {
+            $companies = Company::query()->get();
+            $platformStats = [
+                'total_companies' => $companies->count(),
+                'active_companies' => $companies->where('is_active', true)->count(),
+                'active_licenses' => $companies->filter(fn ($company) => ! $company->isLicenseInactive())->count(),
+                'expiring_licenses' => $companies->filter(fn ($company) => $company->licenseSnapshot()['is_warning'] ?? false)->count(),
+                'total_users' => User::count(),
+                'enabled_features' => CompanyFeature::where('is_enabled', true)->count().' / '.(max($companies->count(), 1) * max(Feature::count(), 1)),
+            ];
+        }
+
+        return view('admin.dashboard', compact('userCount', 'store', 'cats', 'products', 'variants', 'suppliers', 'customers', 'taxes', 'purchases', 'items', 'sales', 'payments', 'platformStats'));
     }
 
   

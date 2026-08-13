@@ -18,35 +18,48 @@
                         </div>
 
                         <div class="card-body">
-
-                            {{-- Actual Categories Table --}}
-                            <table class="table table-bordered table-striped" id="categoriesTable">
+                            <table class="table table-bordered" id="customersTable">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Name</th>
+                                        <th>Code</th>
+                                        <th>Customer Name</th>
+                                        <th>Phone</th>
                                         <th>Email</th>
                                         <th>Address</th>
-                                        <th>Phone</th>
+                                        <th>Transactions</th>
+                                        <th>Total Spend</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($customers as $cus)
-                                        <td>{{ $cus->id }}</td>
-                                        <td>{{ $cus->name }}</td>
-                                        <td>{{ $cus->email }}</td>
-                                        <td>{{ $cus->address }}</td>
-                                        <td>{{ $cus->phone }}</td>
-                                        <td>
-                                            <a href="{{ url('admin-panel/customer/edit', $cus->id) }}" class="btn-sm btn-primary"><i class="fas fa-edit"></i></a>
-                                            <a href="{{ url('admin-panel/customer/delete', $cus->id) }}" class="btn-sm btn-danger delete-category"><i class="fas fa-trash"></i></a>
-                                        </td>
-                                    @endforeach
+                                    @forelse ($customers as $cus)
+                                        <tr>
+                                            <td>{{ $cus->customer_code ?? '-' }}</td>
+                                            <td><strong>{{ $cus->name }}</strong></td>
+                                            <td>{{ $cus->phone ?? '-' }}</td>
+                                            <td>{{ $cus->email ?? '-' }}</td>
+                                            <td>{{ $cus->address ?? '-' }}</td>
+                                            <td>{{ $cus->total_transactions }}</td>
+                                            <td class="text-right">{{ number_format($cus->total_spend, 2) }}</td>
+                                            <td style="white-space:nowrap;">
+                                                <a href="{{ url('admin-panel/customer/show', $cus->id) }}" class="btn btn-sm btn-primary" title="View"><i class="fas fa-eye"></i></a>
+                                                <a href="{{ url('admin-panel/customer/edit', $cus->id) }}" class="btn btn-sm btn-secondary" title="Edit"><i class="fas fa-edit"></i></a>
+                                                <form action="{{ url('admin-panel/customer/delete', $cus->id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Yakin ingin menghapus customer ini?');">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-danger" title="Delete"><i class="fas fa-trash"></i></button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="8" class="text-center py-4">
+                                                <i class="fas fa-users fa-2x mb-2" style="color:var(--color-blue-500)"></i>
+                                                <p>Belum ada customer.</p>
+                                            </td>
+                                        </tr>
+                                    @endforelse
                                 </tbody>
                             </table>
-
-
                         </div>
                     </div>
                 </div>

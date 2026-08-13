@@ -41,4 +41,9 @@ class PurchaseController extends Controller
     return $this->purchaseService->destroy($id);
    }
 
+   public function show($id)
+   {
+       return $this->purchaseService->show($id);
+   }
+
 }

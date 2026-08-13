@@ -3,11 +3,21 @@
 namespace App\Models\Pos;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToCompany;
 
 class SaleItem extends Model
 {
+    use BelongsToCompany;
+
     protected $fillable = [
-        'sale_id', 'product_id', 'product_variant_id', 'quantity', 'price', 'total'
+        'sale_id',
+        'product_id',
+        'product_variant_id',
+        'quantity',
+        'price',
+        'discount',
+        'tax',
+        'company_id',
     ];
 
     public function sale()

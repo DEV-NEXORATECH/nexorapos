@@ -28,30 +28,29 @@
 
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <h4 class="section-title"><span style="font-weight: bold;">Role Permissions</span></h4>
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h4 class="section-title mb-0"><span>Role Permissions</span></h4>
+                                            <button type="button" class="btn btn-secondary btn-sm" id="selectAllPermissions">Select All</button>
+                                        </div>
                                         <div class="permission-categories">
                                             @foreach($permissionCategories as $category)
-                                            <div class="category-card mb-4">
-                                                <div class="category-header">
-                                                    <h5 style="background-color: #f5f5f5">{{ $category->name }}</h5>
+                                            <div class="nexora-permission-group mb-3">
+                                                <div class="nexora-permission-group-head">
+                                                    <strong><i class="{{ $category->icons ?? $category->icon ?? 'la la-folder' }}"></i> {{ $category->name }}</strong>
+                                                    <button type="button" class="btn btn-secondary btn-sm js-select-row">Select Module</button>
                                                 </div>
-                                                <div class="category-body">
-                                                    <div class="row">
-                                                        @foreach($category->permissions as $permission)
-                                                        <div class="col-md-4 col-sm-6">
-                                                            <div class="form-check permission-checkbox">
-                                                                <label class="form-check-label">
-                                                                    <input class="form-check-input" type="checkbox"
-                                                                        name="permissions[]"
-                                                                        value="{{ $permission->id }}"
-                                                                       {{ in_array($permission->id, $assignedPermissions) ? 'checked' : '' }}
->
-                                                                    <span class="form-check-sign">{{ $permission->name }}</span>
-                                                                </label>
-                                                            </div>
-                                                        </div>
-                                                        @endforeach
+                                                <div class="row">
+                                                    @foreach($category->permissions as $permission)
+                                                    <div class="col-md-3 col-sm-6">
+                                                        <label class="nexora-permission-check">
+                                                            <input type="checkbox"
+                                                                name="permissions[]"
+                                                                value="{{ $permission->id }}"
+                                                                {{ in_array($permission->id, $assignedPermissions) ? 'checked' : '' }}>
+                                                            <span>{{ $permission->name }}</span>
+                                                        </label>
                                                     </div>
+                                                    @endforeach
                                                 </div>
                                             </div>
                                             @endforeach
@@ -72,3 +71,18 @@
 </div>
 @endsection
 
+@push('script')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('selectAllPermissions')?.addEventListener('click', function () {
+        document.querySelectorAll('input[name="permissions[]"]').forEach((input) => input.checked = true);
+    });
+
+    document.querySelectorAll('.js-select-row').forEach(function (button) {
+        button.addEventListener('click', function () {
+            button.closest('.nexora-permission-group')?.querySelectorAll('input[name="permissions[]"]').forEach((input) => input.checked = true);
+        });
+    });
+});
+</script>
+@endpush

@@ -6,22 +6,15 @@
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
-            <h4 class="page-title">Categories</h4>
-            <div class="row">
-                <div class="col">
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <div class="card-title">CAtegory</div>
-                            <div>
-                                <a href="{{ url('admin-panel/categories/add') }}" class="btn btn-primary">Add New Category</a>
-                            </div>
-                        </div>
+            <div class="superadmin-header-card mb-4" style="align-items: center;">
+                <h4 class="mt-1 mb-2" style="color: #fff;"><i class="fas fa-tags"></i> Categories</h4>
+                <a href="{{ url('admin-panel/categories/add') }}" class="btn" style="background-color: #FFFFFF !important; color: #0058A6 !important; border: none !important; white-space: nowrap; font-weight: 600; padding: 8px 16px; border-radius: 6px;">
+                    + Add New Category
+                </a>
+            </div>
 
-                        <div class="card-body">
-
-                            {{-- Actual Categories Table --}}
-                            <table class="table table-bordered table-striped" id="categoriesTable">
-                                <thead>
+            <table class="table nexora-data-table" id="categoriesTable" style="width:100%">
+                <thead>
                                     <tr>
                                         <th>ID</th>
                                         <th>Name</th>
@@ -41,13 +34,7 @@
 
                                     @endforeach
                                 </tbody>
-                            </table>
-
-
-                        </div>
-                    </div>
-                </div>
-            </div>
+            </table>
         </div>
     </div>
 </div>

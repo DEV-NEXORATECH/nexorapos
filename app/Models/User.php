@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\Role;
+use App\Models\Company;
+use App\Models\Pos\Sale;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -21,6 +23,8 @@ class User extends Authenticatable
         'name',
         'email',
         'role_id',
+        'company_id',
+        'is_super_admin',
         'password',
         'phone',
         'profile_image',
@@ -46,7 +50,13 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_super_admin' => 'boolean',
         ];
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return (bool) $this->is_super_admin;
     }
 
     public function post(){
@@ -61,5 +71,10 @@ class User extends Authenticatable
     public function sales()
     {
         return $this->hasMany(Sale::class); 
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 }

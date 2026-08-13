@@ -35,6 +35,11 @@ class CustomerController extends Controller
         return $this->customerService->edit($request,$id);
     }
 
+    public function show(Request $request, $id)
+    {
+        return $this->customerService->show($request, $id);
+    }
+
     public function update(Request $request, $id)
     {
         return $this->customerService->update($request, $id);

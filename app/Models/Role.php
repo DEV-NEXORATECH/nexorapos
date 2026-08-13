@@ -3,12 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToCompany;
 use App\Models\Permission;
 use App\Models\User;
 
 class Role extends Model
 {
+    use BelongsToCompany;
+
     protected $table = 'roles';
+    protected $fillable = ['role', 'company_id'];
 
     public function permissions()
     {

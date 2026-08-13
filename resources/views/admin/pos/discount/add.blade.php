@@ -28,7 +28,10 @@
 										</div>
 										<div class="form-group">
 											<label for="type">Discount Type</label>
-											<input type="text" class="form-control" name="type" id="type"  placeholder="Enter Discount Type">
+											<select name="type" id="type" class="form-control">
+                                                <option value="percentage">Percentage</option>
+                                                <option value="fixed">Fixed Amount</option>
+                                            </select>
                                             @error('type')
                                                 <div class="text-danger mt-2">{{ $message }}</div>
                                             @enderror
@@ -36,15 +39,15 @@
 
 										<div class="form-group">
 											<label for="value">Discount Value</label>
-											<input type="number" class="form-control" name="value" id="value"  placeholder="Enter Discount Value">
+											<input type="number" min="0" step="0.01" class="form-control" name="value" id="value"  placeholder="Enter Discount Value">
                                             @error('value')
                                                 <div class="text-danger mt-2">{{ $message }}</div>
                                             @enderror
 										</div>
 
                                         <div class="card-action">
-											<button class="btn btn-success">Submit</button>
-											 <a href="{{ url('admin-panel/discounts/listing') }}" class="btn btn-danger">Cancel</a>
+											<button class="btn btn-primary">Submit</button>
+											 <a href="{{ url('admin-panel/discounts/listing') }}" class="btn btn-secondary">Cancel</a>
 										</div>
 
                                     </div>

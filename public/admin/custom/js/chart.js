@@ -1,103 +1,68 @@
-    let chart;
+(function () {
+    let salesChartInstance = null;
 
-    // Function to fetch and render chart
-    function loadChart(filter = 'monthly') {
-        fetch(`/admin-panel/sales-data?filter=${filter}`)
-            .then(response => response.json())
-            .then(data => {
-                const labels = data.map(item => item.label);
-                const values = data.map(item => item.value);
+    function loadSalesChart(filter = 'monthly') {
+        const canvas = document.getElementById('salesChart');
+        if (!canvas || typeof Chart === 'undefined') {
+            return;
+        }
 
-                // Destroy old chart
-                if (chart) {
-                    chart.destroy();
+        fetch(`/admin-panel/sales-data?filter=${encodeURIComponent(filter)}`)
+            .then((response) => response.json())
+            .then((data) => {
+                const labels = data.map((item) => item.label);
+                const values = data.map((item) => item.value);
+
+                if (salesChartInstance) {
+                    salesChartInstance.destroy();
                 }
 
-                // Create chart
-                chart = new Chart(document.getElementById('salesChart'), {
+                salesChartInstance = new Chart(canvas, {
                     type: 'line',
                     data: {
-                        labels: labels,
+                        labels,
                         datasets: [{
-                            label: 'Products Sold',
+                            label: 'Sales',
                             data: values,
-                            borderColor: 'blue',
-                            backgroundColor: 'rgba(0,123,255,0.2)',
+                            borderColor: '#0058A6',
+                            backgroundColor: 'rgba(0, 88, 166, 0.12)',
                             fill: true,
-                            tension: 0.4
-                        }]
+                            tension: 0.35,
+                        }],
                     },
                     options: {
                         responsive: true,
                         plugins: {
-                            legend: { display: true }
+                            legend: { display: true },
                         },
                         scales: {
                             y: {
                                 beginAtZero: true,
                                 ticks: {
-                                    callback: function(value) {
-                                        return value.toLocaleString();
-                                    }
-                                }
-                            }
-                        }
-                    }
+                                    callback(value) {
+                                        return Number(value).toLocaleString();
+                                    },
+                                },
+                            },
+                        },
+                    },
                 });
             })
-            .catch(error => console.error('Error fetching sales data:', error));
+            .catch((error) => console.error('Error fetching sales data:', error));
     }
 
-    // Run after DOM is ready
-    document.addEventListener("DOMContentLoaded", function() {
-        const filterDropdown = document.getElementById('salesFilter'); // ✅ Must match Blade <select id="salesFilter">
+    document.addEventListener('DOMContentLoaded', function () {
+        const filterDropdown = document.getElementById('salesFilter');
+        const salesCanvas = document.getElementById('salesChart');
 
-        // Default: monthly
-        loadChart('monthly');
+        if (salesCanvas) {
+            loadSalesChart(filterDropdown ? filterDropdown.value : 'monthly');
+        }
 
-        // Change filter
-        filterDropdown.addEventListener('change', function() {
-            loadChart(this.value);
-        });
-    });
-
-
-
-document.addEventListener("DOMContentLoaded", function () {
-    const ctx = document.getElementById('monthlyChart').getContext('2d');
-
-    // 🔹 Random demo data
-    const data = {
-        labels: ['Active Users', 'Inactive Users', 'New Signups'],
-        datasets: [{
-            data: [
-                Math.floor(Math.random() * 200) + 50, // Active
-                Math.floor(Math.random() * 100) + 20, // Inactive
-                Math.floor(Math.random() * 50) + 10   // New
-            ],
-            backgroundColor: ['#36A2EB', '#FF6384', '#FFCE56'],
-            hoverOffset: 10
-        }]
-    };
-
-    // 🔹 Create Pie Chart
-    new Chart(ctx, {
-        type: 'pie',
-        data: data,
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function (context) {
-                            return context.label + ': ' + context.raw.toLocaleString();
-                        }
-                    }
-                }
-            }
+        if (filterDropdown) {
+            filterDropdown.addEventListener('change', function () {
+                loadSalesChart(this.value);
+            });
         }
     });
-});
+})();

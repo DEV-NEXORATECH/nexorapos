@@ -6,78 +6,83 @@
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
-            <h4 class="page-title">Products</h4>
-            <div class="row">
-                <div class="col">
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <div class="card-title">Products</div>
-                           <div>
-                                {{-- Add New Product --}}
-                                <a href="{{ url('admin-panel/products/add') }}" class="btn btn-primary">
-                                    <i class="fas fa-plus"></i> Add New Product
-                                </a>
+            <div class="superadmin-header-card mb-4" style="align-items: center;">
+                <h4 class="mt-1 mb-2" style="color: #fff;"><i class="fas fa-box"></i> Products</h4>
+                <div class="d-flex" style="gap: 10px;">
+                    <a href="{{ url('admin-panel/products/add') }}" class="btn" style="background-color: #FFFFFF !important; color: #0058A6 !important; border: none !important; white-space: nowrap; font-weight: 600; padding: 8px 16px; border-radius: 6px;">
+                        <i class="fas fa-plus"></i> Add New Product
+                    </a>
+                    <a href="{{ url('admin-panel/products/recycle') }}" class="btn btn-danger" style="white-space: nowrap; font-weight: 600; padding: 8px 16px; border-radius: 6px;">
+                        <i class="fa-solid fa-recycle"></i> Recycle Bin
+                    </a>
+                    <a href="{{ url('admin-panel/products/export') }}" class="btn btn-success" style="white-space: nowrap; font-weight: 600; padding: 8px 16px; border-radius: 6px;">
+                        <i class="fas fa-file-export"></i> Export Excel
+                    </a>
+                    <button type="button" class="btn btn-info" data-bs-toggle="modal" id="importModal" style="white-space: nowrap; font-weight: 600; padding: 8px 16px; border-radius: 6px;">
+                        <i class="fas fa-file-import"></i> Import Excel
+                    </button>
+                    <!-- Hidden file input -->
+                    <input type="file" id="fileInput" style="display:none" accept=".xlsx,.xls,.csv">
+                </div>
+            </div>
 
-                                <a href="{{ url('admin-panel/products/recycle') }}" class="btn btn-danger">
-                                    <i class="fa-solid fa-recycle"></i> Recycle Bin
-                                </a>
-                                {{-- Export Excel --}}
-                                <a href="{{ url('admin-panel/products/export') }}" class="btn btn-success">
-                                    <i class="fas fa-file-export"></i> Export Excel
-                                </a>
-
-                                {{-- Import Excel --}}
-                                <button type="button" class="btn btn-info" data-bs-toggle="modal" id="importModal">
-                                    <i class="fas fa-file-import"></i> Import Excel
-                                </button>
-                                <!-- Hidden file input -->
-                                <input type="file" id="fileInput" style="display:none" accept=".xlsx,.xls,.csv">
-                            </div>
-
-                        </div>
-
-                        <div class="card-body">
-
-                            {{-- Actual Categories Table --}}
-                            <table class="table table-bordered table-striped" id="categoriesTable">
-                                <thead>
+            <table class="table nexora-data-table" id="productsTable" style="width:100%">
+                <thead>
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Name</th>
-                                        <th>Tax_Rate</th>
-                                        <th>Price</th>
+                                        <th>Product</th>
                                         <th>SKU</th>
-                                        <th>Barcode</th>
-                                        <th>Cost</th>
-                                        <th>Track_Stock</th>
+                                        <th>Category</th>
+                                        <th>Variants</th>
+                                        <th>Stock</th>
+                                        <th class="text-right">Cost</th>
+                                        <th class="text-right">Selling Price</th>
+                                        <th>Tax</th>
+                                        <th>Track Stock</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($products as $product)
+                                    @forelse ($products as $product)
                                     <tr>
-                                        <td>{{ $product->id }}</td>
-                                        <td>{{ $product->name }}</td>
-                                        <td>{{ $product->tax->rate }}</td>
-                                        <td>{{ $total=$product->price * $product->tax->rate/100 +$product->price}}</td>
+                                        <td><strong>{{ $product->name }}</strong></td>
                                         <td>{{ $product->sku }}</td>
-                                        <td>{{ $product->barcode }}</td>
-                                        <td>{{ $product->cost }}</td>
-                                        <td>{{ $product->track_stock }}</td>
+                                        <td>{{ optional($product->category)->name ?? '-' }}</td>
+                                        <td>{{ $product->product_variants->count() }}</td>
                                         <td>
-                                            <a href="{{ url('admin-panel/products/edit', $product->id) }}" class="btn-sm btn-primary"><i class="fas fa-edit"></i></a>
-                                            <a href="{{ url('admin-panel/products/delete', $product->id) }}" class="btn-sm btn-danger delete-category"><i class="fas fa-trash"></i></a>
+                                            @if($product->track_stock)
+                                                <span class="badge {{ $product->stock_quantity <= ($product->minimum_stock ?? 0) ? 'badge-danger' : 'badge-success' }}">
+                                                    {{ $product->stock_quantity }}
+                                                </span>
+                                                @if($product->minimum_stock > 0)
+                                                <small class="text-muted">(min: {{ $product->minimum_stock }})</small>
+                                                @endif
+                                            @else
+                                                <span class="text-muted">N/A</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-right">{{ number_format($product->cost, 2) }}</td>
+                                        <td class="text-right">{{ number_format($product->price, 2) }}</td>
+                                        <td>{{ optional($product->tax)->name ?? '-' }} {{ $product->tax ? '('.$product->tax->rate.'%)' : '' }}</td>
+                                        <td>{{ $product->track_stock ? 'Yes' : 'No' }}</td>
+                                        <td style="white-space:nowrap;">
+                                            <a href="{{ url('admin-panel/products/show', $product->id) }}" class="btn btn-sm btn-primary" title="View"><i class="fas fa-eye"></i></a>
+                                            <a href="{{ url('admin-panel/products/edit', $product->id) }}" class="btn btn-sm btn-secondary" title="Edit"><i class="fas fa-edit"></i></a>
+                                            <form action="{{ url('admin-panel/products/delete', $product->id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Yakin ingin menghapus/arsipkan produk ini?');">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-danger" title="Delete"><i class="fas fa-trash"></i></button>
+                                            </form>
                                         </td>
                                     </tr>
-                                    @endforeach
+                                    @empty
+                                    <tr>
+                                        <td colspan="10" class="text-center py-4">
+                                            <i class="fas fa-box-open fa-2x mb-2" style="color:var(--color-blue-500)"></i>
+                                            <p>Belum ada produk.</p>
+                                        </td>
+                                    </tr>
+                                    @endforelse
                                 </tbody>
-                            </table>
-
-
-                        </div>
-                    </div>
-                </div>
-            </div>
+            </table>
         </div>
     </div>
 </div>

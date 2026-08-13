@@ -7,9 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Models\Permission;
-use App\Models\Role;
-use App\Models\User;
-use App\Models\RolePermission;
 use Symfony\Component\HttpFoundation\Response;
 
 class AdminMiddleware
@@ -24,20 +21,67 @@ class AdminMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         // Redirect to login if user is not authenticated
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('login');
         }
 
-       $user = Auth::user();
-        $role = $user->role;
-        $permissions = $role->permissions->pluck('route')->toArray();
+        $user = Auth::user();
         $currentUri = Route::current()->uri();
 
-        if (in_array($currentUri, $permissions)) {
+        if (in_array($currentUri, ['admin-panel/dashboard', 'admin-panel/business-process', 'admin-panel/settings/license'])) {
             return $next($request);
         }
 
-        // Redirect if user has no permission
-        return redirect()->back()->with('failed', 'You do not have permission to access this route.');
+        if ($user->isSuperAdmin()) {
+            return $next($request);
+        }
+
+        if ($currentUri === 'admin-panel/sales-data') {
+            return $next($request);
+        }
+
+        if (! $user->company?->hasAnyEnabledFeature()) {
+            abort(403, 'License company belum aktif karena semua fitur dimatikan oleh Super Admin.');
+        }
+
+        $role = $user->role;
+        if (! $role) {
+            abort(403, 'Your account does not have a role assigned.');
+        }
+
+        $permission = $this->resolvePermission($role, $currentUri);
+
+        if ($permission && $this->featureIsEnabled($user, $permission)) {
+            return $next($request);
+        }
+
+        abort(403, 'You do not have permission to access this route.');
+    }
+
+    private function resolvePermission($role, string $currentUri)
+    {
+        $candidates = [$currentUri];
+
+        $lastSlash = strrpos($currentUri, '/');
+        if ($lastSlash !== false) {
+            $candidates[] = substr($currentUri, 0, $lastSlash);
+        }
+
+        return $role->permissions()
+            ->with('permission_category')
+            ->whereIn('route', $candidates)
+            ->orderByRaw('CASE WHEN route = ? THEN 0 ELSE 1 END', [$currentUri])
+            ->first();
+    }
+
+    private function featureIsEnabled($user, Permission $permission): bool
+    {
+        $featureKey = $permission->permission_category?->feature_key;
+
+        if (! $featureKey) {
+            return true;
+        }
+
+        return $user->company?->hasFeature($featureKey) ?? false;
     }
 }

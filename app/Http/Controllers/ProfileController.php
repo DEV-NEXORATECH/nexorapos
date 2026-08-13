@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Feature;
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,8 +17,16 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
+        $user = $request->user()->loadMissing('company', 'role');
+        $company = $user->company;
+        $totalFeatures = Feature::count();
+        $enabledFeatureCount = $company ? $company->enabledFeaturesCount() : 0;
+
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $user,
+            'company' => $company,
+            'totalFeatures' => $totalFeatures,
+            'enabledFeatureCount' => $enabledFeatureCount,
         ]);
     }
 

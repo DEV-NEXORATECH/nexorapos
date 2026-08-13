@@ -7,8 +7,8 @@ class StockStoreValidation{
         $validator=Validator::make($inputs, [
             'store_id' =>'required',
             'product_id' => 'required',
-            'product_variant_id' => 'required',
-            'quantity' => 'required',
+            'product_variant_id' => 'nullable',
+            'quantity' => 'required|numeric|min:0',
             'type' => 'required',
         ]);
 

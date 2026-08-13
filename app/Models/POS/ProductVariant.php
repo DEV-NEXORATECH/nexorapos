@@ -1,11 +1,24 @@
 <?php
 
-namespace App\Models\POS;
+namespace App\Models\Pos;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToCompany;
 
 class ProductVariant extends Model
 {
+    use BelongsToCompany;
+
+    protected $fillable = [
+        'product_id',
+        'name',
+        'sku',
+        'barcode',
+        'price',
+        'cost',
+        'company_id',
+    ];
+
     public function product()
     {
         return $this->belongsTo(Product::class);

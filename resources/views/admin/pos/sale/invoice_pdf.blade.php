@@ -9,7 +9,7 @@
             font-family: DejaVu Sans, sans-serif;
             margin: 0;
             padding: 0;
-            color: #333;
+            color: #002E58;
         }
         .invoice-wrapper {
             width: 100%;
@@ -47,7 +47,7 @@
         }
         .invoice-details .small {
             font-size: 12px;
-            color: #666;
+            color: #1976C9;
         }
 
         /* Info section */
@@ -64,7 +64,7 @@
         }
         .section-info table th {
             width: 20%;
-            color: #555;
+            color: #003F7D;
         }
 
         /* Items table */
@@ -76,12 +76,12 @@
             border-collapse: collapse;
         }
         .items table th, .items table td {
-            border: 1px solid #ddd;
+            border: 1px solid #DCEEFF;
             padding: 8px;
             font-size: 14px;
         }
         .items table th {
-            background-color: #f5f5f5;
+            background-color: #EAF5FF;
         }
 
         /* Totals */
@@ -111,7 +111,7 @@
             margin-top: 40px;
             text-align: center;
             font-size: 12px;
-            color: #777;
+            color: #1976C9;
         }
 
         /* Font Awesome embedding */
@@ -130,7 +130,7 @@
     </style>
 </head>
 <body>
-    <div class="invoice-wrapper" style="margin-left:-15px; border:1px solid #ccc; padding:15px; padding-bottom:50px; box-shadow:0 0 10px rgba(0,0,0,0.1);">
+    <div class="invoice-wrapper" style="margin-left:-15px; border:1px solid #DCEEFF; padding:15px; padding-bottom:50px; box-shadow:0 0 10px rgba(0, 46, 88, 0.12);">
         <div class="header">
             <div class="left logo">
                 @if (file_exists(public_path('admin/images/logo.png')))

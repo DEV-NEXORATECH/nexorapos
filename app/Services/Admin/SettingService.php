@@ -1,7 +1,11 @@
 <?php
 namespace App\Services\Admin;
+use App\Models\Company;
+use App\Models\CompanyFeature;
+use App\Models\Feature;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use App\Support\AuditLogger;
 use App\Validations\Admin\Setting\SettingStoreValidation;
 use App\Validations\Admin\Setting\SettingUpdateValidation;
 class SettingService{
@@ -19,6 +23,20 @@ public function index()
         return view('admin.setting.listing', compact('settings'));
     }
 
+    public function license()
+    {
+        $user = auth()->user();
+        $features = Feature::orderBy('display_order')->orderBy('name')->get();
+        $companies = $user?->isSuperAdmin()
+            ? Company::orderBy('name')->get()
+            : Company::where('id', $user?->company_id)->get();
+        $companyFeatures = CompanyFeature::all()
+            ->groupBy('company_id')
+            ->map(fn ($items) => $items->keyBy('feature_key'));
+
+        return view('admin.setting.license', compact('companies', 'features', 'companyFeatures'));
+    }
+
     public function add()
     {
         $settings=Setting::all();
@@ -34,20 +52,25 @@ public function index()
                 return redirect()->back()->with('failed', $errorMessage);
             }
 
-            // Get all existing settings as key => value
-            $existingSettings = Setting::pluck('value', 'key')->toArray();
+            $user = auth()->user();
+            $companyId = $user?->isSuperAdmin() ? null : $user?->company_id;
 
             foreach ($inputs as $key => $value) {
                 if ($key === '_token') continue;
 
-                // Only update if user entered a value, otherwise keep existing
                 if ($value !== null && $value !== '') {
-                    Setting::updateOrCreate(
-                        ['key' => $key],
-                        ['value' => $value]
+                    $setting = Setting::updateOrCreate(
+                        [
+                            'key' => $key,
+                            'company_id' => $companyId,
+                        ],
+                        [
+                            'value' => $value,
+                        ]
                     );
+                    AuditLogger::log('upsert', 'settings', $setting, [], $setting->only(['id', 'key', 'company_id']));
+                    Setting::forgetCachedValue($key);
                 }
-                // If value is empty and key exists, do nothing (keep existing)
             }
 
             return redirect()->back()->with('success', 'Settings Added/Updated Successfully');
@@ -77,9 +100,17 @@ public function index()
            }
 
            $setting=Setting::find($id);
+           if (! $setting) {
+            return redirect()->back()->with('failed', 'Setting not found.');
+           }
+           $oldKey = $setting->key;
+           $oldValue = $setting->only(['id', 'key', 'value', 'company_id']);
            $setting->key=$request->key;
            $setting->value=$request->value;
            $setting->save();
+           Setting::forgetCachedValue($oldKey);
+           Setting::forgetCachedValue($setting->key);
+           AuditLogger::log('update', 'settings', $setting, $oldValue, $setting->only(['id', 'key', 'value', 'company_id']));
            if($setting){
             return redirect()->to('admin-panel/settings/listing')->with('success', 'Setting Updated Successfully');
            }
@@ -96,6 +127,8 @@ public function index()
             $setting=Setting::find($id);
             if($setting)
             {
+                Setting::forgetCachedValue($setting->key);
+                AuditLogger::log('delete', 'settings', $setting, $setting->only(['id', 'key', 'company_id']), []);
                 $setting->delete();
                 return redirect()->bacK()->with('success', 'Setting Deleted Successfully');
             }
