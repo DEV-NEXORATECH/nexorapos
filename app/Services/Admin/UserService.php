@@ -27,7 +27,7 @@ class UserService
     public function index()
     {
         $currentUser = auth()->user();
-        $users = User::with('role')
+        $users = User::with(['role', 'company'])
             ->when(! $currentUser?->isSuperAdmin(), fn ($query) => $query->where('company_id', $currentUser?->company_id))
             ->get();
         return view('admin.users.listing', compact('users'));

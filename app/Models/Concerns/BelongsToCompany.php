@@ -4,37 +4,30 @@ namespace App\Models\Concerns;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Schema;
 
 trait BelongsToCompany
 {
     protected static function bootBelongsToCompany(): void
     {
         static::addGlobalScope('company', function (Builder $builder) {
-            $model = $builder->getModel();
+            $table = $builder->getModel()->getTable();
 
-            if (! Schema::hasColumn($model->getTable(), 'company_id')) {
+            if (auth()->hasUser() && auth()->user()->isSuperAdmin()) {
                 return;
             }
 
-            if (auth()->user()?->isSuperAdmin()) {
-                return;
-            }
-
-            $companyId = auth()->user()?->company_id ?? session('company_id');
+            $companyId = auth()->hasUser() ? auth()->user()->company_id : session('company_id');
 
             if ($companyId) {
-                $builder->where($model->getTable().'.company_id', $companyId);
+                $builder->where($table . '.company_id', $companyId);
             }
         });
 
         static::creating(function (Model $model) {
-            if (! Schema::hasColumn($model->getTable(), 'company_id')) {
-                return;
-            }
-
-            if (! $model->company_id && ! auth()->user()?->isSuperAdmin()) {
-                $model->company_id = auth()->user()?->company_id ?? session('company_id');
+            $isSuperAdmin = auth()->hasUser() ? auth()->user()->isSuperAdmin() : false;
+            
+            if (! $model->company_id && ! $isSuperAdmin) {
+                $model->company_id = auth()->hasUser() ? auth()->user()->company_id : session('company_id');
             }
         });
     }

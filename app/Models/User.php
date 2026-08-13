@@ -9,10 +9,12 @@ use Illuminate\Notifications\Notifiable;
 use App\Models\Role;
 use App\Models\Company;
 use App\Models\Pos\Sale;
+use App\Models\Concerns\BelongsToCompany;
+
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, BelongsToCompany;
 
     /**
      * The attributes that are mass assignable.

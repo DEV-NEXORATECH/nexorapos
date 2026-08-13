@@ -34,7 +34,7 @@ class CustomerService{
             return redirect()->back()->withErrors($errorMessage)->withInput();
         }
         $customer = new Customer();
-        $customer->company_id = auth()->user()?->company_id;
+        $customer->company_id = (auth()->user()?->isSuperAdmin() && $request->company_id) ? $request->company_id : auth()->user()?->company_id;
         $customer->name = $request->name;
         $customer->email = $request->email;
         $customer->phone = $request->phone;
@@ -51,7 +51,7 @@ class CustomerService{
 
     public function edit(Request $request, $id)
     {
-        $customer = Customer::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
+        $customer = Customer::where('id', $id)->when(!auth()->user()?->isSuperAdmin(), fn($q) => $q->where('company_id', auth()->user()?->company_id))->first();
         if($customer)
         {
             return view('admin.pos.customer.update', compact('customer'));
@@ -62,7 +62,7 @@ class CustomerService{
 
     public function show(Request $request, $id)
     {
-        $customer = Customer::with('sales')->where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
+        $customer = Customer::with('sales')->where('id', $id)->when(!auth()->user()?->isSuperAdmin(), fn($q) => $q->where('company_id', auth()->user()?->company_id))->first();
         if($customer)
         {
             return view('admin.pos.customer.show', compact('customer'));
@@ -80,7 +80,7 @@ class CustomerService{
         if($errorMessage !== true) {
             return redirect()->back()->withErrors($errorMessage)->withInput();
         }
-        $customer = Customer::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
+        $customer = Customer::where('id', $id)->when(!auth()->user()?->isSuperAdmin(), fn($q) => $q->where('company_id', auth()->user()?->company_id))->first();
         if (!$customer) {
             return redirect()->back()->with('failed', 'Record Not Found or Unauthorized');
         }
@@ -100,7 +100,7 @@ class CustomerService{
 
     public function destroy($id)
     {
-        $customer = Customer::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
+        $customer = Customer::where('id', $id)->when(!auth()->user()?->isSuperAdmin(), fn($q) => $q->where('company_id', auth()->user()?->company_id))->first();
         if($customer)
         {
             $customer->delete();

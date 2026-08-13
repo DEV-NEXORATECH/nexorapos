@@ -34,7 +34,7 @@ class SupplierService{
             return redirect()->back()->withErrors($errorMessage)->withInput();
         }
         $supplier = new Supplier();
-        $supplier->company_id = auth()->user()?->company_id;
+        $supplier->company_id = (auth()->user()?->isSuperAdmin() && $request->company_id) ? $request->company_id : auth()->user()?->company_id;
         $supplier->name = $request->name;
         $supplier->email = $request->email;
         $supplier->phone = $request->phone;
@@ -51,7 +51,7 @@ class SupplierService{
 
     public function edit(Request $request, $id)
     {
-        $supplier = Supplier::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
+        $supplier = Supplier::where('id', $id)->when(!auth()->user()?->isSuperAdmin(), fn($q) => $q->where('company_id', auth()->user()?->company_id))->first();
         if($supplier)
         {
             return view('admin.pos.supplier.update', compact('supplier'));
@@ -69,7 +69,7 @@ class SupplierService{
         if($errorMessage !== true) {
             return redirect()->back()->withErrors($errorMessage)->withInput();
         }
-        $supplier = Supplier::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
+        $supplier = Supplier::where('id', $id)->when(!auth()->user()?->isSuperAdmin(), fn($q) => $q->where('company_id', auth()->user()?->company_id))->first();
         if (!$supplier) {
             return redirect()->back()->with('failed', 'Record Not Found or Unauthorized');
         }
@@ -89,7 +89,7 @@ class SupplierService{
 
     public function destroy($id)
     {
-        $supplier = Supplier::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
+        $supplier = Supplier::where('id', $id)->when(!auth()->user()?->isSuperAdmin(), fn($q) => $q->where('company_id', auth()->user()?->company_id))->first();
         if($supplier)
         {
             $supplier->delete();

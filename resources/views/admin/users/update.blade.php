@@ -55,20 +55,7 @@
                                     @error('role_id')<div class="nexora-field-error">{{ $message }}</div>@enderror
                                 </div>
                             </div>
-                            @if(auth()->user()?->isSuperAdmin())
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="company_id">Company *</label>
-                                        <select name="company_id" id="company_id" class="form-control select2" required>
-                                            <option value="">Select company</option>
-                                            @foreach($companies as $company)
-                                                <option value="{{ $company->id }}" @selected(old('company_id', $user->company_id) == $company->id)>{{ $company->name }} - {{ $company->company_code }}</option>
-                                            @endforeach
-                                        </select>
-                                        @error('company_id')<div class="nexora-field-error">{{ $message }}</div>@enderror
-                                    </div>
-                                </div>
-                            @endif
+                            @include('admin.partials.company-selector', ['selectedCompanyId' => $user->company_id])
                         </div>
                     </div>
                 </div>

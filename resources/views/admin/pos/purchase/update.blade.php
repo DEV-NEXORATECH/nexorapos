@@ -19,6 +19,10 @@
                     
                                     <form action="{{ url('admin-panel/purchase/update/'. $purchase->id) }}" method="POST" id="purchaseForm">
                                         @csrf
+
+                                        <div class="row">
+                                            @include('admin.partials.company-selector')
+                                        </div>
                                                             <div class="card-body p-0 mt-3">
 										<div class="form-group">
 											<label for="supplier_id">Supplier Name</label>

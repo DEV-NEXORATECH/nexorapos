@@ -103,40 +103,6 @@
     .min-w-120 {
         min-width: 120px;
     }
-    .nexora-action-group {
-        display: flex;
-        gap: 8px;
-    }
-    .nexora-action-btn.is-warning {
-        background: #F39C12 !important;
-        color: #fff !important;
-        border-radius: 6px;
-        width: 32px;
-        height: 32px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .nexora-action-btn.is-warning:hover {
-        background: #D68910 !important;
-        color: #fff !important;
-    }
-    .nexora-action-btn.is-warning i { color: #fff !important; }
-    .nexora-action-btn.is-danger {
-        background: #E74C3C !important;
-        color: #fff !important;
-        border-radius: 6px;
-        width: 32px;
-        height: 32px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .nexora-action-btn.is-danger:hover {
-        background: #C0392B !important;
-        color: #fff !important;
-    }
-    .nexora-action-btn.is-danger i { color: #fff !important; }
     .nexora-table-wrapper { background: #fff; border: 1px solid #DCEEFF; border-radius: 12px; overflow: hidden; padding: 16px; }
 </style>
 

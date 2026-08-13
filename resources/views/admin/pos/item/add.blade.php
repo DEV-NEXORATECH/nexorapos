@@ -23,6 +23,10 @@
                         {{-- Form to add new purchase item --}}
                         <form action="{{ url('admin-panel/purchase-item/add') }}" method="POST" id="categoryForm">
                             @csrf {{-- Laravel CSRF protection --}}
+
+                                        <div class="row">
+                                            @include('admin.partials.company-selector')
+                                        </div>
                                                 <div class="card-body p-0 mt-3">
 
                                 {{-- Dropdown to select purchase (status shown) --}}

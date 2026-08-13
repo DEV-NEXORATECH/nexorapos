@@ -15,7 +15,7 @@ class ProductService
         $this->productUpdateValidation=new ProductUpdateValidation();
     }
     public function index(){
-        $products = Product::with('tax')->where('company_id', auth()->user()?->company_id)->get();
+        $products = Product::with('tax')->when(!auth()->user()?->isSuperAdmin(), fn($q) => $q->where('company_id', auth()->user()?->company_id))->get();
         return view('admin.pos.Product.listing', compact('products'));
     }
 
@@ -129,7 +129,7 @@ class ProductService
     // Soft deleted products listing
     public function deletedProducts()
     {
-        $deletedProducts = Product::onlyTrashed()->with('tax')->where('company_id', auth()->user()?->company_id)->get();
+        $deletedProducts = Product::onlyTrashed()->with('tax')->when(!auth()->user()?->isSuperAdmin(), fn($q) => $q->where('company_id', auth()->user()?->company_id))->get();
         return view('admin.pos.Product.archieve', compact('deletedProducts'));
     }
 
@@ -162,7 +162,7 @@ class ProductService
     public function export(){
         try{
             $fileName = 'products.xlsx';
-            $products = Product::with('tax', 'category')->where('company_id', auth()->user()?->company_id)->get();
+            $products = Product::with('tax', 'category')->when(!auth()->user()?->isSuperAdmin(), fn($q) => $q->where('company_id', auth()->user()?->company_id))->get();
             $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
             // Set header row

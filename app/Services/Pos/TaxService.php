@@ -23,7 +23,7 @@ class TaxService {
                 return redirect()->back()->with('error', $errors)->withInput();
             }
             $tax = new Tax();
-            $tax->company_id = auth()->user()?->company_id;
+            $tax->company_id = (auth()->user()?->isSuperAdmin() && $request->company_id) ? $request->company_id : auth()->user()?->company_id;
             $tax->name = $request->name;
             $tax->rate = $request->rate;
             $tax->save();
@@ -37,7 +37,7 @@ class TaxService {
 
     // Edit Tax
     public function edit(Request $request, $id) {
-            $tax = Tax::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
+            $tax = Tax::where('id', $id)->when(!auth()->user()?->isSuperAdmin(), fn($q) => $q->where('company_id', auth()->user()?->company_id))->first();
             if (! $tax) {
                 return redirect('admin-panel/tax/listing')->with('failed', 'Tax Not Found');
             }
@@ -54,7 +54,7 @@ class TaxService {
             {
                 return redirect()->back()->with('error',$errors)->withInput();
             }
-            $tax = Tax::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
+            $tax = Tax::where('id', $id)->when(!auth()->user()?->isSuperAdmin(), fn($q) => $q->where('company_id', auth()->user()?->company_id))->first();
             if (!$tax) {
                 return redirect('admin-panel/tax/listing')->with('failed', 'Tax Not Found');
             }
@@ -73,7 +73,7 @@ class TaxService {
     public function destroy(Request $request,$id)
     {
         try{
-            $tax = Tax::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
+            $tax = Tax::where('id', $id)->when(!auth()->user()?->isSuperAdmin(), fn($q) => $q->where('company_id', auth()->user()?->company_id))->first();
             if($tax)
             {
                 $tax->delete();

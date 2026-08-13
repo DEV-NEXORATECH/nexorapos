@@ -30,7 +30,7 @@ class CategoryService{
             return redirect()->back()->withErrors(['failed' => $validationError])->withInput();
             }
             $category = new ProductCategory();
-            $category->company_id = auth()->user()?->company_id;
+            $category->company_id = (auth()->user()?->isSuperAdmin() && $request->company_id) ? $request->company_id : auth()->user()?->company_id;
             $category->name = $request->name;
             $category->save();
             return redirect('admin-panel/categories/listing')->with('success', 'Category added successfully.');
@@ -42,7 +42,7 @@ class CategoryService{
 
     public function edit(Request $request, $id)
     {
-        $category = ProductCategory::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
+        $category = ProductCategory::where('id', $id)->when(!auth()->user()?->isSuperAdmin(), fn($q) => $q->where('company_id', auth()->user()?->company_id))->first();
         if (!$category) {
             return redirect('admin-panel/categories/listing')->withErrors(['failed' => 'Category not found.']);
         }
@@ -52,7 +52,7 @@ class CategoryService{
     public function update(Request $request, $id)
     {
         try{
-            $category = ProductCategory::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
+            $category = ProductCategory::where('id', $id)->when(!auth()->user()?->isSuperAdmin(), fn($q) => $q->where('company_id', auth()->user()?->company_id))->first();
             if (!$category) {
                 return redirect('admin-panel/categories/listing')->withErrors(['failed' => 'Category not found.']);
             }
@@ -73,7 +73,7 @@ class CategoryService{
     public function destroy($id)
     {
         try{
-            $category = ProductCategory::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
+            $category = ProductCategory::where('id', $id)->when(!auth()->user()?->isSuperAdmin(), fn($q) => $q->where('company_id', auth()->user()?->company_id))->first();
             if (!$category) {
                 return redirect('admin-panel/categories/listing')->withErrors(['failed' => 'Category not found.']);
             }

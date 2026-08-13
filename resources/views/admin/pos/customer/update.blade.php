@@ -19,6 +19,10 @@
                     
                                     <form action="{{ url('admin-panel/customer/update', $customer->id) }}" method="POST" id="categoryForm">
                                         @csrf
+
+                                        <div class="row">
+                                            @include('admin.partials.company-selector')
+                                        </div>
                                                             <div class="card-body p-0 mt-3">
 										<div class="form-group">
 											<label for="name">Customer Name</label>

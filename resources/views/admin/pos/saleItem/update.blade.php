@@ -20,6 +20,10 @@
                     
                                     <form action="{{ url('admin-panel/sale-items/update', $sale->id) }}" method="POST" id="categoryForm">
                                         @csrf
+
+                                        <div class="row">
+                                            @include('admin.partials.company-selector')
+                                        </div>
                                                             <div class="card-body p-0 mt-3">
 										<div class="form-group">
 											<label for="sale_id">Sale Status</label>

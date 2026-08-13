@@ -2531,3 +2531,39 @@ a.text-warning:focus { opacity: .85; }
 .btn-secondary { background: #EAF5FF !important; border-color: #DCEEFF !important; color: #003F7D !important; }
 .btn-secondary:hover,
 .btn-secondary:focus { background: #DCEEFF !important; border-color: #1976C9 !important; color: #003F7D !important; }
+
+/* Global Action Buttons */
+.nexora-action-group {
+    display: flex;
+    gap: 8px;
+}
+.nexora-action-btn.is-warning {
+    background: #F39C12 !important;
+    color: #fff !important;
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.nexora-action-btn.is-warning:hover {
+    background: #D68910 !important;
+    color: #fff !important;
+}
+.nexora-action-btn.is-warning i { color: #fff !important; }
+.nexora-action-btn.is-danger {
+    background: #E74C3C !important;
+    color: #fff !important;
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.nexora-action-btn.is-danger:hover {
+    background: #C0392B !important;
+    color: #fff !important;
+}
+.nexora-action-btn.is-danger i { color: #fff !important; }

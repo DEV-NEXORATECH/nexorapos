@@ -23,7 +23,7 @@ class StoreService{
 
     public function show($id)
     {
-        $store = Store::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
+        $store = Store::where('id', $id)->when(!auth()->user()?->isSuperAdmin(), fn($q) => $q->where('company_id', auth()->user()?->company_id))->first();
         if($store) {
             return view('admin.pos.store.show', compact('store'));
         }
@@ -40,7 +40,7 @@ class StoreService{
             }
 
             $store=new Store();
-            $store->company_id=auth()->user()?->company_id;
+            $store->company_id=(auth()->user()?->isSuperAdmin() && $request->company_id) ? $request->company_id : auth()->user()?->company_id;
             $store->name=$request->name;
             $store->code=$request->code;
             $store->save();
@@ -57,7 +57,7 @@ class StoreService{
 
     public function edit($id)
     {
-        $store=Store::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
+        $store=Store::where('id', $id)->when(!auth()->user()?->isSuperAdmin(), fn($q) => $q->where('company_id', auth()->user()?->company_id))->first();
         if($store)
         {
             return view('admin.pos.store.update', compact('store'));
@@ -68,7 +68,7 @@ class StoreService{
 
     public function update(Request $request,$id)
     {
-        $store=Store::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
+        $store=Store::where('id', $id)->when(!auth()->user()?->isSuperAdmin(), fn($q) => $q->where('company_id', auth()->user()?->company_id))->first();
         if($store)
         {
             $inputs=$request->all();
@@ -90,7 +90,7 @@ class StoreService{
 
     public function destroy($id)
     {
-        $store=Store::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
+        $store=Store::where('id', $id)->when(!auth()->user()?->isSuperAdmin(), fn($q) => $q->where('company_id', auth()->user()?->company_id))->first();
         if($store){
             $store->delete();
             return redirect()->back()->with('success', 'Record Deleted Successfully');

@@ -30,7 +30,7 @@ class DiscountService{
             }
 
             $discount= new Discount();
-            $discount->company_id = auth()->user()?->company_id;
+            $discount->company_id = (auth()->user()?->isSuperAdmin() && $request->company_id) ? $request->company_id : auth()->user()?->company_id;
             $discount->name=$request->name;
             $discount->type=$request->type;
             $discount->value=$request->value;
@@ -46,7 +46,7 @@ class DiscountService{
 
     public function edit($id)
     {
-        $discount = Discount::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
+        $discount = Discount::where('id', $id)->when(!auth()->user()?->isSuperAdmin(), fn($q) => $q->where('company_id', auth()->user()?->company_id))->first();
         if($discount){
             return view('admin.pos.discount.update', compact('discount'));
         }
@@ -56,7 +56,7 @@ class DiscountService{
 
     public function update(Request $request,$id){
         try{
-            $discount = Discount::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
+            $discount = Discount::where('id', $id)->when(!auth()->user()?->isSuperAdmin(), fn($q) => $q->where('company_id', auth()->user()?->company_id))->first();
             if(!$discount){
                 return redirect()->back()->with('failed', 'Record Not Found or Unauthorized');
             }
@@ -79,7 +79,7 @@ class DiscountService{
     }
 
     public function destroy($id){
-        $discount = Discount::where('id', $id)->where('company_id', auth()->user()?->company_id)->first();
+        $discount = Discount::where('id', $id)->when(!auth()->user()?->isSuperAdmin(), fn($q) => $q->where('company_id', auth()->user()?->company_id))->first();
         if($discount){
             $discount->delete();
             return redirect()->back()->with('success', 'Record Deleted Successfully');

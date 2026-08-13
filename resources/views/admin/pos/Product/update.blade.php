@@ -15,6 +15,10 @@
 
             <form action="{{ url('admin-panel/products/update', $product->id) }}" method="POST" class="nexora-form">
                 @csrf
+
+                                        <div class="row">
+                                            @include('admin.partials.company-selector')
+                                        </div>
                 <div class="nexora-control-card is-neutral mb-4">
                     <h5><i class="fas fa-folder"></i> Product Information</h5>
                                         <div class="card-body p-0 mt-3">

@@ -9,11 +9,13 @@ if (!function_exists('modules')) {
         $user = auth()->user();
         $permissionColumns = ['id', 'permission_category_id', 'name', 'route'];
 
-        if (Schema::hasColumn('permissions', 'icon')) {
+        $hasIcon = \Illuminate\Support\Facades\Cache::remember('schema_permissions_has_icon', 3600, fn() => Schema::hasColumn('permissions', 'icon'));
+        if ($hasIcon) {
             $permissionColumns[] = 'icon';
         }
 
-        if (Schema::hasColumn('permissions', 'is_show')) {
+        $hasIsShow = \Illuminate\Support\Facades\Cache::remember('schema_permissions_has_is_show', 3600, fn() => Schema::hasColumn('permissions', 'is_show'));
+        if ($hasIsShow) {
             $permissionColumns[] = 'is_show';
         }
 
