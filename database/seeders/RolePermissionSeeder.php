@@ -80,6 +80,36 @@ class RolePermissionSeeder extends Seeder
                         ['name' => 'Laporan Keuangan', 'route' => 'admin-panel/reports/financial'],
                     ],
                 ],
+                'stores' => [
+                    'name' => 'Stores',
+                    'permissions' => [
+                        ['name' => 'Kelola Toko', 'route' => 'admin-panel/stores/listing'],
+                    ],
+                ],
+                'taxes' => [
+                    'name' => 'Taxes',
+                    'permissions' => [
+                        ['name' => 'Kelola Pajak', 'route' => 'admin-panel/taxes/listing'],
+                    ],
+                ],
+                'discounts' => [
+                    'name' => 'Discounts',
+                    'permissions' => [
+                        ['name' => 'Kelola Diskon', 'route' => 'admin-panel/discounts/listing'],
+                    ],
+                ],
+                'roles' => [
+                    'name' => 'Roles & Access',
+                    'permissions' => [
+                        ['name' => 'Kelola Hak Akses', 'route' => 'admin-panel/roles/listing'],
+                    ],
+                ],
+                'settings' => [
+                    'name' => 'Settings',
+                    'permissions' => [
+                        ['name' => 'Pengaturan Sistem', 'route' => 'admin-panel/settings/listing'],
+                    ],
+                ],
             ];
 
             $adminPermissions = [];

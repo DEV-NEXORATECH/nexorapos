@@ -20,29 +20,14 @@
                                         <th>Name</th>
                                         <th>Route</th>
                                         <th>Is_Show</th>
-                                        <th>Action</th>
+                                        <th class="text-nowrap">Company</th>
+                                        <th class="text-nowrap">Created By</th>
+                                        <th class="text-nowrap">Created At</th>
+                                        <th class="text-nowrap">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($permissions as $permission)
-                                    <tr>
-                                        <td>{{ $permission->id }}</td>
-                                       <td>{{ $permission->permission_category->name ?? 'No Category' }}</td>
-
-                                        <td>{{ $permission->name }}</td>
-                                        <td>{{ $permission->route }}</td>
-                                        <td>@if($permission->is_show == '1')
-                                            <p>Yes</p>
-                                            @else
-                                            <p>Null</p>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <a href="{{ url('admin-panel/permissions/edit', $permission->id) }}" class="nexora-action-btn is-warning" title="Edit"><i class="fas fa-edit"></i></a>
-                                            <a href="{{ url('admin-panel/permissions/delete', $permission->id) }}" class="nexora-action-btn is-danger delete-category" title="Delete"><i class="fas fa-trash"></i></a>
-                                        </td>
-                                    </tr>
-                                    @endforeach
+                                    <!-- AJAX loaded by DataTables -->
                                 </tbody>
                             </table>
         </div>
@@ -53,6 +38,27 @@
 
 @section('scripts')
 
-<!-- Your custom JS -->
-<script src="{{ asset('admin/custom/js/category.js') }}"></script>
+<script>
+    $(document).ready(function() {
+        if ($.fn.DataTable.isDataTable('.nexora-data-table')) {
+            $('.nexora-data-table').DataTable().destroy();
+        }
+        $('.nexora-data-table').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: '{{ url("admin-panel/permissions/listing") }}',
+            columns: [
+                { data: 'id', name: 'id' },
+                { data: 'permission_category', name: 'permission_category' },
+                { data: 'name', name: 'name' },
+                { data: 'route', name: 'route' },
+                { data: 'is_show', name: 'is_show' },
+                { data: 'company', name: 'company.name' , orderable: false, searchable: false },
+                { data: 'created_by', name: 'created_by', searchable: false, orderable: false },
+                { data: 'created_at', name: 'created_at' },
+                { data: 'action', name: 'action', orderable: false, searchable: false }
+            ]
+        });
+    });
+</script>
 @endsection

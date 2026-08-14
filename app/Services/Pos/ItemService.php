@@ -24,7 +24,7 @@ class ItemService
     {
         $companyId = auth()->user()?->company_id;
         $items = PurchaseItem::with('product', 'purchase')
-            ->where('company_id', $companyId)
+            
             ->get();
         return view('admin.pos.item.listing', compact('items'));
     }

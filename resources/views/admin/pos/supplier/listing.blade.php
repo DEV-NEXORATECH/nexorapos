@@ -20,24 +20,14 @@
                                         <th>Email</th>
                                         <th>Address</th>
                                         <th>Phone</th>
-                                        <th>Action</th>
+                                        <th class="text-nowrap">Company</th>
+                                        <th class="text-nowrap">Created By</th>
+                                        <th class="text-nowrap">Created At</th>
+                                        <th class="text-nowrap">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($suppliers as $sup)
-                                    <tr>
-                                         <td>{{ $sup->id }}</td>
-                                        <td>{{ $sup->name }}</td>
-                                        <td>{{ $sup->email }}</td>
-                                        <td>{{ $sup->address }}</td>
-                                        <td>{{ $sup->phone }}</td>
-                                        <td>
-                                            <a href="{{ url('admin-panel/supplier/edit', $sup->id) }}" class="nexora-action-btn is-warning" title="Edit"><i class="fas fa-edit"></i></a>
-                                            <a href="{{ url('admin-panel/supplier/delete', $sup->id) }}" class="nexora-action-btn is-danger delete-category" title="Delete"><i class="fas fa-trash"></i></a>
-                                        </td>
-                                    </tr>
-
-                                    @endforeach
+                                    <!-- AJAX loaded by DataTables -->
                                 </tbody>
                             </table>
         </div>
@@ -48,10 +38,27 @@
 
 @section('scripts')
 
-<!-- Your custom JS -->
-<script src="{{ asset('admin/custom/js/category.js') }}"></script>
-
-
-
-
+<script>
+    $(document).ready(function() {
+        if ($.fn.DataTable.isDataTable('.nexora-data-table')) {
+            $('.nexora-data-table').DataTable().destroy();
+        }
+        $('.nexora-data-table').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: '{{ url("admin-panel/supplier/listing") }}',
+            columns: [
+                { data: 'id', name: 'id' },
+                { data: 'name', name: 'name' },
+                { data: 'email', name: 'email' },
+                { data: 'address', name: 'address' },
+                { data: 'phone', name: 'phone' },
+                { data: 'company', name: 'company.name' , orderable: false, searchable: false },
+                { data: 'created_by', name: 'created_by', searchable: false, orderable: false },
+                { data: 'created_at', name: 'created_at' },
+                { data: 'action', name: 'action', orderable: false, searchable: false }
+            ]
+        });
+    });
+</script>
 @endsection

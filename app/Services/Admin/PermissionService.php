@@ -14,6 +14,52 @@ class PermissionService{
     }
     public function index()
     {
+
+        if (request()->ajax()) {
+            $data = Permission::with('permission_category');
+            return \Yajra\DataTables\Facades\DataTables::of($data)
+                ->addColumn('id', function($row) { return $row->id; })
+                ->addColumn('permission_category', function($row) { return $row->permission_category; })
+                ->addColumn('name', function($row) { return $row->name; })
+                ->addColumn('route', function($row) { return $row->route; })
+                ->addColumn('is_show', function($row) { return $row->is_show; })
+                ->addColumn('company', function($row) { return $row->company ? $row->company->name : "-"; })
+                ->addColumn('created_by', function($row) { return "-"; })
+                ->addColumn('created_at', function($row) { return $row->created_at ? $row->created_at->format("d M Y H:i") : "-"; })
+                ->addColumn('action', function($row) { return '<a href="'.url('admin-panel/permissions/edit/'.$row->id).'" class="nexora-action-btn is-warning"><i class="fas fa-edit"></i></a><a href="'.url('admin-panel/permissions/delete/'.$row->id).'" class="nexora-action-btn is-danger no-ajax" onclick="return confirm(\'Delete?\')"><i class="fas fa-trash"></i></a>'; })
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                ->rawColumns(['action'])
+                ->make(true);
+        }
         $permissions=Permission::with('permission_category')->get();
         return view('admin.permissions.listing', compact('permissions'));
     }

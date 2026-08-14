@@ -18,21 +18,14 @@
                                         <th>ID</th>
                                         <th>Key</th>
                                         <th>Value</th>
-                                        <th class="min-w-120 text-nowrap">Action</th>
+                                        <th class="text-nowrap">Company</th>
+                                        <th class="text-nowrap">Created By</th>
+                                        <th class="text-nowrap">Created At</th>
+                                        <th class="text-nowrap">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($settings as $setting)
-                                        <tr>
-                                            <td>{{ $setting->id }}</td>
-                                            <td>{{ $setting->key }}</td>
-                                            <td>{{ $setting->value }}</td>
-                                            <td class="text-nowrap">
-                                                <a href="{{ url('admin-panel/settings/edit', $setting->id) }}" class="nexora-action-btn is-warning" title="Edit"><i class="fas fa-edit"></i></a>
-                                                <a href="{{ url('admin-panel/settings/delete', $setting->id) }}" class="nexora-action-btn is-danger delete-category" title="Delete"><i class="fas fa-trash"></i></a>
-                                            </td>
-                                        </tr>
-                                    @endforeach
+                                    <!-- AJAX loaded by DataTables -->
                                 </tbody>
             </table>
         </div>
@@ -47,5 +40,26 @@
 @endsection
 
 @section('scripts')
-<script src="{{ asset('admin/custom/js/category.js') }}"></script>
+
+<script>
+    $(document).ready(function() {
+        if ($.fn.DataTable.isDataTable('.nexora-data-table')) {
+            $('.nexora-data-table').DataTable().destroy();
+        }
+        $('.nexora-data-table').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: '{{ url("admin-panel/settings/listing") }}',
+            columns: [
+                { data: 'id', name: 'id' },
+                { data: 'key', name: 'key' },
+                { data: 'value', name: 'value' },
+                { data: 'company', name: 'company.name' , orderable: false, searchable: false },
+                { data: 'created_by', name: 'created_by', searchable: false, orderable: false },
+                { data: 'created_at', name: 'created_at' },
+                { data: 'action', name: 'action', orderable: false, searchable: false }
+            ]
+        });
+    });
+</script>
 @endsection

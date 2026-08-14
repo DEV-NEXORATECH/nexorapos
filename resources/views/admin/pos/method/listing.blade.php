@@ -17,7 +17,10 @@
                                     <tr>
                                         <th>ID</th>
                                         <th>Name</th>
-                                        <th>Action</th>
+                                        <th class="text-nowrap">Company</th>
+                                        <th class="text-nowrap">Created By</th>
+                                        <th class="text-nowrap">Created At</th>
+                                        <th class="text-nowrap">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -25,6 +28,9 @@
                                         <tr>
                                             <td>{{ $method->id }}</td>
                                             <td>{{ $method->name }}</td>
+                                            <td class="text-nowrap">{{ $method->company?->name ?? 'System' }}</td>
+                                            <td class="text-nowrap">{{ $method->user?->name ?? $method->creator?->name ?? '-' }}</td>
+                                            <td class="text-nowrap">{{ $method->created_at ? $method->created_at->format('d M Y H:i') : '-' }}</td>
                                             <td>
                                                 <a href="{{ url('admin-panel/payment-methods/edit', $method->id) }}" class="nexora-action-btn is-warning" title="Edit"><i class="fas fa-edit"></i></a>
                                                 <a href="{{ url('admin-panel/payment-methods/delete', $method->id) }}" class="nexora-action-btn is-danger delete-category" title="Delete"><i class="fas fa-trash"></i></a>

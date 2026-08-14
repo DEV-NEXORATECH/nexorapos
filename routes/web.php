@@ -162,6 +162,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckCompanyLicense::class, 'Adm
 
     //Route For Customers
     Route::get('admin-panel/customer/listing', [CustomerController::class, 'index']);
+    Route::post('admin-panel/pos/customers/api', [CustomerController::class, 'apiStore']);
     Route::get('admin-panel/customer/add', [CustomerController::class, 'add']);
     Route::post('admin-panel/customer/add', [CustomerController::class, 'store']);
     Route::get('admin-panel/customer/edit/{id}', [CustomerController::class, 'edit']);

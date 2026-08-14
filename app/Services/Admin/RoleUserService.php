@@ -15,7 +15,7 @@ class RoleUserService{
 
     public function index()
    {
-    $users=User::with('roles')->get();
+    $users=User::get();
     return view('admin.RU.listing', compact('users'));
    }
 
@@ -56,7 +56,7 @@ class RoleUserService{
    {
     $users=User::all();
     $roles=Role::all();
-    $user=User::with('roles')->findOrFail($id);
+    $user=User::findOrFail($id);
     return view('admin.RU.update', compact('user', 'users', 'roles'));
    }
 
@@ -86,7 +86,7 @@ class RoleUserService{
    public function destroy(Request $request, $id)
    {
         try{
-            $user=User::with('roles')->findOrFail($id);
+            $user=User::findOrFail($id);
              $user->roles()->detach();
             if($user)
             {

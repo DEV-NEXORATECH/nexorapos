@@ -23,7 +23,10 @@
                                         <th>Tax</th>
                                         <th>Discount</th>
                                         <th>Price</th>
-                                        <th>Action</th>
+                                        <th class="text-nowrap">Company</th>
+                                        <th class="text-nowrap">Created By</th>
+                                        <th class="text-nowrap">Created At</th>
+                                        <th class="text-nowrap">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -37,6 +40,9 @@
                                             <td>{{ $sale->tax }}</td>
                                             <td>{{ $sale->discount }}</td>
                                             <td>{{ $sale->price }}</td>
+                                            <td class="text-nowrap">{{ $sale->company?->name ?? 'System' }}</td>
+                                            <td class="text-nowrap">{{ $sale->user?->name ?? $sale->creator?->name ?? '-' }}</td>
+                                            <td class="text-nowrap">{{ $sale->created_at ? $sale->created_at->format('d M Y H:i') : '-' }}</td>
                                             <td>
                                                 <a href="{{ url('admin-panel/sale-items/edit', $sale->id) }}" class="nexora-action-btn is-warning" title="Edit"><i class="fas fa-edit"></i></a>
                                                 <a href="{{ url('admin-panel/sale-items/delete', $sale->id) }}" class="nexora-action-btn is-danger delete-category" title="Delete"><i class="fas fa-trash"></i></a>

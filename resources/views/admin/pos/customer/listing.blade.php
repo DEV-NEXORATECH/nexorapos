@@ -20,36 +20,14 @@
                                         <th>Address</th>
                                         <th>Transactions</th>
                                         <th>Total Spend</th>
-                                        <th>Action</th>
+                                        <th class="text-nowrap">Company</th>
+                                        <th class="text-nowrap">Created By</th>
+                                        <th class="text-nowrap">Created At</th>
+                                        <th class="text-nowrap">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse ($customers as $cus)
-                                        <tr>
-                                            <td>{{ $cus->customer_code ?? '-' }}</td>
-                                            <td><strong>{{ $cus->name }}</strong></td>
-                                            <td>{{ $cus->phone ?? '-' }}</td>
-                                            <td>{{ $cus->email ?? '-' }}</td>
-                                            <td>{{ $cus->address ?? '-' }}</td>
-                                            <td>{{ $cus->total_transactions }}</td>
-                                            <td class="text-right">{{ number_format($cus->total_spend, 2) }}</td>
-                                            <td style="white-space:nowrap;">
-                                                <a href="{{ url('admin-panel/customer/show', $cus->id) }}" class="btn btn-sm btn-primary" title="View"><i class="fas fa-eye"></i></a>
-                                                <a href="{{ url('admin-panel/customer/edit', $cus->id) }}" class="btn btn-sm btn-secondary" title="Edit"><i class="fas fa-edit"></i></a>
-                                                <form action="{{ url('admin-panel/customer/delete', $cus->id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Yakin ingin menghapus customer ini?');">
-                                                    @csrf
-                                                    <button type="submit" class="btn btn-sm btn-danger" title="Delete"><i class="fas fa-trash"></i></button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="8" class="text-center py-4">
-                                                <i class="fas fa-users fa-2x mb-2" style="color:var(--color-blue-500)"></i>
-                                                <p>Belum ada customer.</p>
-                                            </td>
-                                        </tr>
-                                    @endforelse
+                                    <!-- AJAX loaded by DataTables -->
                                 </tbody>
                             </table>
         </div>
@@ -60,10 +38,29 @@
 
 @section('scripts')
 
-<!-- Your custom JS -->
-<script src="{{ asset('admin/custom/js/category.js') }}"></script>
-
-
-
-
+<script>
+    $(document).ready(function() {
+        if ($.fn.DataTable.isDataTable('.nexora-data-table')) {
+            $('.nexora-data-table').DataTable().destroy();
+        }
+        $('.nexora-data-table').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: '{{ url("admin-panel/customer/listing") }}',
+            columns: [
+                { data: 'code', name: 'customer_code' },
+                { data: 'name', name: 'name' },
+                { data: 'phone', name: 'phone' },
+                { data: 'email', name: 'email' },
+                { data: 'address', name: 'address' },
+                { data: 'transactions', name: 'transactions' , orderable: false, searchable: false },
+                { data: 'total_spend', name: 'total_spend' , orderable: false, searchable: false },
+                { data: 'company', name: 'company.name' , orderable: false, searchable: false },
+                { data: 'created_by', name: 'created_by', searchable: false, orderable: false },
+                { data: 'created_at', name: 'created_at' },
+                { data: 'action', name: 'action', orderable: false, searchable: false }
+            ]
+        });
+    });
+</script>
 @endsection

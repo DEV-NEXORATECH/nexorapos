@@ -29,78 +29,14 @@
                                         <th>Payment Status</th>
                                         <th>Sale Status</th>
                                         <th>Created</th>
-                                        <th>Action</th>
+                                        <th class="text-nowrap">Company</th>
+                                        <th class="text-nowrap">Created By</th>
+                                        <th class="text-nowrap">Created At</th>
+                                        <th class="text-nowrap">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse ($sales as $sale)
-                                        <tr>
-                                            <td><strong>{{ $sale->invoice_number ?? '#'.$sale->id }}</strong></td>
-                                            <td>{{ $sale->created_at?->format('d M Y H:i') }}</td>
-                                            <td>{{ optional($sale->store)->name ?? '-' }}</td>
-                                            <td>{{ optional($sale->customer)->name ?? 'Walk-in' }}</td>
-                                            <td>{{ optional($sale->user)->name ?? '-' }}</td>
-                                            <td>{{ $sale->sale_items_count ?? $sale->sale_items->count() }}</td>
-                                            <td class="text-right">{{ number_format($sale->subtotal, 2) }}</td>
-                                            <td class="text-right">{{ number_format($sale->discount, 2) }}</td>
-                                            <td class="text-right">{{ number_format($sale->tax, 2) }}</td>
-                                            <td class="text-right"><strong>{{ number_format($sale->total, 2) }}</strong></td>
-                                            <td class="text-right">{{ number_format($sale->paid_amount ?? 0, 2) }}</td>
-                                            <td class="text-right">{{ number_format($sale->change_amount ?? 0, 2) }}</td>
-                                            <td>
-                                                @forelse($sale->payments as $payment)
-                                                    <span class="badge badge-primary">{{ optional($payment->method)->name ?? '-' }}</span>
-                                                @empty
-                                                    <span class="text-muted">-</span>
-                                                @endforelse
-                                            </td>
-                                            <td>
-                                                @php
-                                                    $psBadge = match($sale->payment_status ?? 'UNPAID') {
-                                                        'PAID' => 'badge-success',
-                                                        'PARTIAL' => 'badge-warning',
-                                                        'REFUNDED' => 'badge-info',
-                                                        default => 'badge-secondary',
-                                                    };
-                                                @endphp
-                                                <span class="badge {{ $psBadge }}">{{ $sale->payment_status ?? 'UNPAID' }}</span>
-                                            </td>
-                                            <td>
-                                                @php
-                                                    $ssBadge = match($sale->status) {
-                                                        'completed' => 'badge-success',
-                                                        'cancelled', 'void' => 'badge-danger',
-                                                        default => 'badge-secondary',
-                                                    };
-                                                @endphp
-                                                <span class="badge {{ $ssBadge }}">{{ ucfirst($sale->status) }}</span>
-                                            </td>
-                                            <td>{{ $sale->created_at?->format('d/m/Y') }}</td>
-                                            <td style="white-space:nowrap;">
-                                                <a href="{{ url('admin-panel/pos/invoice', $sale->id) }}" class="btn btn-sm btn-primary" title="View Detail">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="{{ url('admin-panel/pos/pdf', $sale->id) }}" class="btn btn-sm btn-secondary" title="Download PDF">
-                                                    <i class="fas fa-file-pdf"></i>
-                                                </a>
-                                                @if(!in_array($sale->status, ['cancelled', 'void']))
-                                                <form action="{{ url('admin-panel/sales/delete', $sale->id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Yakin ingin membatalkan sale ini? Stok akan dikembalikan.');">
-                                                    @csrf
-                                                    <button type="submit" class="btn btn-sm btn-danger" title="Cancel Sale">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                </form>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="17" class="text-center py-4">
-                                                <i class="fas fa-receipt fa-2x mb-2" style="color:var(--color-blue-500)"></i>
-                                                <p>Belum ada transaksi.</p>
-                                            </td>
-                                        </tr>
-                                    @endforelse
+                                    <!-- AJAX loaded by DataTables -->
                                 </tbody>
                             </table>
         </div>
@@ -109,14 +45,38 @@
 @endsection
 
 @section('scripts')
-<script src="{{ asset('admin/custom/js/category.js') }}"></script>
+
 <script>
-    // Optional: Add confirmation for delete
-    document.querySelectorAll('.delete-sale').forEach(function(el){
-        el.addEventListener('click', function(e){
-            if(!confirm('Are you sure you want to delete this sale?')) {
-                e.preventDefault();
-            }
+    $(document).ready(function() {
+        if ($.fn.DataTable.isDataTable('.nexora-data-table')) {
+            $('.nexora-data-table').DataTable().destroy();
+        }
+        $('.nexora-data-table').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: '{{ url("admin-panel/sale/listing") }}',
+            columns: [
+                { data: 'invoice', name: 'invoice_number' },
+                { data: 'date', name: 'created_at' },
+                { data: 'store', name: 'store.name' , orderable: false, searchable: false },
+                { data: 'customer', name: 'customer.name' , orderable: false, searchable: false },
+                { data: 'cashier', name: 'user.name' , orderable: false, searchable: false },
+                { data: 'items', name: 'items' },
+                { data: 'subtotal', name: 'sub_total' },
+                { data: 'discount', name: 'total_discount' },
+                { data: 'tax', name: 'total_tax' },
+                { data: 'grand_total', name: 'grand_total' },
+                { data: 'paid', name: 'paid_amount' },
+                { data: 'change', name: 'change_amount' },
+                { data: 'payment_method', name: 'payment_method' },
+                { data: 'payment_status', name: 'payment_status' },
+                { data: 'sale_status', name: 'sale_status' },
+                { data: 'created', name: 'created_at_time' },
+                { data: 'company', name: 'company.name' , orderable: false, searchable: false },
+                { data: 'created_by', name: 'user.name' , orderable: false, searchable: false },
+                { data: 'created_at', name: 'created_at_full' },
+                { data: 'action', name: 'action', orderable: false, searchable: false }
+            ]
         });
     });
 </script>

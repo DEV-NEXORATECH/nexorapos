@@ -58,3 +58,7 @@
 
 
 @endsection
+@section('scripts')
+
+
+@endsection

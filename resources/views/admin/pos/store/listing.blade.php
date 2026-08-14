@@ -18,32 +18,14 @@
                                         <th>Store Code</th>
                                         <th>Store Name</th>
                                         <th>Created At</th>
-                                        <th>Action</th>
+                                        <th class="text-nowrap">Company</th>
+                                        <th class="text-nowrap">Created By</th>
+                                        <th class="text-nowrap">Created At</th>
+                                        <th class="text-nowrap">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse ($stores as $store)
-                                        <tr>
-                                            <td><strong>{{ $store->store_code ?? $store->code ?? '-' }}</strong></td>
-                                            <td>{{ $store->name }}</td>
-                                            <td>{{ $store->created_at?->format('d M Y') }}</td>
-                                            <td style="white-space:nowrap;">
-                                                <a href="{{ url('admin-panel/stores/show', $store->id) }}" class="btn btn-sm btn-info" title="View"><i class="fas fa-eye"></i></a>
-                                                <a href="{{ url('admin-panel/stores/edit', $store->id) }}" class="btn btn-sm btn-primary" title="Edit"><i class="fas fa-edit"></i></a>
-                                                <form action="{{ url('admin-panel/stores/delete', $store->id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Yakin ingin menghapus store ini?');">
-                                                    @csrf
-                                                    <button type="submit" class="btn btn-sm btn-danger" title="Delete"><i class="fas fa-trash"></i></button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="4" class="text-center py-4">
-                                                <i class="fas fa-store fa-2x mb-2" style="color:var(--color-blue-500)"></i>
-                                                <p>Belum ada store.</p>
-                                            </td>
-                                        </tr>
-                                    @endforelse
+                                    <!-- AJAX loaded by DataTables -->
                                 </tbody>
             </table>
         </div>
@@ -56,8 +38,25 @@
 
 <!-- Your custom JS -->
 <script src="{{ asset('admin/custom/js/category.js') }}"></script>
-
-
-
-
+<script>
+    $(document).ready(function() {
+        if ($.fn.DataTable.isDataTable('#storesTable')) {
+            $('#storesTable').DataTable().destroy();
+        }
+        $('#storesTable').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: '{{ url("admin-panel/stores/listing") }}',
+            columns: [
+                { data: 'code', name: 'code' },
+                { data: 'name', name: 'name' },
+                { data: 'created_at_short', name: 'created_at', searchable: false },
+                { data: 'company', name: 'company.name' , orderable: false, searchable: false },
+                { data: 'created_by', name: 'created_by', searchable: false, orderable: false },
+                { data: 'created_at', name: 'created_at' },
+                { data: 'action', name: 'action', orderable: false, searchable: false }
+            ]
+        });
+    });
+</script>
 @endsection

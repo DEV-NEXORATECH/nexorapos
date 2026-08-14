@@ -15,8 +15,53 @@ class CustomerService{
     }
     public function index()
     {
-        $customers = Customer::where('company_id', auth()->user()?->company_id)->get();
-        return view('admin.pos.customer.listing', compact('customers'));
+        if (request()->ajax()) {
+            $data = Customer::with(["company", "sales"]);
+            return \Yajra\DataTables\Facades\DataTables::of($data)
+                ->addColumn('code', function($row) { return $row->customer_code; })
+                ->addColumn('name', function($row) { return $row->name; })
+                ->addColumn('phone', function($row) { return $row->phone; })
+                ->addColumn('email', function($row) { return $row->email; })
+                ->addColumn('address', function($row) { return $row->address; })
+                ->addColumn('transactions', function($row) { return $row->sales ? $row->sales->count() : 0; })
+                ->addColumn('total_spend', function($row) { return "Rp " . number_format($row->sales ? $row->sales->sum("grand_total") : 0); })
+                ->addColumn('company', function($row) { return $row->company ? $row->company->name : "-"; })
+                ->addColumn('created_by', function($row) { return "-"; })
+                ->addColumn('created_at', function($row) { return $row->created_at ? $row->created_at->format("d M Y H:i") : "-"; })
+                ->addColumn('action', function($row) { return '<a href="'.url('admin-panel/customer/edit/'.$row->id).'" class="nexora-action-btn is-warning"><i class="fas fa-edit"></i></a><a href="'.url('admin-panel/customer/delete/'.$row->id).'" class="nexora-action-btn is-danger no-ajax" onclick="return confirm(\'Delete?\')"><i class="fas fa-trash"></i></a>'; })
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+        return view('admin.pos.customer.listing');
     }
 
     public function add()

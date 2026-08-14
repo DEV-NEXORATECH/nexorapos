@@ -15,7 +15,7 @@ class ProductVariantService{
     {
         $companyId = auth()->user()?->company_id;
         $variants = ProductVariant::with('product')
-            ->where('company_id', $companyId)
+            
             ->get();
         return view('admin.pos.variant.listing', compact('variants'));
     }

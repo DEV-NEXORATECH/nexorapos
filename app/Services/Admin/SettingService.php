@@ -19,8 +19,38 @@ class SettingService{
 
 public function index()
     {
-        $settings=Setting::all();
-        return view('admin.setting.listing', compact('settings'));
+        if (request()->ajax()) {
+            $data = Setting::with([]);
+            return \Yajra\DataTables\Facades\DataTables::of($data)
+                ->addColumn('id', function($row) { return $row->id; })
+                ->addColumn('key', function($row) { return $row->key; })
+                ->addColumn('value', function($row) { return $row->value; })
+                ->addColumn('company', function($row) { return $row->company ? $row->company->name : "-"; })
+                ->addColumn('created_by', function($row) { return "-"; })
+                ->addColumn('created_at', function($row) { return $row->created_at ? $row->created_at->format("d M Y H:i") : "-"; })
+                ->addColumn('action', function($row) { return '<a href="'.url('admin-panel/settings/edit/'.$row->id).'" class="nexora-action-btn is-warning"><i class="fas fa-edit"></i></a><a href="'.url('admin-panel/settings/delete/'.$row->id).'" class="nexora-action-btn is-danger no-ajax" onclick="return confirm(\'Delete?\')"><i class="fas fa-trash"></i></a>'; })
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+        return view('admin.setting.listing');
     }
 
     public function license()

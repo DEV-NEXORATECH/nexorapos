@@ -401,3 +401,9 @@ body.pos-fullscreen-mode {
     transform: translateY(1px);
     box-shadow: 0 5px 15px rgba(0, 88, 166, 0.3);
 }
+
+ / *   F i x   M o d a l   z - i n d e x   * / 
+ . m o d a l   {   z - i n d e x :   1 0 0 0 0 1   ! i m p o r t a n t ;   } 
+ . m o d a l - b a c k d r o p   {   z - i n d e x :   1 0 0 0 0 0   ! i m p o r t a n t ;   } 
+  
+ 

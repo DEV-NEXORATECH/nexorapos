@@ -17,11 +17,48 @@ class StockService{
     }
     public function index()
     {
-        $companyId = auth()->user()?->company_id;
-        $stocks = StockMovement::with('store', 'product', 'product_variant')
-            ->where('company_id', $companyId)
-            ->get();
-        return view('admin.pos.stock.listing', compact('stocks'));
+        if (request()->ajax()) {
+            $data = StockMovement::with(['company']);
+            return \Yajra\DataTables\Facades\DataTables::of($data)
+                ->addColumn('id', function($row) { return $row->id; })
+                ->addColumn('store', function($row) { return $row->store ? $row->store->name : "-"; })
+                ->addColumn('product', function($row) { return $row->product ? $row->product->name : "-"; })
+                ->addColumn('variant', function($row) { return $row->product_variant ? $row->product_variant->name : "-"; })
+                ->addColumn('quantity', function($row) { return $row->quantity; })
+                ->addColumn('type', function($row) { return $row->type; })
+                ->addColumn('company', function($row) { return $row->company ? $row->company->name : "-"; })
+                ->addColumn('created_by', function($row) { return "-"; })
+                ->addColumn('created_at', function($row) { return $row->created_at ? $row->created_at->format("d M Y H:i") : "-"; })
+                ->addColumn('action', function($row) { return '<a href="'.url('admin-panel/stock/edit/'.$row->id).'" class="nexora-action-btn is-warning"><i class="fas fa-edit"></i></a><a href="'.url('admin-panel/stock/delete/'.$row->id).'" class="nexora-action-btn is-danger no-ajax" onclick="return confirm(\'Delete?\')"><i class="fas fa-trash"></i></a>'; })
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+        return view('admin.pos.stock.listing');
     }
 
     public function add()

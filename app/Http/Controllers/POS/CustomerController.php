@@ -30,6 +30,11 @@ class CustomerController extends Controller
         return $this->customerService->store($request);
     }
 
+    public function apiStore(Request $request)
+    {
+        return $this->customerService->apiStore($request);
+    }
+
     public function edit(Request $request, $id)
     {
         return $this->customerService->edit($request,$id);

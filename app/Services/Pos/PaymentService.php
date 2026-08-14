@@ -15,11 +15,45 @@ class PaymentService{
     }
     public function index()
     {
-        $payments = Payment::with('sale', 'method')
-            ->where('company_id', auth()->user()?->company_id)
-            ->latest()
-            ->get();
-        return view('admin.pos.payment.listing', compact('payments'));
+        if (request()->ajax()) {
+            $data = Payment::with(['company']);
+            return \Yajra\DataTables\Facades\DataTables::of($data)
+                ->addColumn('id', function($row) { return $row->id; })
+                ->addColumn('sale_status', function($row) { return $row->sale ? $row->sale->sale_status : "-"; })
+                ->addColumn('method', function($row) { return $row->payment_method; })
+                ->addColumn('amount', function($row) { return "Rp " . number_format($row->amount); })
+                ->addColumn('reference', function($row) { return $row->reference_number; })
+                ->addColumn('company', function($row) { return $row->company ? $row->company->name : "-"; })
+                ->addColumn('created_by', function($row) { return "-"; })
+                ->addColumn('created_at', function($row) { return $row->created_at ? $row->created_at->format("d M Y H:i") : "-"; })
+                ->addColumn('action', function($row) { return '<a href="'.url('admin-panel/payment/edit/'.$row->id).'" class="nexora-action-btn is-warning"><i class="fas fa-edit"></i></a><a href="'.url('admin-panel/payment/delete/'.$row->id).'" class="nexora-action-btn is-danger no-ajax" onclick="return confirm(\'Delete?\')"><i class="fas fa-trash"></i></a>'; })
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+        return view('admin.pos.payment.listing');
     }
 
     public function add()

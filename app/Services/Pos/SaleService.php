@@ -31,11 +31,81 @@ class SaleService
     // Listing all sales
     public function index()
     {
-        $sales = Sale::with('store', 'user', 'customer', 'payments.method', 'sale_items')
-            ->where('company_id', auth()->user()?->company_id)
-            ->latest()
-            ->get();
-        return view('admin.pos.sale.listing', compact('sales'));
+        if (request()->ajax()) {
+            $data = Sale::with(["store", "customer", "user", "sale_items", "company"])->with(['company']);
+            return \Yajra\DataTables\Facades\DataTables::of($data)
+                ->addColumn('invoice', function($row) { return $row->invoice_number; })
+                ->addColumn('date', function($row) { return $row->created_at ? $row->created_at->format("d M Y") : "-"; })
+                ->addColumn('store', function($row) { return $row->store ? $row->store->name : "-"; })
+                ->addColumn('customer', function($row) { return $row->customer ? $row->customer->name : "-"; })
+                ->addColumn('cashier', function($row) { return "-"; })
+                ->addColumn('items', function($row) { return $row->sale_items ? $row->sale_items->sum("quantity") : 0; })
+                ->addColumn('subtotal', function($row) { return "Rp " . number_format($row->sub_total); })
+                ->addColumn('discount', function($row) { return "Rp " . number_format($row->total_discount); })
+                ->addColumn('tax', function($row) { return "Rp " . number_format($row->total_tax); })
+                ->addColumn('grand_total', function($row) { return "Rp " . number_format($row->grand_total); })
+                ->addColumn('paid', function($row) { return "Rp " . number_format($row->paid_amount); })
+                ->addColumn('change', function($row) { return "Rp " . number_format($row->change_amount); })
+                ->addColumn('payment_method', function($row) { return $row->payment_method; })
+                ->addColumn('payment_status', function($row) { return $row->payment_status; })
+                ->addColumn('sale_status', function($row) { return $row->sale_status; })
+                ->addColumn('created', function($row) { return $row->created_at ? $row->created_at->format("H:i") : "-"; })
+                ->addColumn('company', function($row) { return $row->company ? $row->company->name : "-"; })
+                ->addColumn('created_by', function($row) { return "-"; })
+                ->addColumn('created_at', function($row) { return $row->created_at ? $row->created_at->format("d M Y H:i") : "-"; })
+                ->addColumn('action', function($row) { return '<a href="'.url('admin-panel/sale/edit/'.$row->id).'" class="nexora-action-btn is-warning"><i class="fas fa-edit"></i></a><a href="'.url('admin-panel/sale/delete/'.$row->id).'" class="nexora-action-btn is-danger no-ajax" onclick="return confirm(\'Delete?\')"><i class="fas fa-trash"></i></a>'; })
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+        return view('admin.pos.sale.listing');
     }
 
     public function reconciliation(Request $request)
@@ -43,14 +113,13 @@ class SaleService
         $date = $request->get('date', now()->toDateString());
         $companyId = auth()->user()?->company_id;
 
-        $sales = Sale::with(['store', 'customer', 'user', 'payments.method'])
+        $sales = Sale::with(['store', 'customer', 'user'])
             ->where('company_id', $companyId)
             ->whereDate('created_at', $date)
             ->latest()
             ->get();
 
-        $payments = Payment::with('method')
-            ->whereHas('sale', fn ($query) => $query->whereDate('created_at', $date))
+        $payments = Payment::whereHas('sale', fn ($query) => $query->whereDate('created_at', $date))
             ->get();
 
         $summary = [
@@ -192,7 +261,7 @@ class SaleService
     public function destroy($id)
     {
         $companyId = auth()->user()?->company_id;
-        $sale = Sale::with(['sale_items.product', 'payments'])->where('company_id', $companyId)->find($id);
+        $sale = Sale::with(['payments'])->where('company_id', $companyId)->find($id);
         if ($sale) {
             $this->cancelSale($sale);
             return redirect()->back()->with('success', 'Sale cancelled successfully');
@@ -204,11 +273,11 @@ class SaleService
     public function pos()
     {
         $companyId = auth()->user()?->company_id;
-        $categories = ProductCategory::where('company_id', $companyId)->get();
-        $customers = Customer::where('company_id', $companyId)->get();
-        $stores = Store::where('company_id', $companyId)->get();
-        $methods = Method::where('company_id', $companyId)->get();
-        $products = Product::with('tax','category','product_variants')->where('company_id', $companyId)->get();
+        $categories = ProductCategory::when($companyId, function ($q) use ($companyId) { return $q->where('company_id', $companyId); })->get();
+        $customers = Customer::when($companyId, function ($q) use ($companyId) { return $q->where('company_id', $companyId); })->get();
+        $stores = Store::when($companyId, function ($q) use ($companyId) { return $q->where('company_id', $companyId); })->get();
+        $methods = Method::when($companyId, function ($q) use ($companyId) { return $q->where('company_id', $companyId); })->get();
+        $products = Product::with('tax','category','product_variants')->when($companyId, function ($q) use ($companyId) { return $q->where('company_id', $companyId); })->get();
         return view('admin.pos.sale.pos', compact('categories','products','customers','stores','methods'));
     }
 
@@ -340,7 +409,7 @@ class SaleService
         $totals = $this->calculateTotals($cart);
 
         foreach ($cart as $item) {
-            $product = Product::with('tax')->where('id', $item['product_id'])->where('company_id', $companyId)->first();
+            $product = Product::where('id', $item['product_id'])->where('company_id', $companyId)->first();
             if (! $product) {
                 return response()->json(['success'=>false,'message'=>'Produk tidak ditemukan.'],422);
             }
@@ -499,7 +568,7 @@ class SaleService
     public function invoice($id)
     {
         $companyId = auth()->user()?->company_id;
-        $sale = Sale::with(['store','customer','user','payments.method','sale_items.product','sale_items.product_variant'])->where('company_id', $companyId)->findOrFail($id);
+        $sale = Sale::with(['store', 'customer', 'user'])->where('company_id', $companyId)->findOrFail($id);
         return view('admin.pos.sale.invoice', compact('sale'));
     }
     // Generate PDF invoice

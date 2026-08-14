@@ -20,23 +20,14 @@
                                         <th>Method</th>
                                         <th>Amount</th>
                                         <th>Reference</th>
-                                        <th>Action</th>
+                                        <th class="text-nowrap">Company</th>
+                                        <th class="text-nowrap">Created By</th>
+                                        <th class="text-nowrap">Created At</th>
+                                        <th class="text-nowrap">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($payments as $pay)
-                                        <tr>
-                                            <td>{{ $pay->id }}</td>
-                                            <td>{{ $pay->sale->status}}</td>
-                                            <td>{{ $pay->method->name}}</td>
-                                            <td>{{ $pay->amount }}</td>
-                                            <td>{{ $pay->reference }}</td>
-                                            <td>
-                                                <a href="{{ url('admin-panel/payments/edit', $pay->id) }}" class="nexora-action-btn is-warning" title="Edit"><i class="fas fa-edit"></i></a>
-                                                <a href="{{ url('admin-panel/payments/delete', $pay->id) }}" class="nexora-action-btn is-danger delete-category" title="Delete"><i class="fas fa-trash"></i></a>
-                                            </td>
-                                        </tr>
-                                    @endforeach
+                                    <!-- AJAX loaded by DataTables -->
                                 </tbody>
                             </table>
         </div>
@@ -47,10 +38,27 @@
 
 @section('scripts')
 
-<!-- Your custom JS -->
-<script src="{{ asset('admin/custom/js/category.js') }}"></script>
-
-
-
-
+<script>
+    $(document).ready(function() {
+        if ($.fn.DataTable.isDataTable('.nexora-data-table')) {
+            $('.nexora-data-table').DataTable().destroy();
+        }
+        $('.nexora-data-table').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: '{{ url("admin-panel/payments/listing") }}',
+            columns: [
+                { data: 'id', name: 'id' },
+                { data: 'sale_status', name: 'sale.sale_status' , orderable: false, searchable: false },
+                { data: 'method', name: 'payment_method' },
+                { data: 'amount', name: 'amount' },
+                { data: 'reference', name: 'reference_number' },
+                { data: 'company', name: 'company.name' , orderable: false, searchable: false },
+                { data: 'created_by', name: 'created_by', searchable: false, orderable: false },
+                { data: 'created_at', name: 'created_at' },
+                { data: 'action', name: 'action', orderable: false, searchable: false }
+            ]
+        });
+    });
+</script>
 @endsection

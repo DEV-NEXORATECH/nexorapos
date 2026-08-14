@@ -27,10 +27,25 @@ class UserService
     public function index()
     {
         $currentUser = auth()->user();
-        $users = User::with(['role', 'company'])
-            ->when(! $currentUser?->isSuperAdmin(), fn ($query) => $query->where('company_id', $currentUser?->company_id))
-            ->get();
-        return view('admin.users.listing', compact('users'));
+        if (request()->ajax()) {
+            $users = User::with(['role', 'company'])
+                ->when(! $currentUser?->isSuperAdmin(), fn ($query) => $query->where('company_id', $currentUser?->company_id));
+            
+            return \Yajra\DataTables\Facades\DataTables::of($users)
+                ->addColumn('nama', function ($row) { return $row->name; })
+                ->addColumn('email', function ($row) { return $row->email; })
+                ->addColumn('role', function ($row) { return $row->role ? $row->role->role : '-'; })
+                ->addColumn('company', function ($row) { return $row->company ? $row->company->name : '-'; })
+                ->addColumn('license', function ($row) { return $row->company ? $row->company->subscription_status : '-'; })
+                ->addColumn('status', function ($row) { return $row->company && $row->company->is_active ? 'Active' : 'Inactive'; })
+                ->addColumn('action', function ($row) {
+                    return '<a href="'.url('admin-panel/users/edit/'.$row->id).'" class="nexora-action-btn is-warning"><i class="fas fa-edit"></i></a>
+                            <a href="'.url('admin-panel/users/delete/'.$row->id).'" class="nexora-action-btn is-danger no-ajax" onclick="return confirm(\'Delete?\')"><i class="fas fa-trash"></i></a>';
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+        return view('admin.users.listing');
     }
 
     // Show add user form

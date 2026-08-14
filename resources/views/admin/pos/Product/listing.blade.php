@@ -38,49 +38,14 @@
                                         <th class="text-right">Selling Price</th>
                                         <th>Tax</th>
                                         <th>Track Stock</th>
-                                        <th>Action</th>
+                                        <th class="text-nowrap">Company</th>
+                                        <th class="text-nowrap">Created By</th>
+                                        <th class="text-nowrap">Created At</th>
+                                        <th class="text-nowrap">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse ($products as $product)
-                                    <tr>
-                                        <td><strong>{{ $product->name }}</strong></td>
-                                        <td>{{ $product->sku }}</td>
-                                        <td>{{ optional($product->category)->name ?? '-' }}</td>
-                                        <td>{{ $product->product_variants->count() }}</td>
-                                        <td>
-                                            @if($product->track_stock)
-                                                <span class="badge {{ $product->stock_quantity <= ($product->minimum_stock ?? 0) ? 'badge-danger' : 'badge-success' }}">
-                                                    {{ $product->stock_quantity }}
-                                                </span>
-                                                @if($product->minimum_stock > 0)
-                                                <small class="text-muted">(min: {{ $product->minimum_stock }})</small>
-                                                @endif
-                                            @else
-                                                <span class="text-muted">N/A</span>
-                                            @endif
-                                        </td>
-                                        <td class="text-right">{{ number_format($product->cost, 2) }}</td>
-                                        <td class="text-right">{{ number_format($product->price, 2) }}</td>
-                                        <td>{{ optional($product->tax)->name ?? '-' }} {{ $product->tax ? '('.$product->tax->rate.'%)' : '' }}</td>
-                                        <td>{{ $product->track_stock ? 'Yes' : 'No' }}</td>
-                                        <td style="white-space:nowrap;">
-                                            <a href="{{ url('admin-panel/products/show', $product->id) }}" class="btn btn-sm btn-primary" title="View"><i class="fas fa-eye"></i></a>
-                                            <a href="{{ url('admin-panel/products/edit', $product->id) }}" class="btn btn-sm btn-secondary" title="Edit"><i class="fas fa-edit"></i></a>
-                                            <form action="{{ url('admin-panel/products/delete', $product->id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Yakin ingin menghapus/arsipkan produk ini?');">
-                                                @csrf
-                                                <button type="submit" class="btn btn-sm btn-danger" title="Delete"><i class="fas fa-trash"></i></button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                    @empty
-                                    <tr>
-                                        <td colspan="10" class="text-center py-4">
-                                            <i class="fas fa-box-open fa-2x mb-2" style="color:var(--color-blue-500)"></i>
-                                            <p>Belum ada produk.</p>
-                                        </td>
-                                    </tr>
-                                    @endforelse
+                                    <!-- AJAX loaded by DataTables -->
                                 </tbody>
             </table>
         </div>
@@ -91,7 +56,31 @@
 
 @section('scripts')
 
-<!-- Your custom JS -->
-<script src="{{ asset('admin/custom/js/category.js') }}"></script>
-<script src="{{ asset('admin/custom/product.js') }}"></script>
+<script>
+    $(document).ready(function() {
+        if ($.fn.DataTable.isDataTable('.nexora-data-table')) {
+            $('.nexora-data-table').DataTable().destroy();
+        }
+        $('.nexora-data-table').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: '{{ url("admin-panel/products/listing") }}',
+            columns: [
+                { data: 'name', name: 'name' },
+                { data: 'sku', name: 'sku' },
+                { data: 'category', name: 'category.name' , orderable: false, searchable: false },
+                { data: 'variants', name: 'variants', searchable: false },
+                { data: 'stock', name: 'stock_quantity' },
+                { data: 'cost', name: 'purchase_price' },
+                { data: 'price', name: 'price' },
+                { data: 'tax', name: 'tax.name' , orderable: false, searchable: false },
+                { data: 'track_stock', name: 'track_stock' },
+                { data: 'company', name: 'company.name' , orderable: false, searchable: false },
+                { data: 'created_by', name: 'user.name' , orderable: false, searchable: false },
+                { data: 'created_at', name: 'created_at' },
+                { data: 'action', name: 'action', orderable: false, searchable: false }
+            ]
+        });
+    });
+</script>
 @endsection

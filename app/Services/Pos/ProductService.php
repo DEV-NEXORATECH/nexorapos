@@ -15,7 +15,57 @@ class ProductService
         $this->productUpdateValidation=new ProductUpdateValidation();
     }
     public function index(){
-        $products = Product::with('tax')->when(!auth()->user()?->isSuperAdmin(), fn($q) => $q->where('company_id', auth()->user()?->company_id))->get();
+
+        if (request()->ajax()) {
+            $data = Product::with(['category', 'tax', 'company'])->withCount('product_variants');
+            return \Yajra\DataTables\Facades\DataTables::of($data)
+                ->addColumn('name', function($row) {
+                    return '<strong>' . $row->name . '</strong>';
+                })
+                ->addColumn('sku', function($row) {
+                    return $row->sku ?? '-';
+                })
+                ->addColumn('category', function($row) {
+                    return $row->category ? $row->category->name : 'System';
+                })
+                ->addColumn('variants', function($row) {
+                    return '<span class="badge badge-info">' . $row->product_variants_count . '</span>';
+                })
+                ->addColumn('stock', function($row) {
+                    if (!$row->track_stock) return '<span class="text-muted">-</span>';
+                    $color = $row->stock_quantity <= 5 ? 'text-danger font-weight-bold' : 'text-success';
+                    return '<span class="' . $color . '">' . $row->stock_quantity . '</span>';
+                })
+                ->addColumn('cost', function($row) {
+                    return 'Rp ' . number_format($row->purchase_price);
+                })
+                ->addColumn('price', function($row) {
+                    return 'Rp ' . number_format($row->price);
+                })
+                ->addColumn('tax', function($row) {
+                    return $row->tax ? $row->tax->name : '-';
+                })
+                ->addColumn('track_stock', function($row) {
+                    return $row->track_stock ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-secondary">No</span>';
+                })
+                ->addColumn('company', function($row) {
+                    return $row->company ? $row->company->name : 'System';
+                })
+                ->addColumn('created_by', function($row) {
+                    return $row->user ? $row->user->name : '-';
+                })
+                ->addColumn('created_at', function($row) {
+                    return $row->created_at ? $row->created_at->format('d M Y H:i') : '-';
+                })
+                ->addColumn('action', function ($row) {
+                    return '
+                    <a href="'.url('admin-panel/products/edit/' . $row->id).'" class="nexora-action-btn is-warning" title="Edit"><i class="fas fa-edit"></i></a>
+                    <a href="'.url('admin-panel/products/delete/' . $row->id).'" class="nexora-action-btn is-danger" onclick="return confirm(\'Delete?\')" title="Delete"><i class="fas fa-trash"></i></a>';
+                })
+                ->rawColumns(['name', 'variants', 'stock', 'track_stock', 'action'])
+                ->make(true);
+        }
+        $products = Product::with('tax')->get();
         return view('admin.pos.Product.listing', compact('products'));
     }
 

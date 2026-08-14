@@ -6,8 +6,38 @@ use App\Pos\Tax\TaxStoreValidation;
 
 class TaxService {
     public function index() {
-        $taxes = Tax::where('company_id', auth()->user()?->company_id)->get();
-        return view('admin.pos.tax.listing', compact('taxes'));
+        if (request()->ajax()) {
+            $data = Tax::with(['company']);
+            return \Yajra\DataTables\Facades\DataTables::of($data)
+                ->addColumn('id', function($row) { return $row->id; })
+                ->addColumn('name', function($row) { return $row->name; })
+                ->addColumn('rate', function($row) { return $row->rate . "%"; })
+                ->addColumn('company', function($row) { return $row->company ? $row->company->name : "-"; })
+                ->addColumn('created_by', function($row) { return "-"; })
+                ->addColumn('created_at', function($row) { return $row->created_at ? $row->created_at->format("d M Y H:i") : "-"; })
+                ->addColumn('action', function($row) { return '<a href="'.url('admin-panel/tax/edit/'.$row->id).'" class="nexora-action-btn is-warning"><i class="fas fa-edit"></i></a><a href="'.url('admin-panel/tax/delete/'.$row->id).'" class="nexora-action-btn is-danger no-ajax" onclick="return confirm(\'Delete?\')"><i class="fas fa-trash"></i></a>'; })
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+        return view('admin.pos.tax.listing');
     }
 
     public function add() {

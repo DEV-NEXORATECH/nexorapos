@@ -12,8 +12,37 @@ class StoreService{
     }
     public function index()
     {
-        $stores = Store::where('company_id', auth()->user()?->company_id)->get();
-        return view('admin.pos.store.listing', compact('stores'));
+        if (request()->ajax()) {
+            $stores = Store::with(["company"]);
+            return \Yajra\DataTables\Facades\DataTables::of($stores)
+                ->addColumn('code', function ($row) {
+                    return '<strong>' . ($row->code ?? '-') . '</strong>';
+                })
+                ->addColumn('name', function ($row) {
+                    return $row->name;
+                })
+                ->addColumn('created_at_short', function ($row) {
+                    return $row->created_at ? $row->created_at->format('d M Y') : '-';
+                })
+                ->addColumn('company', function ($row) {
+                    return $row->company ? $row->company->name : 'System';
+                })
+                ->addColumn('created_by', function ($row) {
+                    return '-';
+                })
+                ->addColumn('created_at', function ($row) {
+                    return $row->created_at ? $row->created_at->format('d M Y H:i') : '-';
+                })
+                ->addColumn('action', function ($row) {
+                    return '
+                    <a href="'.url('admin-panel/stores/show/'.$row->id).'" class="nexora-action-btn is-info" title="View"><i class="fas fa-eye"></i></a>
+                    <a href="'.url('admin-panel/stores/edit/'.$row->id).'" class="nexora-action-btn is-warning" title="Edit"><i class="fas fa-edit"></i></a>
+                    <a href="'.url('admin-panel/stores/delete/'.$row->id).'" class="nexora-action-btn is-danger" onclick="return confirm(\'Delete?\')" title="Delete"><i class="fas fa-trash"></i></a>';
+                })
+                ->rawColumns(['code', 'action'])
+                ->make(true);
+        }
+        return view('admin.pos.store.listing');
     }
 
     public function add()

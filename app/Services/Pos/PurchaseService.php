@@ -20,11 +20,50 @@ class PurchaseService{
     }
     public function index()
     {
-        $purchases = Purchase::with('supplier')
-            ->where('company_id', auth()->user()?->company_id)
-            ->latest()
-            ->get();
-        return view('admin.pos.purchase.listing', compact('purchases'));
+        if (request()->ajax()) {
+            $data = Purchase::with(['company']);
+            return \Yajra\DataTables\Facades\DataTables::of($data)
+                ->addColumn('purchase_number', function($row) { return $row->purchase_number; })
+                ->addColumn('date', function($row) { return $row->date; })
+                ->addColumn('supplier', function($row) { return $row->supplier ? $row->supplier->name : "-"; })
+                ->addColumn('reference', function($row) { return $row->reference_number; })
+                ->addColumn('total_amount', function($row) { return "Rp " . number_format($row->total_amount); })
+                ->addColumn('status', function($row) { return $row->status; })
+                ->addColumn('company', function($row) { return $row->company ? $row->company->name : "-"; })
+                ->addColumn('created_by', function($row) { return "-"; })
+                ->addColumn('created_at', function($row) { return $row->created_at ? $row->created_at->format("d M Y H:i") : "-"; })
+                ->addColumn('action', function($row) { return '<a href="'.url('admin-panel/purchase/edit/'.$row->id).'" class="nexora-action-btn is-warning"><i class="fas fa-edit"></i></a><a href="'.url('admin-panel/purchase/delete/'.$row->id).'" class="nexora-action-btn is-danger no-ajax" onclick="return confirm(\'Delete?\')"><i class="fas fa-trash"></i></a>'; })
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+        return view('admin.pos.purchase.listing');
     }
 
     public function add()
@@ -219,7 +258,7 @@ class PurchaseService{
     public function show($id)
     {
         $companyId = auth()->user()?->company_id;
-        $purchase = Purchase::with(['purchase_items.product', 'supplier'])
+        $purchase = Purchase::with(['supplier'])
             ->where('company_id', $companyId)
             ->find($id);
         if (!$purchase) {

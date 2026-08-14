@@ -19,7 +19,10 @@
                                         <th>ID</th>
                                         <th>Name</th>
                                         <th>Permissions</th>
-                                        <th>Action</th>
+                                        <th class="text-nowrap">Company</th>
+                                        <th class="text-nowrap">Created By</th>
+                                        <th class="text-nowrap">Created At</th>
+                                        <th class="text-nowrap">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -28,6 +31,9 @@
                                             <td>{{ $role->id }}</td>
                                             <td>{{ $role->role }}</td>
                                             <td>{{ $role->permissions->pluck('name')->implode(', ') }}</td>
+                                            <td class="text-nowrap">{{ $role->company?->name ?? 'System' }}</td>
+                                            <td class="text-nowrap">{{ $role->user?->name ?? $role->creator?->name ?? '-' }}</td>
+                                            <td class="text-nowrap">{{ $role->created_at ? $role->created_at->format('d M Y H:i') : '-' }}</td>
                                             <td>
                                                 <a href="{{ url('admin-panel/role-permissions/edit', $role->id) }}" class="nexora-action-btn is-warning" title="Edit"><i class="fas fa-edit"></i></a>
                                                 <a href="{{ url('admin-panel/role-permissions/delete', $role->id) }}" class="nexora-action-btn is-danger delete-category" title="Delete"><i class="fas fa-trash"></i></a>

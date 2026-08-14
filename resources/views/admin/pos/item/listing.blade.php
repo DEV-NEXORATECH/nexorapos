@@ -20,7 +20,10 @@
                                         <th>Product ID</th>
                                         <th>Quantity</th>
                                         <th>Cost</th>
-                                        <th>Action</th>
+                                        <th class="text-nowrap">Company</th>
+                                        <th class="text-nowrap">Created By</th>
+                                        <th class="text-nowrap">Created At</th>
+                                        <th class="text-nowrap">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -31,6 +34,9 @@
                                             <td>{{ $item->product->name }}</td>
                                             <td>{{ $item->quantity }}</td>
                                             <td>{{ $item->cost }}</td>
+                                            <td class="text-nowrap">{{ $item->company?->name ?? 'System' }}</td>
+                                            <td class="text-nowrap">{{ $item->user?->name ?? $item->creator?->name ?? '-' }}</td>
+                                            <td class="text-nowrap">{{ $item->created_at ? $item->created_at->format('d M Y H:i') : '-' }}</td>
                                             <td>
                                                 <a href="{{ url('admin-panel/purchase-items/edit/'. $item->id) }}" class="nexora-action-btn is-warning" title="Edit"><i class="fas fa-edit"></i></a>
                                                 <a href="{{ url('admin-panel/purchase-items/delete/'. $item->id) }}" class="nexora-action-btn is-danger delete-category" title="Delete"><i class="fas fa-trash"></i></a>
