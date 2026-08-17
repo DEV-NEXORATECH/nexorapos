@@ -9,13 +9,15 @@ use App\Http\Middleware\XssMiddleware;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
        $middleware->alias([
         'Admin' => \App\Http\Middleware\AdminMiddleware::class,
-        'XSS' =>\App\Http\Middleware\XssMiddleware::class
+        'XSS' =>\App\Http\Middleware\XssMiddleware::class,
+        'mobile.api' => \App\Http\Middleware\MobileApiAuth::class,
        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

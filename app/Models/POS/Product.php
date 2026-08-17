@@ -13,6 +13,7 @@ class Product extends Model
     'name',
     'sku',
     'barcode',
+    'image',
     'category_id',
     'tax_id',
     'price',

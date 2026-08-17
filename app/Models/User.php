@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use App\Models\Role;
 use App\Models\Company;
 use App\Models\Pos\Sale;
+use App\Models\Pos\Store;
 use App\Models\Concerns\BelongsToCompany;
 
 class User extends Authenticatable
@@ -26,10 +27,14 @@ class User extends Authenticatable
         'email',
         'role_id',
         'company_id',
+        'store_id',
         'is_super_admin',
         'password',
         'phone',
         'profile_image',
+        'shift_name',
+        'shift_start',
+        'shift_end',
     ];
 
     /**
@@ -78,5 +83,10 @@ class User extends Authenticatable
     public function company()
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
     }
 }

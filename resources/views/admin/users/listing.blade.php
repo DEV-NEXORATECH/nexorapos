@@ -33,6 +33,8 @@
                         <th>Email</th>
                         <th>Role</th>
                         <th>Company</th>
+                        <th>Store</th>
+                        <th>Shift</th>
                         <th>License</th>
                         <th>Status</th>
                         <th class="min-w-120 text-nowrap">Action</th>
@@ -71,6 +73,8 @@
                 { data: 'email', name: 'email' },
                 { data: 'role', name: 'role.name' , orderable: false, searchable: false },
                 { data: 'company', name: 'company.name' , orderable: false, searchable: false },
+                { data: 'store', name: 'store.name' , orderable: false, searchable: false },
+                { data: 'shift', name: 'shift' , orderable: false, searchable: false },
                 { data: 'license', name: 'license' },
                 { data: 'status', name: 'status' , orderable: false, searchable: false },
                 { data: 'action', name: 'action', orderable: false, searchable: false }

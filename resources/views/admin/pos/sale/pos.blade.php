@@ -44,24 +44,54 @@
 
         <!-- Bottom Navigation -->
         <div class="pos-bottom-nav">
-            <div class="nav-item active" onclick="Swal.fire('Favorites', 'Menampilkan item favorit.', 'info')">
+            <button type="button" class="nav-item active" id="posFavoritesBtn">
                 <i class="fas fa-star"></i>
                 <span>Favorites</span>
-            </div>
-            <div class="nav-item" onclick="Swal.fire('Library', 'Fitur Library Item sedang dalam pengembangan.', 'info')">
+            </button>
+            <button type="button" class="nav-item" id="posLibraryBtn">
                 <i class="fas fa-list-ul"></i>
                 <span>Library</span>
-            </div>
-            <div class="nav-item" onclick="Swal.fire('Custom Amount', 'Fitur input Custom Amount sedang dalam pengembangan.', 'info')">
+            </button>
+            <button type="button" class="nav-item" id="posCustomAmountBtn">
                 <i class="fas fa-calculator"></i>
                 <span>Custom</span>
-            </div>
+            </button>
         </div>
     </div>
 
     <!-- Right Section: Cart / Billing -->
     <div class="pos-right-panel">
         <div class="pos-cart-header">
+            @if($stores->isEmpty())
+                <div class="pos-setup-alert mb-3">
+                    <strong>Store belum tersedia</strong>
+                    <span>Buat store dulu supaya checkout POS bisa diproses.</span>
+                    <a href="{{ url('admin-panel/stores/add') }}" class="btn btn-sm btn-primary mt-2">Create Store</a>
+                </div>
+            @endif
+            <div class="pos-shift-card mb-3 {{ $openShift ? 'is-open' : 'is-closed' }}">
+                <div>
+                    <small>Cashier Shift</small>
+                    @if($openShift)
+                        <strong>{{ $openShift->shift_name ?: 'Open Shift' }}</strong>
+                        <span>{{ $openShift->store?->name ?? 'Store' }} | Open {{ $openShift->opened_at?->format('H:i') }}</span>
+                    @else
+                        <strong>Shift belum dibuka</strong>
+                        <span>Buka shift untuk catat kas awal dan laporan kasir.</span>
+                    @endif
+                </div>
+                @if($openShift)
+                    <div class="pos-shift-actions">
+                        <a href="{{ url('admin-panel/pos/shifts/report') }}" class="btn btn-sm btn-outline-primary">Report</a>
+                        <button type="button" class="btn btn-sm btn-secondary" id="closeShiftBtn">Close Shift</button>
+                    </div>
+                @else
+                    <div class="pos-shift-actions">
+                        <a href="{{ url('admin-panel/pos/shifts/report') }}" class="btn btn-sm btn-outline-primary">Report</a>
+                        <button type="button" class="btn btn-sm btn-primary" id="openShiftBtn" {{ $stores->isEmpty() ? 'disabled' : '' }}>Open Shift</button>
+                    </div>
+                @endif
+            </div>
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div class="billing-icon">
                     <i class="fas fa-receipt"></i>
@@ -71,7 +101,7 @@
                     <a href="{{ url('cfd/'.auth()->id()) }}" target="_blank" class="btn btn-sm btn-outline-primary" style="border-radius:8px; font-weight:600; margin-right: 5px;" title="Open Customer Facing Display">
                         <i class="fas fa-desktop"></i> CFD
                     </a>
-                    <button class="btn pos-add-customer-btn" data-toggle="modal" data-target="#addCustomerModal">
+                    <button type="button" class="btn pos-add-customer-btn">
                         + Add Customer
                     </button>
                 </div>
@@ -114,7 +144,7 @@
             <div style="display: none;">
                 <select id="customerId"><option value=""></option></select>
                 <select id="storeId">
-                    @foreach($stores as $store) <option value="{{ $store->id }}">{{ $store->name }}</option> @endforeach
+                    @foreach($stores as $store) <option value="{{ $store->id }}" @selected(($assignedStoreId ?? null) == $store->id)>{{ $store->name }}</option> @endforeach
                 </select>
                 <select id="methodId">
                     @foreach($methods as $method) <option value="{{ $method->id }}">{{ $method->name }}</option> @endforeach
@@ -230,6 +260,101 @@
     </div>
 </div>
 
+<!-- Open Shift Modal -->
+<div class="modal fade" id="openShiftModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Open Cashier Shift</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="openShiftForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Store</label>
+                        <select name="store_id" class="form-control" required>
+                            @foreach($stores as $store)
+                                <option value="{{ $store->id }}" @selected(($assignedStoreId ?? null) == $store->id)>{{ $store->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Shift Name</label>
+                        <input type="text" name="shift_name" class="form-control" value="{{ auth()->user()?->shift_name }}" placeholder="Contoh: Pagi">
+                    </div>
+                    <div class="form-group">
+                        <label>Opening Cash</label>
+                        <input type="number" name="opening_cash" class="form-control" min="0" step="1000" value="0">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Open Shift</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Close Shift Modal -->
+<div class="modal fade" id="closeShiftModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Close Cashier Shift</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="closeShiftForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Closing Cash</label>
+                        <input type="number" name="closing_cash" class="form-control" min="0" step="1000" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Note</label>
+                        <textarea name="note" class="form-control" rows="3" placeholder="Catatan selisih kas, bila ada"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Close Shift</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Held Bills Modal -->
+<div class="modal fade" id="heldBillsModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Held Bills</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                @forelse($heldBills as $bill)
+                    <div class="pos-held-bill-row">
+                        <div>
+                            <strong>{{ $bill->bill_name }}</strong>
+                            <span>{{ $bill->store?->name ?? '-' }} | {{ $bill->created_at->format('d M Y H:i') }} | Rp {{ number_format((float) data_get($bill->totals_snapshot, 'total', 0), 0, ',', '.') }}</span>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-primary restore-held-bill" data-id="{{ $bill->id }}">Restore</button>
+                    </div>
+                @empty
+                    <div class="text-muted">Belum ada held bill.</div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- CSRF Token -->
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -240,7 +365,18 @@
         update: "{{ url('admin-panel/pos/cart/update') }}",
         remove: "{{ url('admin-panel/pos/cart/remove') }}",
         checkout: "{{ url('admin-panel/pos/checkout') }}",
-        apiCustomer: "{{ url('admin-panel/pos/customers/api') }}"
+        apiCustomer: "{{ url('admin-panel/pos/customers/api') }}",
+        createStore: "{{ url('admin-panel/stores/add') }}",
+        customAmount: "{{ url('admin-panel/pos/cart/custom') }}",
+        holdBill: "{{ url('admin-panel/pos/hold-bills') }}",
+        restoreHeldBill: "{{ url('admin-panel/pos/hold-bills') }}",
+        openShift: "{{ url('admin-panel/pos/shifts/open') }}",
+        closeShift: "{{ url('admin-panel/pos/shifts/close') }}"
+    };
+    const posSetup = {
+        hasStores: @json($stores->isNotEmpty()),
+        hasMethods: @json($methods->isNotEmpty()),
+        hasOpenShift: @json((bool) $openShift)
     };
 </script>
 @endsection
@@ -250,9 +386,65 @@
     <script>
         // Additional UI logic for the new design
         document.addEventListener('DOMContentLoaded', function() {
+            document.body.classList.add('pos-fullscreen-mode');
+
+            $('#addCustomerModal, #checkoutModal, #openShiftModal, #closeShiftModal, #heldBillsModal').appendTo('body');
+
             // Category filtering
             const catBtns = document.querySelectorAll('.pos-cat-btn');
             const productCards = document.querySelectorAll('.pos-product-card');
+            const cartItemsContainer = document.getElementById('cartItems');
+            const subtotalEl = document.getElementById('subtotal');
+            const discountEl = document.getElementById('discount');
+            const taxEl = document.getElementById('tax');
+            const totalEl = document.getElementById('total');
+            const setActivePosNav = (activeButton) => {
+                document.querySelectorAll('.pos-bottom-nav .nav-item').forEach(item => item.classList.remove('active'));
+                activeButton?.classList.add('active');
+            };
+
+            const renderPosCart = (cart) => {
+                if (!cartItemsContainer) return;
+                cartItemsContainer.innerHTML = '';
+                Object.keys(cart || {}).forEach((key) => {
+                    const item = cart[key];
+                    const div = document.createElement('div');
+                    div.className = 'd-flex align-items-center justify-content-between mb-2';
+                    div.innerHTML = `
+                        <div>
+                            <div><strong>${item.product_name}</strong> ${item.category_name ? '(' + item.category_name + ')' : ''}</div>
+                            <small>Price: ${Number(item.price).toFixed(2)} | Tax: ${Number(item.tax_percent || 0).toFixed(2)}%</small>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <input type="number" min="1" value="${item.quantity}" data-key="${key}" class="form-control form-control-sm qty-change" style="width:80px;">
+                            <button class="btn btn-danger btn-sm ml-2 remove-item" data-key="${key}">x</button>
+                        </div>
+                    `;
+                    cartItemsContainer.appendChild(div);
+                });
+            };
+
+            const updatePosTotals = (totals) => {
+                if (!totals) return;
+                subtotalEl.textContent = Number(totals.subtotal || 0).toFixed(2);
+                discountEl.textContent = Number(totals.discount || 0).toFixed(2);
+                taxEl.textContent = Number(totals.tax || 0).toFixed(2);
+                totalEl.textContent = Number(totals.total || 0).toFixed(2);
+            };
+
+            const notifyInfo = (title, text) => {
+                if (window.NexoraPopup) {
+                    window.NexoraPopup.success({
+                        title,
+                        message: text,
+                        detail: 'Aksi POS berhasil dijalankan.',
+                        timer: 1800,
+                    });
+                    return;
+                }
+
+                Swal.fire(title, text, 'info');
+            };
             
             catBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -268,6 +460,73 @@
                         }
                     });
                 });
+            });
+
+            $('#posFavoritesBtn').on('click', function() {
+                setActivePosNav(this);
+                catBtns.forEach(b => b.classList.remove('active'));
+                catBtns[0]?.classList.add('active');
+                productCards.forEach(card => card.style.display = 'flex');
+                notifyInfo('Favorites', 'Semua item favorit/default ditampilkan.');
+            });
+
+            $('#posLibraryBtn').on('click', function() {
+                setActivePosNav(this);
+                catBtns.forEach(b => b.classList.remove('active'));
+                catBtns[0]?.classList.add('active');
+                productCards.forEach(card => card.style.display = 'flex');
+                document.getElementById('productGrid')?.scrollTo({ top: 0, behavior: 'smooth' });
+                $('#heldBillsModal').modal('show');
+            });
+
+            $('#posCustomAmountBtn').on('click', async function() {
+                setActivePosNav(this);
+                const result = await Swal.fire({
+                    title: 'Custom Amount',
+                    input: 'number',
+                    inputLabel: 'Masukkan nominal custom',
+                    inputPlaceholder: 'Contoh: 25000',
+                    inputAttributes: {
+                        min: 1,
+                        step: 1,
+                    },
+                    showCancelButton: true,
+                    confirmButtonText: 'OK',
+                    cancelButtonText: 'Cancel',
+                    inputValidator: (value) => {
+                        if (!value || Number(value) <= 0) {
+                            return 'Nominal harus lebih dari 0';
+                        }
+                    },
+                });
+
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: urls.customAmount,
+                        type: 'POST',
+                        data: {
+                            amount: result.value,
+                            name: 'Custom Amount',
+                            _token: $('meta[name="csrf-token"]').attr('content'),
+                        },
+                        success: function(res) {
+                            if (res.success) {
+                                renderPosCart(res.cart);
+                                updatePosTotals(res.totals);
+                                Swal.fire('Custom Amount', 'Nominal custom masuk ke cart.', 'success');
+                            }
+                        },
+                        error: function(err) {
+                            const msg = err.responseJSON?.message || 'Custom amount gagal ditambahkan.';
+                            Swal.fire('Error', msg, 'error');
+                        }
+                    });
+                }
+            });
+
+            $('.pos-add-customer-btn').on('click', function(e) {
+                e.preventDefault();
+                $('#addCustomerModal').modal('show');
             });
 
             // Update giant charge button text when total changes
@@ -313,6 +572,27 @@
             let rawTotalDue = 0;
             
             function openCheckout() {
+                if (!posSetup.hasStores) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Store belum tersedia',
+                        text: 'Buat store terlebih dahulu supaya transaksi POS punya cabang/toko tujuan.',
+                        showCancelButton: true,
+                        confirmButtonText: 'Create Store',
+                        cancelButtonText: 'Nanti',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = urls.createStore;
+                        }
+                    });
+                    return;
+                }
+
+                if (!posSetup.hasMethods) {
+                    Swal.fire('Payment Method belum tersedia', 'Buat metode pembayaran dulu sebelum checkout.', 'warning');
+                    return;
+                }
+
                 let totalText = $('#total').text().replace(/[^0-9]/g, '');
                 rawTotalDue = parseInt(totalText) || 0;
                 
@@ -350,6 +630,114 @@
 
             $('#openCheckoutBtn, #openCheckoutSplitBtn').on('click', function() {
                 openCheckout();
+            });
+
+            $('#saveBillBtn').on('click', function() {
+                Swal.fire({
+                    title: 'Save Bill',
+                    input: 'text',
+                    inputLabel: 'Nama bill / meja / customer',
+                    inputValue: 'Bill ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    showCancelButton: true,
+                    confirmButtonText: 'Save',
+                }).then((result) => {
+                    if (!result.isConfirmed) return;
+
+                    $.ajax({
+                        url: urls.holdBill,
+                        type: 'POST',
+                        data: {
+                            bill_name: result.value,
+                            store_id: $('#storeId').val(),
+                            customer_id: $('#customerId').val(),
+                            _token: $('meta[name="csrf-token"]').attr('content'),
+                        },
+                        success: function(res) {
+                            if (res.success) {
+                                renderPosCart(res.cart);
+                                updatePosTotals(res.totals);
+                                Swal.fire('Bill Saved', 'Bill tersimpan server-side sebagai held bill.', 'success').then(() => window.location.reload());
+                            }
+                        },
+                        error: function(err) {
+                            const msg = err.responseJSON?.message || 'Save bill gagal.';
+                            Swal.fire('Error', msg, 'error');
+                        }
+                    });
+                });
+            });
+
+            $('#printBillBtn').on('click', function() {
+                window.print();
+            });
+
+            $('#openShiftBtn').on('click', function() {
+                $('#openShiftModal').modal('show');
+            });
+
+            $('#closeShiftBtn').on('click', function() {
+                $('#closeShiftModal').modal('show');
+            });
+
+            $('#openShiftForm').on('submit', function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: urls.openShift,
+                    type: 'POST',
+                    data: $(this).serialize() + '&_token=' + $('meta[name="csrf-token"]').attr('content'),
+                    success: function(res) {
+                        if (res.success) {
+                            Swal.fire('Shift Opened', 'Shift kasir berhasil dibuka.', 'success').then(() => window.location.reload());
+                        }
+                    },
+                    error: function(err) {
+                        Swal.fire('Error', err.responseJSON?.message || 'Open shift gagal.', 'error');
+                    }
+                });
+            });
+
+            $('#closeShiftForm').on('submit', function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: urls.closeShift,
+                    type: 'POST',
+                    data: $(this).serialize() + '&_token=' + $('meta[name="csrf-token"]').attr('content'),
+                    success: function(res) {
+                        if (res.success) {
+                            const shift = res.shift;
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Shift Closed',
+                                html: `Sales: <b>${shift.sales_count}</b><br>Total: <b>Rp ${Number(shift.sales_total).toLocaleString()}</b><br>Expected Cash: <b>Rp ${Number(shift.expected_cash).toLocaleString()}</b><br>Difference: <b>Rp ${Number(shift.cash_difference).toLocaleString()}</b>`,
+                            }).then(() => window.location.reload());
+                        }
+                    },
+                    error: function(err) {
+                        Swal.fire('Error', err.responseJSON?.message || 'Close shift gagal.', 'error');
+                    }
+                });
+            });
+
+            $('.restore-held-bill').on('click', function() {
+                const billId = $(this).data('id');
+                $.ajax({
+                    url: urls.restoreHeldBill + '/' + billId + '/restore',
+                    type: 'POST',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                    },
+                    success: function(res) {
+                        if (res.success) {
+                            renderPosCart(res.cart);
+                            updatePosTotals(res.totals);
+                            $('#heldBillsModal').modal('hide');
+                            Swal.fire('Bill Restored', 'Held bill berhasil dikembalikan ke cart.', 'success').then(() => window.location.reload());
+                        }
+                    },
+                    error: function(err) {
+                        Swal.fire('Error', err.responseJSON?.message || 'Restore bill gagal.', 'error');
+                    }
+                });
             });
 
             $('#addSplitPaymentBtn').on('click', function() {

@@ -63,7 +63,7 @@ class StockService{
 
     public function add()
     {
-        $companyId = auth()->user()?->company_id;
+        $companyId = $this->currentCompanyId();
         $stores = Store::where('company_id', $companyId)->get();
         $products = Product::where('company_id', $companyId)->get();
         $variants = ProductVariant::whereHas('product', function($q) use ($companyId) {
@@ -75,11 +75,15 @@ class StockService{
     public function store(Request $request)
     {
         try{
-            $companyId = auth()->user()?->company_id;
+            $companyId = $this->currentCompanyId();
             $inputs=$request->all();
             $errorMessage=$this->stock->validate($inputs);
             if($errorMessage){
                 return redirect()->back()->with('failed', $errorMessage);
+            }
+
+            if (! Store::where('company_id', $companyId)->whereKey($request->store_id)->exists()) {
+                return redirect()->back()->with('failed', 'Store Not Found or Unauthorized');
             }
 
             $product=Product::where('company_id', $companyId)->find($request->product_id);
@@ -121,7 +125,7 @@ class StockService{
 
     public function edit($id)
     {
-        $companyId = auth()->user()?->company_id;
+        $companyId = $this->currentCompanyId();
         $stores = Store::where('company_id', $companyId)->get();
         $products = Product::where('company_id', $companyId)->get();
         $variants = ProductVariant::whereHas('product', function($q) use ($companyId) {
@@ -141,7 +145,7 @@ class StockService{
     public function update(Request $request, $id)
     {
         try{
-            $companyId = auth()->user()?->company_id;
+            $companyId = $this->currentCompanyId();
             $stock = StockMovement::where('company_id', $companyId)->find($id);
             if($stock)
             {
@@ -149,6 +153,10 @@ class StockService{
                 $errorMessage=$this->stock->validate($inputs);
                 if($errorMessage){
                     return redirect()->back()->with('failed', $errorMessage);
+                }
+
+                if (! Store::where('company_id', $companyId)->whereKey($request->store_id)->exists()) {
+                    return redirect()->back()->with('failed', 'Store Not Found or Unauthorized');
                 }
 
                 $product=Product::where('company_id', $companyId)->find($request->product_id ?: $stock->product_id);
@@ -195,7 +203,7 @@ class StockService{
 
     public function destroy($id)
     {
-        $companyId = auth()->user()?->company_id;
+        $companyId = $this->currentCompanyId();
         $stock = StockMovement::where('company_id', $companyId)->find($id);
         if($stock){
             if (($stock->status ?? 'active') === 'void') {
@@ -233,5 +241,10 @@ class StockService{
         }
         $product->stock_quantity=max(0, (int) $product->stock_quantity + (int) $delta);
         $product->save();
+    }
+
+    private function currentCompanyId(): ?int
+    {
+        return auth()->user()?->company_id ?? session('company_id');
     }
 }

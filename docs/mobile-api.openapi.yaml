@@ -1,0 +1,260 @@
+openapi: 3.0.3
+info:
+  title: Retail Point Of sale Mobile API
+  version: 1.0.0
+servers:
+  - url: http://127.0.0.1:8000/api/mobile/v1
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: mobile_api_token
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          nullable: true
+paths:
+  /auth/login:
+    post:
+      security: []
+      summary: Login mobile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password]
+              properties:
+                email:
+                  type: string
+                phone:
+                  type: string
+                password:
+                  type: string
+                company_code:
+                  type: string
+                  description: Wajib untuk Admin Company dan Kasir. Kosong untuk Super Admin.
+                device_name:
+                  type: string
+      responses:
+        '200':
+          description: Login berhasil
+  /auth/refresh:
+    post:
+      security: []
+      summary: Refresh access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh_token]
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        '200':
+          description: Token baru
+  /auth/me:
+    get:
+      summary: Profile user aktif
+      responses:
+        '200':
+          description: Profile aktif
+  /auth/devices:
+    get:
+      summary: List device login user
+      responses:
+        '200':
+          description: Device list
+  /auth/devices/{id}:
+    delete:
+      summary: Revoke device tertentu
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Device revoked
+  /admin/mobile-menu:
+    get:
+      summary: Permission helper untuk render menu mobile
+      parameters:
+        - in: query
+          name: company_id
+          schema:
+            type: integer
+          description: Wajib kalau token Super Admin.
+      responses:
+        '200':
+          description: Menu + action flags
+  /admin/uploads/company-logo:
+    post:
+      summary: Upload logo company
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [logo]
+              properties:
+                company_id:
+                  type: integer
+                logo:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Logo uploaded
+  /admin/uploads/users/{id}/profile-image:
+    post:
+      summary: Upload foto profile user
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                company_id:
+                  type: integer
+                image:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Profile image uploaded
+  /admin/uploads/products/{id}/image:
+    post:
+      summary: Upload gambar produk
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                company_id:
+                  type: integer
+                image:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Product image uploaded
+  /pos/checkout:
+    post:
+      summary: Checkout POS dengan idempotency key
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [store_id, items, payments]
+              properties:
+                idempotency_key:
+                  type: string
+                store_id:
+                  type: integer
+                customer_id:
+                  type: integer
+                items:
+                  type: array
+                  items:
+                    type: object
+                payments:
+                  type: array
+                  items:
+                    type: object
+      responses:
+        '201':
+          description: Checkout berhasil
+  /pos/held-bills:
+    get:
+      summary: List held bill
+      responses:
+        '200':
+          description: Held bill list
+    post:
+      summary: Save held bill/table bill
+      responses:
+        '201':
+          description: Held bill created
+  /pos/held-bills/merge:
+    post:
+      summary: Merge held bills
+      responses:
+        '201':
+          description: Merged bill created
+  /pos/split-preview:
+    post:
+      summary: Preview split bill
+      responses:
+        '200':
+          description: Split result
+  /pos/sales/{id}/void:
+    post:
+      summary: Void/refund sederhana dengan alasan
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Sale voided
+  /admin/audit-logs:
+    get:
+      summary: Audit log list
+      responses:
+        '200':
+          description: Audit logs
+  /admin/reports/sales/{format}:
+    get:
+      summary: Export sales report
+      parameters:
+        - in: path
+          name: format
+          required: true
+          schema:
+            type: string
+            enum: [csv, xlsx, pdf]
+      responses:
+        '200':
+          description: Report file

@@ -1,0 +1,79 @@
+{
+  "info": {
+    "name": "Retail Point Of sale Mobile API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000/api/mobile/v1" },
+    { "key": "access_token", "value": "" },
+    { "key": "refresh_token", "value": "" },
+    { "key": "company_id", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Auth - Login Company User",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": "{{base_url}}/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@example.test\",\n  \"password\": \"password\",\n  \"company_code\": \"NEXORA001\",\n  \"device_name\": \"Android POS\"\n}",
+          "options": { "raw": { "language": "json" } }
+        }
+      }
+    },
+    {
+      "name": "Auth - Refresh Token",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": "{{base_url}}/auth/refresh",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}",
+          "options": { "raw": { "language": "json" } }
+        }
+      }
+    },
+    {
+      "name": "Catalog - Products",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "url": "{{base_url}}/products"
+      }
+    },
+    {
+      "name": "Access - Mobile Menu",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "url": "{{base_url}}/admin/mobile-menu?company_id={{company_id}}"
+      }
+    },
+    {
+      "name": "POS - Checkout",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" },
+          { "key": "Idempotency-Key", "value": "mobile-demo-0001" }
+        ],
+        "url": "{{base_url}}/pos/checkout",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"store_id\": 1,\n  \"items\": [\n    { \"product_id\": 1, \"quantity\": 1, \"discount\": 0 }\n  ],\n  \"payments\": [\n    { \"method_id\": 1, \"amount\": 11000 }\n  ]\n}",
+          "options": { "raw": { "language": "json" } }
+        }
+      }
+    }
+  ]
+}

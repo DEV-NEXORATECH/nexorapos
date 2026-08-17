@@ -25,12 +25,21 @@ use App\Http\Controllers\POS\SaleItemController;
 use App\Http\Controllers\POS\MethodController;
 use App\Http\Controllers\POS\PaymentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\POS\TaxController;
 
 Route::get('/', function () {
-    return view('auth.login');
-});
+    if (auth()->check()) {
+        $user = auth()->user();
+
+        return redirect($user->role && strtolower($user->role->role) === 'kasir'
+            ? 'admin-panel/pos/sell'
+            : 'admin-panel/dashboard');
+    }
+
+    return app(AuthenticatedSessionController::class)->create();
+})->name('home');
 
 // Profile management routes (required)
 Route::middleware('auth')->group(function () {
@@ -223,6 +232,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckCompanyLicense::class, 'Adm
     //Route For Sales
     Route::get('admin-panel/sales/listing', [SaleController::class, 'index']);
     Route::get('admin-panel/sales/reconciliation', [SaleController::class, 'reconciliation']);
+    Route::get('admin-panel/pos/shifts/report', [SaleController::class, 'shiftReport']);
     Route::get('admin-panel/sales/add', [SaleController::class, 'add']);
     Route::post('admin-panel/sales/add', [SaleController::class, 'store']);
     Route::get('admin-panel/sales/edit/{id}', [SaleController::class, 'edit']);
@@ -232,8 +242,14 @@ Route::middleware(['auth', \App\Http\Middleware\CheckCompanyLicense::class, 'Adm
     // POS Selling Screen and Cart
     Route::get('admin-panel/pos/sell', [SaleController::class, 'pos']);
     Route::post('admin-panel/pos/cart/add', [SaleController::class, 'addToCart']);
+    Route::post('admin-panel/pos/cart/custom', [SaleController::class, 'addCustomAmount']);
     Route::post('admin-panel/pos/cart/update', [SaleController::class, 'updateCart']);
     Route::post('admin-panel/pos/cart/remove', [SaleController::class, 'removeFromCart']);
+    Route::post('admin-panel/pos/hold-bills', [SaleController::class, 'holdBill']);
+    Route::post('admin-panel/pos/hold-bills/{id}/restore', [SaleController::class, 'restoreHeldBill']);
+    Route::delete('admin-panel/pos/hold-bills/{id}', [SaleController::class, 'deleteHeldBill']);
+    Route::post('admin-panel/pos/shifts/open', [SaleController::class, 'openShift']);
+    Route::post('admin-panel/pos/shifts/close', [SaleController::class, 'closeShift']);
     Route::post('admin-panel/pos/checkout', [SaleController::class, 'checkout']);
     Route::get('admin-panel/pos/invoice/{id}', [SaleController::class, 'invoice']);
     Route::get('admin-panel/pos/pdf/{id}', [SaleController::class, 'pdf']);

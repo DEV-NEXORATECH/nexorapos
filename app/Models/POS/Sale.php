@@ -15,6 +15,7 @@ class Sale extends Model
         'store_id',
         'customer_id',
         'user_id',
+        'cashier_shift_id',
         'subtotal',
         'tax',
         'discount',
@@ -24,7 +25,10 @@ class Sale extends Model
         'status',
         'payment_status',
         'invoice_number',
+        'idempotency_key',
         'cancelled_at',
+        'void_reason',
+        'voided_by',
         'company_id',
     ];
 
@@ -61,6 +65,11 @@ class Sale extends Model
     public function payments()
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function cashier_shift()
+    {
+        return $this->belongsTo(CashierShift::class);
     }
 
 

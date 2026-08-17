@@ -9,9 +9,12 @@ use App\Models\Pos\ProductCategory;
 use App\Models\Pos\Store;
 use App\Models\Pos\Customer;
 use App\Models\Pos\Method;
+use App\Models\Pos\Tax;
 use App\Models\Pos\Payment;
 use App\Models\Pos\ProductVariant;
 use App\Models\Pos\StockMovement;
+use App\Models\Pos\CashierShift;
+use App\Models\Pos\HeldBill;
 use App\Models\User;
 use App\Pos\Sale\SaleStoreValidation;
 use App\Support\AuditLogger;
@@ -150,6 +153,49 @@ class SaleService
         return view('admin.pos.sale.reconciliation', compact('date', 'sales', 'summary', 'paymentsByMethod', 'hourlySales'));
     }
 
+    public function shiftReport(Request $request)
+    {
+        $companyId = $this->currentCompanyId($request);
+        $date = $request->get('date');
+
+        if (! $companyId) {
+            return redirect()->back()->with('failed', 'Company tidak ditemukan.');
+        }
+
+        if (! Schema::hasTable('cashier_shifts')) {
+            return view('admin.pos.shifts.report', [
+                'date' => $date,
+                'summary' => [
+                    'total_shift' => 0,
+                    'open_shift' => 0,
+                    'closed_shift' => 0,
+                    'sales_total' => 0,
+                    'cash_difference' => 0,
+                ],
+                'shifts' => collect(),
+                'migrationMissing' => true,
+            ]);
+        }
+
+        $query = CashierShift::with(['store', 'user'])
+            ->where('company_id', $companyId)
+            ->when($date, fn ($q) => $q->whereDate('opened_at', $date))
+            ->latest('opened_at');
+
+        $allShifts = (clone $query)->get();
+        $summary = [
+            'total_shift' => $allShifts->count(),
+            'open_shift' => $allShifts->where('status', 'open')->count(),
+            'closed_shift' => $allShifts->where('status', 'closed')->count(),
+            'sales_total' => $allShifts->sum('sales_total'),
+            'cash_difference' => $allShifts->sum('cash_difference'),
+        ];
+
+        $shifts = $query->paginate(20)->withQueryString();
+
+        return view('admin.pos.shifts.report', compact('date', 'summary', 'shifts') + ['migrationMissing' => false]);
+    }
+
     // Add sale (non-POS)
     public function add()
     {
@@ -272,13 +318,27 @@ class SaleService
     // POS selling screen
     public function pos()
     {
-        $companyId = auth()->user()?->company_id;
+        $companyId = $this->currentCompanyId();
+        $assignedStoreId = auth()->user()?->store_id;
         $categories = ProductCategory::when($companyId, function ($q) use ($companyId) { return $q->where('company_id', $companyId); })->get();
         $customers = Customer::when($companyId, function ($q) use ($companyId) { return $q->where('company_id', $companyId); })->get();
-        $stores = Store::when($companyId, function ($q) use ($companyId) { return $q->where('company_id', $companyId); })->get();
+        $stores = Store::when($companyId, function ($q) use ($companyId) { return $q->where('company_id', $companyId); })
+            ->when($assignedStoreId, function ($q) use ($assignedStoreId) { return $q->where('id', $assignedStoreId); })
+            ->get();
         $methods = Method::when($companyId, function ($q) use ($companyId) { return $q->where('company_id', $companyId); })->get();
         $products = Product::with('tax','category','product_variants')->when($companyId, function ($q) use ($companyId) { return $q->where('company_id', $companyId); })->get();
-        return view('admin.pos.sale.pos', compact('categories','products','customers','stores','methods'));
+        $openShift = $this->currentOpenShift($companyId);
+        $heldBills = Schema::hasTable('held_bills')
+            ? HeldBill::with(['store', 'customer'])
+                ->where('company_id', $companyId)
+                ->where('user_id', auth()->id())
+                ->where('status', 'held')
+                ->latest()
+                ->limit(10)
+                ->get()
+            : collect();
+
+        return view('admin.pos.sale.pos', compact('categories','products','customers','stores','methods','assignedStoreId','openShift','heldBills'));
     }
 
     // Add to cart
@@ -324,6 +384,43 @@ class SaleService
         }
     }
 
+    public function addCustomAmount(Request $request)
+    {
+        $request->validate([
+            'amount' => ['required', 'numeric', 'min:1'],
+            'name' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $companyId = $this->currentCompanyId($request);
+        if (! $companyId) {
+            return response()->json(['success' => false, 'message' => 'Company tidak ditemukan.'], 422);
+        }
+
+        $product = $this->customAmountProduct($companyId);
+        $amount = (float) $request->amount;
+        $name = $request->filled('name') ? $request->name : 'Custom Amount';
+        $cart = session()->get('pos_cart', []);
+        $key = 'custom-'.uniqid();
+
+        $cart[$key] = [
+            'product_id' => $product->id,
+            'product_name' => $name,
+            'category_name' => 'Custom',
+            'product_variant_id' => null,
+            'price' => $amount,
+            'discount' => 0,
+            'tax_percent' => 0,
+            'quantity' => 1,
+            'is_custom_amount' => true,
+        ];
+
+        session(['pos_cart' => $cart]);
+        $totals = $this->calculateTotals($cart);
+        $this->syncToCfd($cart, $totals);
+
+        return response()->json(['success' => true, 'cart' => $cart, 'totals' => $totals]);
+    }
+
     // Update cart
     public function updateCart(Request $request)
     {
@@ -360,6 +457,164 @@ class SaleService
         }
     }
 
+    public function holdBill(Request $request)
+    {
+        if (! Schema::hasTable('held_bills')) {
+            return response()->json(['success' => false, 'message' => 'Migration held bills belum dijalankan. Jalankan php artisan migrate.'], 422);
+        }
+
+        $cart = session()->get('pos_cart', []);
+        if (empty($cart)) {
+            return response()->json(['success' => false, 'message' => 'Cart masih kosong.'], 422);
+        }
+
+        $companyId = $this->currentCompanyId($request);
+        $storeId = $this->selectedStoreId($request, $companyId);
+        if (! $storeId) {
+            return response()->json(['success' => false, 'message' => 'Store belum tersedia.'], 422);
+        }
+
+        $bill = HeldBill::create([
+            'company_id' => $companyId,
+            'store_id' => $storeId,
+            'user_id' => auth()->id() ?: $request->user_id,
+            'customer_id' => $request->customer_id ?: null,
+            'bill_name' => $request->bill_name ?: 'Bill '.now()->format('H:i'),
+            'cart_snapshot' => $cart,
+            'totals_snapshot' => $this->calculateTotals($cart),
+            'status' => 'held',
+        ]);
+
+        session()->forget('pos_cart');
+        $this->syncToCfd([], $this->calculateTotals([]));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Bill berhasil disimpan.',
+            'bill' => $bill,
+            'cart' => [],
+            'totals' => $this->calculateTotals([]),
+        ]);
+    }
+
+    public function restoreHeldBill(Request $request, $id)
+    {
+        if (! Schema::hasTable('held_bills')) {
+            return response()->json(['success' => false, 'message' => 'Migration held bills belum dijalankan.'], 422);
+        }
+
+        $companyId = $this->currentCompanyId($request);
+        $bill = HeldBill::where('company_id', $companyId)
+            ->where('user_id', auth()->id() ?: $request->user_id)
+            ->where('status', 'held')
+            ->findOrFail($id);
+
+        session(['pos_cart' => $bill->cart_snapshot ?: []]);
+        $bill->status = 'restored';
+        $bill->restored_at = now();
+        $bill->save();
+
+        $cart = session()->get('pos_cart', []);
+        $totals = $this->calculateTotals($cart);
+        $this->syncToCfd($cart, $totals);
+
+        return response()->json(['success' => true, 'cart' => $cart, 'totals' => $totals]);
+    }
+
+    public function deleteHeldBill(Request $request, $id)
+    {
+        if (! Schema::hasTable('held_bills')) {
+            return response()->json(['success' => false, 'message' => 'Migration held bills belum dijalankan.'], 422);
+        }
+
+        $companyId = $this->currentCompanyId($request);
+        $bill = HeldBill::where('company_id', $companyId)
+            ->where('user_id', auth()->id() ?: $request->user_id)
+            ->where('status', 'held')
+            ->findOrFail($id);
+
+        $bill->delete();
+
+        return response()->json(['success' => true]);
+    }
+
+    public function openShift(Request $request)
+    {
+        if (! Schema::hasTable('cashier_shifts')) {
+            return response()->json(['success' => false, 'message' => 'Migration shift belum dijalankan. Jalankan php artisan migrate.'], 422);
+        }
+
+        $request->validate([
+            'store_id' => ['required', 'exists:stores,id'],
+            'opening_cash' => ['nullable', 'numeric', 'min:0'],
+            'shift_name' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $companyId = $this->currentCompanyId($request);
+        $userId = auth()->id() ?: $request->user_id;
+
+        if ($this->currentOpenShift($companyId, $userId)) {
+            return response()->json(['success' => false, 'message' => 'Masih ada shift yang sedang open. Tutup shift dulu.'], 422);
+        }
+
+        $store = Store::where('company_id', $companyId)->find($request->store_id);
+        if (! $store) {
+            return response()->json(['success' => false, 'message' => 'Store tidak valid untuk company ini.'], 422);
+        }
+
+        $shift = CashierShift::create([
+            'company_id' => $companyId,
+            'store_id' => $store->id,
+            'user_id' => $userId,
+            'shift_name' => $request->shift_name ?: auth()->user()?->shift_name,
+            'opening_cash' => (float) ($request->opening_cash ?? 0),
+            'opened_at' => now(),
+            'status' => 'open',
+        ]);
+
+        return response()->json(['success' => true, 'shift' => $shift->load('store')]);
+    }
+
+    public function closeShift(Request $request)
+    {
+        if (! Schema::hasTable('cashier_shifts')) {
+            return response()->json(['success' => false, 'message' => 'Migration shift belum dijalankan. Jalankan php artisan migrate.'], 422);
+        }
+
+        $request->validate([
+            'closing_cash' => ['required', 'numeric', 'min:0'],
+            'note' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $companyId = $this->currentCompanyId($request);
+        $shift = $this->currentOpenShift($companyId, auth()->id() ?: $request->user_id);
+        if (! $shift) {
+            return response()->json(['success' => false, 'message' => 'Tidak ada shift yang sedang open.'], 422);
+        }
+
+        $sales = Sale::where('company_id', $companyId)
+            ->where('cashier_shift_id', $shift->id)
+            ->where('status', 'completed')
+            ->get();
+
+        $salesTotal = (float) $sales->sum('total');
+        $expectedCash = (float) $shift->opening_cash + $salesTotal;
+        $closingCash = (float) $request->closing_cash;
+
+        $shift->forceFill([
+            'closing_cash' => $closingCash,
+            'expected_cash' => $expectedCash,
+            'cash_difference' => $closingCash - $expectedCash,
+            'sales_count' => $sales->count(),
+            'sales_total' => $salesTotal,
+            'closed_at' => now(),
+            'status' => 'closed',
+            'note' => $request->note,
+        ])->save();
+
+        return response()->json(['success' => true, 'shift' => $shift->fresh(['store'])]);
+    }
+
     // Calculate totals
     private function calculateTotals(array $cart)
     {
@@ -384,8 +639,9 @@ class SaleService
             return response()->json(['success'=>false,'message'=>'Cart is empty'],422);
         }
 
-        $companyId = auth()->user()?->company_id;
-        $storeId = $request->store_id ?: Store::where('company_id', $companyId)->first()?->id;
+        $companyId = $this->currentCompanyId($request);
+        $assignedStoreId = auth()->user()?->store_id;
+        $storeId = $request->store_id ?: ($assignedStoreId ?: Store::where('company_id', $companyId)->first()?->id);
         $store = $storeId ? Store::where('id', $storeId)->where('company_id', $companyId)->first() : null;
         if (! $store) {
             return response()->json(['success'=>false,'message'=>'Store tidak tersedia. Buat store terlebih dahulu.'],422);
@@ -407,6 +663,12 @@ class SaleService
         }
 
         $totals = $this->calculateTotals($cart);
+        $paymentRows = $this->normalizePaymentRows($request, $companyId, $totals['total']);
+        if (isset($paymentRows['error'])) {
+            return response()->json(['success' => false, 'message' => $paymentRows['error']], 422);
+        }
+        $paidAmount = collect($paymentRows)->sum('amount');
+        $openShift = $this->currentOpenShift($companyId, auth()->id() ?: $request->user_id);
 
         foreach ($cart as $item) {
             $product = Product::where('id', $item['product_id'])->where('company_id', $companyId)->first();
@@ -425,18 +687,21 @@ class SaleService
         }
 
         try {
-            $sale = DB::transaction(function () use ($cart, $totals, $storeId, $methodId, $userId, $request, $companyId) {
+            $sale = DB::transaction(function () use ($cart, $totals, $storeId, $userId, $request, $companyId, $paymentRows, $paidAmount, $openShift) {
                 $sale = new Sale();
                 $sale->invoice_number = 'INV-' . date('Ymd') . '-' . strtoupper(uniqid());
                 $sale->company_id = $companyId;
                 $sale->store_id = $storeId;
                 $sale->customer_id = $request->customer_id ?: null;
                 $sale->user_id = $userId;
+                if (Schema::hasColumn('sales', 'cashier_shift_id')) {
+                    $sale->cashier_shift_id = $openShift?->id;
+                }
                 $sale->subtotal = $totals['subtotal'];
                 $sale->tax = $totals['tax'];
                 $sale->discount = $totals['discount'];
                 $sale->total = $totals['total'];
-                $sale->paid_amount = $request->paid_amount ?? $totals['total'];
+                $sale->paid_amount = $paidAmount;
                 $sale->change_amount = max(0, $sale->paid_amount - $totals['total']);
                 $sale->status = 'completed';
                 
@@ -450,23 +715,25 @@ class SaleService
                 
                 $sale->save();
 
-                $paymentPayload = [
-                    'company_id' => $companyId,
-                    'sale_id' => $sale->id,
-                    'method_id' => $methodId,
-                    'amount' => $sale->paid_amount > 0 ? $sale->paid_amount : $totals['total'],
-                    'reference' => 'PAY-' . $sale->invoice_number,
-                ];
-                if (Schema::hasColumn('payments', 'status')) {
-                    $paymentPayload['status'] = 'active';
+                foreach ($paymentRows as $index => $paymentRow) {
+                    $paymentPayload = [
+                        'company_id' => $companyId,
+                        'sale_id' => $sale->id,
+                        'method_id' => $paymentRow['method_id'],
+                        'amount' => $paymentRow['amount'],
+                        'reference' => 'PAY-' . $sale->invoice_number . '-' . ($index + 1),
+                    ];
+                    if (Schema::hasColumn('payments', 'status')) {
+                        $paymentPayload['status'] = 'active';
+                    }
+                    if (Schema::hasColumn('payments', 'created_by')) {
+                        $paymentPayload['created_by'] = $userId;
+                    }
+                    if (Schema::hasColumn('payments', 'transaction_type')) {
+                        $paymentPayload['transaction_type'] = 'sale';
+                    }
+                    Payment::create($paymentPayload);
                 }
-                if (Schema::hasColumn('payments', 'created_by')) {
-                    $paymentPayload['created_by'] = $userId;
-                }
-                if (Schema::hasColumn('payments', 'transaction_type')) {
-                    $paymentPayload['transaction_type'] = 'sale';
-                }
-                Payment::create($paymentPayload);
 
                 foreach ($cart as $item) {
                     $product = Product::whereKey($item['product_id'])->where('company_id', $companyId)->lockForUpdate()->first();
@@ -512,6 +779,109 @@ class SaleService
         session()->forget('pos_cart');
         $this->syncToCfd([], $this->calculateTotals([]));
         return response()->json(['success'=>true,'sale_id'=>$sale->id,'redirect'=>url('admin-panel/pos/invoice/'.$sale->id)]);
+    }
+
+    private function normalizePaymentRows(Request $request, ?int $companyId, float $total): array
+    {
+        $rows = collect($request->input('payments', []))
+            ->map(function ($row) {
+                return [
+                    'method_id' => isset($row['method_id']) ? (int) $row['method_id'] : null,
+                    'amount' => isset($row['amount']) ? (float) $row['amount'] : 0,
+                ];
+            })
+            ->filter(fn ($row) => $row['method_id'] && $row['amount'] > 0)
+            ->values();
+
+        if ($rows->isEmpty()) {
+            $methodId = $request->method_id ?: Method::where('company_id', $companyId)->first()?->id;
+            $amount = (float) ($request->paid_amount ?? $total);
+            $rows = collect([[
+                'method_id' => $methodId,
+                'amount' => $amount > 0 ? $amount : $total,
+            ]]);
+        }
+
+        foreach ($rows as $row) {
+            if (! Method::where('id', $row['method_id'])->where('company_id', $companyId)->exists()) {
+                return ['error' => 'Metode pembayaran tidak tersedia untuk company ini.'];
+            }
+        }
+
+        return $rows->all();
+    }
+
+    private function currentCompanyId(?Request $request = null): ?int
+    {
+        return auth()->user()?->company_id
+            ?? session('company_id')
+            ?? ($request?->user_id ? User::whereKey($request->user_id)->value('company_id') : null);
+    }
+
+    private function selectedStoreId(Request $request, ?int $companyId): ?int
+    {
+        $assignedStoreId = auth()->user()?->store_id;
+        $storeId = $request->store_id ?: ($assignedStoreId ?: Store::where('company_id', $companyId)->first()?->id);
+
+        return $storeId && Store::where('id', $storeId)->where('company_id', $companyId)->exists()
+            ? (int) $storeId
+            : null;
+    }
+
+    private function currentOpenShift(?int $companyId, ?int $userId = null): ?CashierShift
+    {
+        $userId ??= auth()->id();
+
+        if (! $companyId || ! $userId || ! Schema::hasTable('cashier_shifts')) {
+            return null;
+        }
+
+        return CashierShift::with('store')
+            ->where('company_id', $companyId)
+            ->where('user_id', $userId)
+            ->where('status', 'open')
+            ->latest('opened_at')
+            ->first();
+    }
+
+    private function customAmountProduct(int $companyId): Product
+    {
+        if (! Schema::hasTable('taxes') || ! Schema::hasTable('products')) {
+            abort(422, 'Migration produk/tax belum lengkap.');
+        }
+
+        $tax = Tax::firstOrCreate(
+            ['company_id' => $companyId, 'name' => 'No Tax'],
+            ['rate' => 0]
+        );
+
+        $payload = [
+            'tax_id' => $tax->id,
+            'name' => 'Custom Amount',
+            'barcode' => 'CUSTOM-AMOUNT-'.$companyId,
+            'price' => 0,
+            'cost' => 0,
+            'track_stock' => false,
+        ];
+
+        if (Schema::hasColumn('products', 'stock_quantity')) {
+            $payload['stock_quantity'] = 0;
+        }
+
+        if (Schema::hasColumn('products', 'minimum_stock')) {
+            $payload['minimum_stock'] = 0;
+        }
+
+        $product = Product::withTrashed()->firstOrCreate(
+            ['company_id' => $companyId, 'sku' => 'CUSTOM-AMOUNT-'.$companyId],
+            $payload
+        );
+
+        if (method_exists($product, 'trashed') && $product->trashed()) {
+            $product->restore();
+        }
+
+        return $product;
     }
 
     public function cancelSale(Sale $sale): void

@@ -242,21 +242,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Save Bill and Print Bill handlers
-    const saveBillBtn = document.getElementById('saveBillBtn');
-    if (saveBillBtn) {
-        saveBillBtn.addEventListener('click', function () {
-            showNotification("success", "Draft bill saved successfully!");
-        });
-    }
-
-    const printBillBtn = document.getElementById('printBillBtn');
-    if (printBillBtn) {
-        printBillBtn.addEventListener('click', function () {
-            window.print();
-        });
-    }
-
     // Filters
     function filterCards() {
         const catId = categoryFilter ? categoryFilter.value : '';

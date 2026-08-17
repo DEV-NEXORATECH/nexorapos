@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Models\Role;
 use App\Models\Company;
+use App\Models\Pos\Store;
 use Illuminate\Support\Facades\Hash;
 use App\Support\AuditLogger;
 use App\Validations\Admin\User\UserStoreValidation;
@@ -28,7 +29,7 @@ class UserService
     {
         $currentUser = auth()->user();
         if (request()->ajax()) {
-            $users = User::with(['role', 'company'])
+            $users = User::with(['role', 'company', 'store'])
                 ->when(! $currentUser?->isSuperAdmin(), fn ($query) => $query->where('company_id', $currentUser?->company_id));
             
             return \Yajra\DataTables\Facades\DataTables::of($users)
@@ -36,6 +37,14 @@ class UserService
                 ->addColumn('email', function ($row) { return $row->email; })
                 ->addColumn('role', function ($row) { return $row->role ? $row->role->role : '-'; })
                 ->addColumn('company', function ($row) { return $row->company ? $row->company->name : '-'; })
+                ->addColumn('store', function ($row) { return $row->store ? $row->store->name : '-'; })
+                ->addColumn('shift', function ($row) {
+                    if (! $row->shift_name && ! $row->shift_start && ! $row->shift_end) {
+                        return '-';
+                    }
+
+                    return trim(($row->shift_name ?: 'Shift').' '.($row->shift_start ?: '').' - '.($row->shift_end ?: ''));
+                })
                 ->addColumn('license', function ($row) { return $row->company ? $row->company->subscription_status : '-'; })
                 ->addColumn('status', function ($row) { return $row->company && $row->company->is_active ? 'Active' : 'Inactive'; })
                 ->addColumn('action', function ($row) {
@@ -58,8 +67,11 @@ class UserService
         $companies = $currentUser?->isSuperAdmin()
             ? Company::orderBy('name')->get()
             : collect();
+        $stores = $currentUser?->isSuperAdmin()
+            ? Store::with('company')->withoutGlobalScopes()->orderBy('name')->get()
+            : Store::where('company_id', $currentUser?->company_id)->orderBy('name')->get();
 
-        return view('admin.users.add', compact('roles', 'companies'));
+        return view('admin.users.add', compact('roles', 'companies', 'stores'));
     }
 
     // Store new user
@@ -82,14 +94,16 @@ class UserService
                 : $currentUser?->company_id;
             $company = Company::findOrFail($companyId);
 
-            if (! $currentUser?->isSuperAdmin() && $company->userLimitReached()) {
+            if (! $request->boolean('is_super_admin') && $company->userLimitReached()) {
                 return redirect()->back()->with('failed', 'User limit has been reached.')->withInput();
             }
 
             $role = Role::findOrFail($request->role_id);
-            if (! $currentUser?->isSuperAdmin() && (int) $role->company_id !== (int) $currentUser->company_id) {
+            if ((int) $role->company_id !== (int) $company->id && ! ($currentUser?->isSuperAdmin() && $request->boolean('is_super_admin'))) {
                 abort(403, 'Role tidak tersedia untuk company ini.');
             }
+
+            $storeId = $this->validatedStoreId($request, $company->id);
 
             $user = new User();
             $user->name = $request->name;
@@ -98,6 +112,10 @@ class UserService
             $user->password = Hash::make($request->password);
             $user->role_id = $role->id;
             $user->company_id = $company->id;
+            $user->store_id = $storeId;
+            $user->shift_name = $request->shift_name;
+            $user->shift_start = $request->shift_start;
+            $user->shift_end = $request->shift_end;
             $user->is_super_admin = $currentUser?->isSuperAdmin() && $request->boolean('is_super_admin');
 
             // Handle profile image
@@ -111,7 +129,7 @@ class UserService
             $saved = $user->save();
 
             if ($saved) {
-                AuditLogger::log('create', 'users', $user, [], $user->only(['id', 'name', 'email', 'company_id', 'role_id', 'is_super_admin']));
+                AuditLogger::log('create', 'users', $user, [], $user->only(['id', 'name', 'email', 'company_id', 'store_id', 'shift_name', 'shift_start', 'shift_end', 'role_id', 'is_super_admin']));
                 return redirect()->to('admin-panel/users/listing')->with('success', 'User Registered Successfully');
             } else {
                 return redirect()->back()->with('failed', 'Something went wrong');
@@ -127,7 +145,7 @@ class UserService
     public function edit(Request $request, $id)
     {
         $currentUser = auth()->user();
-        $user = User::with('role')->findOrFail($id);
+        $user = User::withoutGlobalScopes()->with('role')->findOrFail($id);
         if (! $currentUser?->isSuperAdmin() && (int) $user->company_id !== (int) $currentUser?->company_id) {
             abort(403, 'User bukan milik company kamu.');
         }
@@ -137,8 +155,11 @@ class UserService
         $companies = $currentUser?->isSuperAdmin()
             ? Company::orderBy('name')->get()
             : collect();
+        $stores = $currentUser?->isSuperAdmin()
+            ? Store::with('company')->withoutGlobalScopes()->orderBy('name')->get()
+            : Store::where('company_id', $currentUser?->company_id)->orderBy('name')->get();
         if ($user) {
-            return view('admin.users.update', compact('user', 'roles', 'companies'));
+            return view('admin.users.update', compact('user', 'roles', 'companies', 'stores'));
         }
         return redirect()->back()->with('failed', 'User not found');
     }
@@ -154,7 +175,7 @@ class UserService
             }
 
             $currentUser = auth()->user();
-            $user = User::with('role')->findOrFail($id);
+            $user = User::withoutGlobalScopes()->with('role')->findOrFail($id);
             if (! $currentUser?->isSuperAdmin() && (int) $user->company_id !== (int) $currentUser?->company_id) {
                 abort(403, 'User bukan milik company kamu.');
             }
@@ -165,17 +186,32 @@ class UserService
             if (! $currentUser?->isSuperAdmin() && (int) $role->company_id !== (int) $currentUser?->company_id) {
                 abort(403, 'Role tidak tersedia untuk company ini.');
             }
-            $oldValue = $user->only(['name', 'email', 'phone', 'role_id', 'is_super_admin']);
+            $oldValue = $user->only(['name', 'email', 'phone', 'role_id', 'company_id', 'store_id', 'shift_name', 'shift_start', 'shift_end', 'is_super_admin']);
             $companyId = $currentUser?->isSuperAdmin()
                 ? $request->input('company_id', $user->company_id)
                 : $user->company_id;
             $company = Company::findOrFail($companyId);
+            if (! $user->isSuperAdmin() && $company->max_users) {
+                $activeUsersExcludingCurrent = $company->users()
+                    ->where('is_super_admin', false)
+                    ->where('id', '!=', $user->id)
+                    ->count();
+
+                if ($activeUsersExcludingCurrent >= $company->max_users) {
+                    return redirect()->back()->with('failed', 'User limit has been reached for this company.')->withInput();
+                }
+            }
+            $storeId = $this->validatedStoreId($request, $company->id);
 
             $user->name = $request->name;
             $user->email = $request->email;
             $user->phone = $request->phone;
             $user->role_id = $role->id;
             $user->company_id = $company->id;
+            $user->store_id = $storeId;
+            $user->shift_name = $request->shift_name;
+            $user->shift_start = $request->shift_start;
+            $user->shift_end = $request->shift_end;
             if ($request->filled('password')) {
                 $user->password = Hash::make($request->password);
             }
@@ -189,7 +225,7 @@ class UserService
             }
 
             $user->save();
-            AuditLogger::log('update', 'users', $user, $oldValue, $user->only(['name', 'email', 'phone', 'role_id', 'is_super_admin']));
+            AuditLogger::log('update', 'users', $user, $oldValue, $user->only(['name', 'email', 'phone', 'role_id', 'company_id', 'store_id', 'shift_name', 'shift_start', 'shift_end', 'is_super_admin']));
 
             return redirect()->to('admin-panel/users/listing')->with('success', 'User Updated Successfully');
         } catch (HttpExceptionInterface $e) {
@@ -204,7 +240,7 @@ class UserService
     {
         try {
             $currentUser = auth()->user();
-            $user = User::findOrFail($id);
+            $user = User::withoutGlobalScopes()->findOrFail($id);
             if (! $currentUser?->isSuperAdmin() && (int) $user->company_id !== (int) $currentUser?->company_id) {
                 abort(403, 'User bukan milik company kamu.');
             }
@@ -224,5 +260,23 @@ class UserService
         } catch (\Exception $e) {
             return redirect()->back()->with('failed', 'Something went wrong: ' . $e->getMessage());
         }
+    }
+
+    private function validatedStoreId(Request $request, int $companyId): ?int
+    {
+        if (! $request->filled('store_id')) {
+            return null;
+        }
+
+        $store = Store::withoutGlobalScopes()
+            ->whereKey($request->store_id)
+            ->where('company_id', $companyId)
+            ->first();
+
+        if (! $store) {
+            abort(422, 'Store tidak valid untuk company ini.');
+        }
+
+        return $store->id;
     }
 }

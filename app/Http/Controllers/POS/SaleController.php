@@ -22,6 +22,11 @@ class SaleController extends Controller
         return $this->sale->reconciliation($request);
     }
 
+    public function shiftReport(Request $request)
+    {
+        return $this->sale->shiftReport($request);
+    }
+
     public function add()
     {
         return $this->sale->add();
@@ -58,6 +63,11 @@ class SaleController extends Controller
         return $this->sale->addToCart($request);
     }
 
+    public function addCustomAmount(Request $request)
+    {
+        return $this->sale->addCustomAmount($request);
+    }
+
     public function updateCart(Request $request)
     {
         return $this->sale->updateCart($request);
@@ -66,6 +76,31 @@ class SaleController extends Controller
     public function removeFromCart(Request $request)
     {
         return $this->sale->removeFromCart($request);
+    }
+
+    public function holdBill(Request $request)
+    {
+        return $this->sale->holdBill($request);
+    }
+
+    public function restoreHeldBill(Request $request, $id)
+    {
+        return $this->sale->restoreHeldBill($request, $id);
+    }
+
+    public function deleteHeldBill(Request $request, $id)
+    {
+        return $this->sale->deleteHeldBill($request, $id);
+    }
+
+    public function openShift(Request $request)
+    {
+        return $this->sale->openShift($request);
+    }
+
+    public function closeShift(Request $request)
+    {
+        return $this->sale->closeShift($request);
     }
 
     public function checkout(Request $request)
