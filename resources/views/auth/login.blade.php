@@ -2,10 +2,7 @@
     <form method="POST" action="{{ route('login') }}">
         @csrf
 
-        <div class="mb-6">
-            <span class="inline-flex bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-700">Admin access login</span>
-            <h2 class="mt-4 text-3xl font-bold text-slate-900">Masuk ke workspace</h2>
-            <p class="mt-3 text-sm leading-6 text-slate-500">User company wajib memakai company code. Super Admin platform boleh kosongkan company code.</p>
+        <div class="mb-4">
             <x-input-error :messages="$errors->get('login')" class="mt-3" />
             <x-input-error :messages="$errors->get('company')" class="mt-3" />
         </div>
@@ -13,7 +10,6 @@
         <div class="mb-4">
             <x-input-label for="company_code" :value="__('Company Code')" class="text-slate-700" />
             <x-text-input id="company_code" class="block mt-1 w-full border-blue-100 bg-blue-50/40 px-4 py-4 focus:border-blue-500 focus:ring-blue-500" name="company_code" type="text" :value="old('company_code')" autofocus placeholder="Kosongkan khusus Super Admin" />
-            <p class="mt-2 text-xs text-blue-700">Wajib untuk Admin/Employee company. Kosongkan hanya untuk Super Admin.</p>
             <x-input-error :messages="$errors->get('company_code')" class="mt-2" />
         </div>
 
