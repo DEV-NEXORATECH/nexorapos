@@ -106,6 +106,11 @@ class FeatureController extends Controller
             'admin_password' => ['nullable', 'required_with:admin_email', 'string', 'min:8'],
         ]);
 
+        // MySQL strict mode rejects an empty string for nullable decimal columns.
+        $data['payment_amount'] = ($data['payment_amount'] ?? '') === ''
+            ? null
+            : $data['payment_amount'];
+
         $company = DB::transaction(function () use ($data) {
             $company = new Company();
             $companyPayload = [
