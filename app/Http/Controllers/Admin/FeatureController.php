@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use App\Support\AuditLogger;
+use Database\Seeders\RolePermissionSeeder;
 
 class FeatureController extends Controller
 {
@@ -147,6 +148,10 @@ class FeatureController extends Controller
                     );
                 });
             }
+
+            // Company baru perlu memiliki permission dan role mapping agar
+            // akun Admin client tidak langsung terkena 403.
+            app(RolePermissionSeeder::class)->run();
 
             if (! empty($data['admin_email'])) {
                 $role = Role::withoutGlobalScopes()->firstOrCreate([

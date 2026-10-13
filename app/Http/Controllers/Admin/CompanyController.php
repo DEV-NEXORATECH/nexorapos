@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Database\Seeders\RolePermissionSeeder;
 
 class CompanyController extends Controller
 {
@@ -80,10 +81,14 @@ class CompanyController extends Controller
                     'name' => $request->admin_name,
                     'email' => $request->admin_email,
                     'password' => Hash::make($request->admin_password),
+                    'role_id' => $role->id,
                     'company_id' => $company->id,
                     'is_super_admin' => 0,
                 ]);
             }
+
+            // Pastikan role Admin company baru memiliki semua permission dasar.
+            app(RolePermissionSeeder::class)->run();
 
             DB::commit();
 
