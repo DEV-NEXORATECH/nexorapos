@@ -166,18 +166,19 @@
                     });
                 </script>
             @elseif($license['is_warning'])
+                @php
+                    $licenseWarningMessage = 'Paket '.$license['package'].' jatuh tempo pada '.
+                        optional($license['expiry_date'])->format('d M Y').'. ';
+                    $licenseWarningMessage .= $license['status'] === 'GRACE_PERIOD'
+                        ? 'Sisa grace '.max($license['remaining_grace_days'], 0).' hari. '
+                        : 'Sisa '.max($license['remaining_days'], 0).' hari. ';
+                    $licenseWarningMessage .= 'Jika lewat masa aktif/grace, fitur akan otomatis diblok.';
+                @endphp
                 <script>
                     Swal.fire({
                         icon: 'warning',
                         title: @json($license['status'] === 'GRACE_PERIOD' ? 'Grace Period License' : 'License Hampir Jatuh Tempo'),
-                        text: @json(
-                            'Paket '.$license['package'].' jatuh tempo pada '.
-                            optional($license['expiry_date'])->format('d M Y').'. '.
-                            ($license['status'] === 'GRACE_PERIOD'
-                                ? 'Sisa grace '.max($license['remaining_grace_days'], 0).' hari. '
-                                : 'Sisa '.max($license['remaining_days'], 0).' hari. ').
-                            'Jika lewat masa aktif/grace, fitur akan otomatis diblok.'
-                        ),
+                        text: @json($licenseWarningMessage),
                         confirmButtonText: 'Saya Mengerti',
                         confirmButtonColor: '#0058A6',
                     });
