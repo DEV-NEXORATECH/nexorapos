@@ -5,7 +5,9 @@
 @section('content')
 <style>
     html, body { max-width: 100%; overflow-x: hidden !important; }
-    .main-panel, .main-panel .content { min-width: 0 !important; max-width: 100% !important; overflow-x: hidden; }
+    .invoice-page { margin-left: 0 !important; width: 100% !important; max-width: 100vw !important; }
+    .invoice-page, .invoice-page .content { min-width: 0 !important; max-width: 100% !important; overflow-x: hidden; }
+    .invoice-page .content { padding-left: 24px !important; padding-right: 24px !important; }
     .invoice-shell { max-width: none; width: 100%; min-width: 0; margin: 0; overflow: hidden; }
     .invoice-toolbar { gap: .5rem; flex-wrap: wrap; min-width: 0; }
     .invoice-actions { display: flex; justify-content: flex-end; gap: .5rem; flex-wrap: wrap; min-width: 0; }
@@ -46,7 +48,7 @@
         #invoice .card { box-shadow: none; }
     }
 </style>
-<div class="main-panel">
+<div class="main-panel invoice-page">
     <div class="content">
         <div class="container-fluid invoice-shell">
             {{-- Header --}}
