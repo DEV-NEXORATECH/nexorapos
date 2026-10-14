@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\CompanyPayment;
+use App\Models\Pos\Payment;
 use App\Models\Pos\Sale;
 use App\Services\MidtransPaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class CompanyPaymentController extends Controller
@@ -126,7 +128,31 @@ class CompanyPaymentController extends Controller
                 return;
             }
 
-            if ($isPaid && $payment->purpose === 'pos') {
+            if ($payment->purpose === 'pos') {
+                $sale = Sale::whereKey($payment->sale_id)->lockForUpdate()->first();
+                if ($sale && $isPaid) {
+                    $paidNonQris = Payment::where('sale_id', $sale->id)
+                        ->whereHas('method', fn ($query) => $query->whereRaw('LOWER(name) <> ?', ['qris']))
+                        ->when(Schema::hasColumn('payments', 'status'), fn ($query) => $query->where('status', 'active'))
+                        ->sum('amount');
+                    $paidQris = CompanyPayment::where('sale_id', $sale->id)
+                        ->where('purpose', 'pos')
+                        ->where('status', 'paid')
+                        ->sum('amount');
+                    $paidTotal = (float) $paidNonQris + (float) $paidQris;
+
+                    $sale->paid_amount = $paidTotal;
+                    $sale->change_amount = max(0, $paidTotal - (float) $sale->total);
+                    $sale->payment_status = $paidTotal >= (float) $sale->total ? 'PAID' : ($paidTotal > 0 ? 'PARTIAL' : 'UNPAID');
+                    $sale->status = $paidTotal >= (float) $sale->total ? 'completed' : 'pending';
+                    $sale->save();
+
+                    if (Schema::hasColumn('payments', 'status')) {
+                        Payment::where('sale_id', $sale->id)
+                            ->whereHas('method', fn ($query) => $query->whereRaw('LOWER(name) = ?', ['qris']))
+                            ->update(['status' => 'active']);
+                    }
+                }
                 return;
             }
 

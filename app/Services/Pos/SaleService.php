@@ -741,6 +741,15 @@ class SaleService
             return response()->json(['success' => false, 'message' => $paymentRows['error']], 422);
         }
         $paidAmount = collect($paymentRows)->sum('amount');
+        $qrisMethodIds = Method::where('company_id', $companyId)
+            ->whereRaw('LOWER(name) = ?', ['qris'])
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+        $qrisAmount = collect($paymentRows)
+            ->filter(fn ($row) => in_array((int) $row['method_id'], $qrisMethodIds, true))
+            ->sum('amount');
+        $nonQrisPaidAmount = max(0, $paidAmount - $qrisAmount);
         $openShift = $this->currentOpenShift($companyId, auth()->id() ?: $request->user_id);
 
         foreach ($cart as $item) {
@@ -760,7 +769,7 @@ class SaleService
         }
 
         try {
-            $sale = DB::transaction(function () use ($cart, $totals, $storeId, $userId, $request, $companyId, $paymentRows, $paidAmount, $openShift) {
+            $sale = DB::transaction(function () use ($cart, $totals, $storeId, $userId, $request, $companyId, $paymentRows, $paidAmount, $qrisMethodIds, $qrisAmount, $nonQrisPaidAmount, $openShift) {
                 $sale = new Sale();
                 $sale->invoice_number = 'INV-' . date('Ymd') . '-' . strtoupper(uniqid());
                 $sale->company_id = $companyId;
@@ -774,11 +783,13 @@ class SaleService
                 $sale->tax = $totals['tax'];
                 $sale->discount = $totals['discount'];
                 $sale->total = $totals['total'];
-                $sale->paid_amount = $paidAmount;
+                // QRIS is not paid yet when the POS sale is created. It is
+                // finalized by the Midtrans notification after settlement.
+                $sale->paid_amount = $qrisAmount > 0 ? $nonQrisPaidAmount : $paidAmount;
                 $sale->change_amount = max(0, $sale->paid_amount - $totals['total']);
-                $sale->status = 'completed';
+                $sale->status = $qrisAmount > 0 ? 'pending' : 'completed';
                 
-                if ($sale->paid_amount >= $sale->total) {
+                if ($qrisAmount <= 0 && $sale->paid_amount >= $sale->total) {
                     $sale->payment_status = 'PAID';
                 } elseif ($sale->paid_amount > 0) {
                     $sale->payment_status = 'PARTIAL';
@@ -797,7 +808,9 @@ class SaleService
                         'reference' => 'PAY-' . $sale->invoice_number . '-' . ($index + 1),
                     ];
                     if (Schema::hasColumn('payments', 'status')) {
-                        $paymentPayload['status'] = 'active';
+                        $paymentPayload['status'] = in_array((int) $paymentRow['method_id'], $qrisMethodIds, true)
+                            ? 'pending'
+                            : 'active';
                     }
                     if (Schema::hasColumn('payments', 'created_by')) {
                         $paymentPayload['created_by'] = $userId;

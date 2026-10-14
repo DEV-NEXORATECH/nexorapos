@@ -899,9 +899,11 @@
                                     success: function(payment) {
                                         window.snap.pay(payment.snap_token, {
                                             onSuccess: openInvoice,
-                                            onPending: openInvoice,
+                                            onPending: function() {
+                                                Swal.fire('Menunggu pembayaran', 'QRIS belum dibayar. Selesaikan pembayaran terlebih dahulu.', 'info');
+                                            },
                                             onError: function() { Swal.fire('QRIS gagal', 'Pembayaran QRIS gagal diproses.', 'error'); },
-                                            onClose: function() { Swal.fire('QRIS belum dibayar', 'QRIS ditutup sebelum pembayaran selesai.', 'info').then(openInvoice); },
+                                            onClose: function() { Swal.fire('QRIS dibatalkan', 'Pembayaran belum berhasil. Transaksi tetap menunggu pembayaran.', 'info'); },
                                         });
                                     },
                                     error: function(err) {
