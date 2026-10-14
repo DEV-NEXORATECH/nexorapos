@@ -512,22 +512,60 @@ class SaleService
             return response()->json(['success' => false, 'message' => 'Migration held bills belum dijalankan.'], 422);
         }
 
-        $companyId = $this->currentCompanyId($request);
-        $bill = HeldBill::where('company_id', $companyId)
-            ->where('user_id', auth()->id() ?: $request->user_id)
-            ->where('status', 'held')
-            ->findOrFail($id);
+        try {
+            $companyId = $this->currentCompanyId($request);
+            $userId = auth()->id() ?: $request->user_id;
 
-        session(['pos_cart' => $bill->cart_snapshot ?: []]);
-        $bill->status = 'restored';
-        $bill->restored_at = now();
-        $bill->save();
+            $query = HeldBill::query()
+                ->where('company_id', $companyId)
+                ->where('user_id', $userId);
 
-        $cart = session()->get('pos_cart', []);
-        $totals = $this->calculateTotals($cart);
-        $this->syncToCfd($cart, $totals);
+            // Older installations may have the table but not this column.
+            if (Schema::hasColumn('held_bills', 'status')) {
+                $query->where('status', 'held');
+            }
 
-        return response()->json(['success' => true, 'cart' => $cart, 'totals' => $totals]);
+            $bill = $query->find($id);
+            if (! $bill) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Held bill tidak ditemukan, sudah direstore, atau bukan milik kasir ini.',
+                ], 404);
+            }
+
+            $cart = $bill->cart_snapshot;
+            if (is_string($cart)) {
+                $cart = json_decode($cart, true);
+            }
+            if (! is_array($cart) || empty($cart)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Isi held bill kosong atau format cart tidak valid.',
+                ], 422);
+            }
+
+            session(['pos_cart' => $cart]);
+
+            if (Schema::hasColumn('held_bills', 'status')) {
+                $bill->status = 'restored';
+            }
+            if (Schema::hasColumn('held_bills', 'restored_at')) {
+                $bill->restored_at = now();
+            }
+            $bill->save();
+
+            $totals = $this->calculateTotals($cart);
+            $this->syncToCfd($cart, $totals);
+
+            return response()->json(['success' => true, 'cart' => $cart, 'totals' => $totals]);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Restore bill gagal diproses. Cek log Laravel untuk detailnya.',
+            ], 500);
+        }
     }
 
     public function deleteHeldBill(Request $request, $id)
