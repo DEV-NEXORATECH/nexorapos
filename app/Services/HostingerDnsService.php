@@ -63,6 +63,19 @@ class HostingerDnsService
             throw new RuntimeException('Hostinger subdomain gagal (HTTP '.$hostingResponse->status().'): '.Str::limit($hostingResponse->body(), 500));
         }
 
+        // A successful hosting-subdomain request already provisions the
+        // hostname/DNS on Hostinger. Do not submit the same DNS record again;
+        // Hostinger returns 422 for that duplicate record.
+        if ($hostingResponse->successful()) {
+            $company->forceFill([
+                'domain_status' => 'active',
+                'domain_error' => null,
+                'domain_created_at' => now(),
+            ])->save();
+
+            return;
+        }
+
         $response = Http::withToken($token)
             ->acceptJson()
             ->timeout(20)
@@ -76,7 +89,10 @@ class HostingerDnsService
                 ]],
             ]);
 
-        if ($response->failed()) {
+        $isDuplicateDnsRecord = $response->status() === 422
+            && str_contains($response->body(), 'DNS:4008');
+
+        if ($response->failed() && ! $isDuplicateDnsRecord) {
             throw new RuntimeException('Hostinger DNS gagal (HTTP '.$response->status().'): '.Str::limit($response->body(), 500));
         }
 
