@@ -108,6 +108,7 @@ class RolePermissionSeeder extends Seeder
                     'name' => 'Settings',
                     'permissions' => [
                         ['name' => 'Pengaturan Sistem', 'route' => 'admin-panel/settings/listing'],
+                        ['name' => 'Company Settings', 'route' => 'admin-panel/settings/company'],
                     ],
                 ],
             ];

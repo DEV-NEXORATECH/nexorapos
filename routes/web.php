@@ -46,6 +46,22 @@ Route::get('/', function () {
     return app(AuthenticatedSessionController::class)->create();
 })->name('home');
 
+// Backward-compatible admin entry point.
+Route::get('/admin', function () {
+    if (! auth()->check()) {
+        return redirect()->route('login');
+    }
+
+    $user = auth()->user();
+    if ($user->isSuperAdmin()) {
+        return redirect('admin-panel/dashboard');
+    }
+
+    return redirect($user->role && strtolower($user->role->role) === 'kasir'
+        ? 'admin-panel/pos/sell'
+        : 'admin-panel/dashboard');
+});
+
 // Profile management routes (required)
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
