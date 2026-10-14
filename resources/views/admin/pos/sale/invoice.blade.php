@@ -41,6 +41,7 @@
         #invoice .table-wrap > table { min-width: 820px; }
     }
     @media print {
+        #invoice, #invoice * { visibility: visible !important; }
         .main-header, .sidebar, .navbar, .topbar, .footer, .invoice-toolbar,
         .main-panel > .content > .container-fluid > .d-flex > div { display: none !important; }
         .main-panel { margin-left: 0 !important; width: 100% !important; }
