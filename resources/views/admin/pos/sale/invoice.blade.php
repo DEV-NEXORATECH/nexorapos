@@ -95,6 +95,7 @@
                         <div class="col-md-3">
                             <small class="text-muted">Sale Status</small>
                             <div>
+                                @php($ssBadge = 'badge-secondary')
                                 @php
                                     $ssBadge = match($sale->status) {
                                         'completed' => 'badge-success',
@@ -108,6 +109,7 @@
                         <div class="col-md-3">
                             <small class="text-muted">Payment Status</small>
                             <div>
+                                @php($psBadge = 'badge-secondary')
                                 @php
                                     $psBadge = match($sale->payment_status ?? 'UNPAID') {
                                         'PAID' => 'badge-success',
