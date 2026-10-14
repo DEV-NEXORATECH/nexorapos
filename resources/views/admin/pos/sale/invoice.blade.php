@@ -6,7 +6,7 @@
 <style>
     html, body { max-width: 100%; overflow-x: hidden !important; }
     .main-panel, .main-panel .content { min-width: 0 !important; max-width: 100% !important; overflow-x: hidden; }
-    .invoice-shell { max-width: 1180px; width: 100%; min-width: 0; margin: 0 auto; overflow: hidden; }
+    .invoice-shell { max-width: none; width: 100%; min-width: 0; margin: 0; overflow: hidden; }
     .invoice-toolbar { gap: .5rem; flex-wrap: wrap; min-width: 0; }
     .invoice-actions { display: flex; justify-content: flex-end; gap: .5rem; flex-wrap: wrap; min-width: 0; }
     #invoice .card { border: 0; border-radius: 16px; box-shadow: 0 8px 24px rgba(17, 55, 92, .08); overflow: hidden; }
