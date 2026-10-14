@@ -19,6 +19,14 @@ class MidtransPaymentService
             ? 'https://app.midtrans.com'
             : 'https://app.sandbox.midtrans.com';
 
+        // Midtrans limits item_details.name. Company names plus invoice
+        // numbers can exceed that limit, especially for POS QRIS orders.
+        $itemName = trim('Subscription '.$companyName);
+        $itemName = function_exists('mb_substr')
+            ? mb_substr($itemName, 0, 50)
+            : substr($itemName, 0, 50);
+        $itemName = $itemName !== '' ? $itemName : 'POS Payment';
+
         $response = Http::withBasicAuth($serverKey, '')
             ->acceptJson()
             ->timeout(30)
@@ -31,7 +39,7 @@ class MidtransPaymentService
                     'id' => 'LICENSE-'.$payment->company_id,
                     'price' => (int) $payment->amount,
                     'quantity' => 1,
-                    'name' => 'Subscription '.$companyName,
+                    'name' => $itemName,
                 ]],
                 'enabled_payments' => ['qris'],
                 'credit_card' => [
