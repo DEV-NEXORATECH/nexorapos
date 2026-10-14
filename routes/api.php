@@ -9,6 +9,9 @@ use App\Http\Controllers\Api\Mobile\PosController;
 use App\Http\Controllers\Api\Mobile\ReportController;
 use App\Http\Controllers\Api\Mobile\UploadController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\CompanyPaymentController;
+
+Route::post('midtrans/notification', [CompanyPaymentController::class, 'notification']);
 
 Route::prefix('mobile/v1')->group(function () {
     Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttle:10,1');

@@ -28,6 +28,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\POS\TaxController;
+use App\Http\Controllers\Admin\CompanyPaymentController;
 
 Route::get('/', function () {
     if (auth()->check()) {
@@ -61,6 +62,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckCompanyLicense::class, 'Adm
     Route::post('admin-panel/features/{id}/domain/retry', [FeatureController::class, 'retryDomain']);
     Route::post('admin-panel/features/update', [FeatureController::class, 'update']);
     Route::post('admin-panel/features/billing', [FeatureController::class, 'updateBilling']);
+    Route::post('admin-panel/features/payment/qris', [CompanyPaymentController::class, 'createQris']);
 
     // Companies
     Route::get('admin-panel/companies/listing', [\App\Http\Controllers\Admin\CompanyController::class, 'index']);

@@ -91,6 +91,11 @@
                         <div class="nexora-control-actions">
                             <button type="submit" name="billing_action" value="save" class="btn btn-secondary">Save Billing</button>
                             <button type="submit" name="billing_action" value="mark_paid" class="btn btn-primary">Mark Paid & Extend</button>
+                            @if((float) $company->payment_amount > 0)
+                                <button type="button" class="btn btn-success" id="payCompanyQrisBtn">
+                                    <i class="fas fa-qrcode"></i> Bayar via QRIS
+                                </button>
+                            @endif
                         </div>
                     </form>
 
@@ -130,7 +135,41 @@
 @endsection
 
 @push('script')
+    @if((float) $company->payment_amount > 0)
+        <script src="{{ config('services.midtrans.is_production') ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js' }}" data-client-key="{{ config('services.midtrans.client_key') }}"></script>
+    @endif
     <script>
+        document.getElementById('payCompanyQrisBtn')?.addEventListener('click', async function () {
+            const button = this;
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyiapkan QRIS...';
+
+            try {
+                const response = await fetch('{{ url('admin-panel/features/payment/qris') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({company_id: {{ $company->id }}}),
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message || 'Pembayaran gagal dibuat.');
+
+                window.snap.pay(data.snap_token, {
+                    onSuccess: () => Swal.fire('Berhasil', 'Pembayaran diterima. Status license akan diperbarui otomatis.', 'success').then(() => window.location.reload()),
+                    onPending: () => Swal.fire('Menunggu pembayaran', 'Selesaikan pembayaran QRIS pada jendela Midtrans.', 'info'),
+                    onError: () => Swal.fire('Gagal', 'Pembayaran QRIS gagal.', 'error'),
+                    onClose: () => { button.disabled = false; button.innerHTML = '<i class="fas fa-qrcode"></i> Bayar via QRIS'; },
+                });
+            } catch (error) {
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-qrcode"></i> Bayar via QRIS';
+                Swal.fire('Gagal', error.message, 'error');
+            }
+        });
+
         document.querySelectorAll('.nexora-billing-form').forEach((form) => {
             const period = form.querySelector('.nexora-billing-period');
             const months = form.querySelector('.nexora-billing-months');
