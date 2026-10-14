@@ -68,6 +68,10 @@ class AuthenticatedSessionController extends Controller
                 $request->session()->put('company_id', $company->id);
             }
 
+            if ($user->isSuperAdmin()) {
+                return redirect()->intended('admin-panel/dashboard');
+            }
+
             if ($user->role && strtolower($user->role->role) === 'kasir') {
                 return redirect()->intended('admin-panel/pos/sell');
             }

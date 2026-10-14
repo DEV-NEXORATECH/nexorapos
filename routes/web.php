@@ -34,6 +34,10 @@ Route::get('/', function () {
     if (auth()->check()) {
         $user = auth()->user();
 
+        if ($user->isSuperAdmin()) {
+            return redirect('admin-panel/dashboard');
+        }
+
         return redirect($user->role && strtolower($user->role->role) === 'kasir'
             ? 'admin-panel/pos/sell'
             : 'admin-panel/dashboard');
