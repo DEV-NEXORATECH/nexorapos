@@ -746,6 +746,18 @@
 
             $('#addSplitPaymentBtn').on('click', function() {
                 let index = $('.payment-row').length;
+                const currentInputs = $('.payment-amount-input');
+                let currentTotal = 0;
+                currentInputs.each(function() { currentTotal += parseInt($(this).val()) || 0; });
+
+                // When splitting the first payment, divide it automatically.
+                // Further rows receive the remaining amount.
+                if (currentInputs.length === 1 && currentTotal >= rawTotalDue) {
+                    const firstHalf = Math.floor(rawTotalDue / 2);
+                    currentInputs.eq(0).val(firstHalf);
+                    currentTotal = firstHalf;
+                }
+                const remainder = Math.max(0, rawTotalDue - currentTotal);
                 $('#paymentRowsContainer').append(`
                     <div class="payment-row row mb-2">
                         <div class="col-md-5">
@@ -758,7 +770,7 @@
                             <label>Amount</label>
                             <div class="input-group">
                                 <div class="input-group-prepend"><span class="input-group-text">Rp</span></div>
-                                <input type="number" name="payments[${index}][amount]" class="form-control payment-amount-input" step="1" required value="0">
+                                <input type="number" name="payments[${index}][amount]" class="form-control payment-amount-input" step="1" required value="${remainder}">
                             </div>
                         </div>
                         <div class="col-md-2 text-center" style="padding-top: 32px;">
@@ -778,13 +790,30 @@
                         $(this).find('select').attr('name', `payments[${i}][method_id]`);
                         $(this).find('input').attr('name', `payments[${i}][amount]`);
                     });
+                    rebalanceSplitPayments();
                     calculateChange();
                 } else {
                     Swal.fire('Cannot Remove', 'You must have at least one payment method', 'warning');
                 }
             });
 
+            function rebalanceSplitPayments() {
+                const inputs = $('.payment-amount-input');
+                if (inputs.length <= 1) return;
+
+                let paidBeforeLast = 0;
+                inputs.each(function(index) {
+                    if (index < inputs.length - 1) {
+                        paidBeforeLast += Math.max(0, parseInt($(this).val()) || 0);
+                    }
+                });
+
+                const remainder = Math.max(0, rawTotalDue - paidBeforeLast);
+                inputs.last().val(remainder);
+            }
+
             $(document).on('input', '.payment-amount-input', function() {
+                rebalanceSplitPayments();
                 calculateChange();
             });
 
@@ -816,6 +845,12 @@
                 $('.payment-amount-input').each(function() {
                     totalPaid += parseInt($(this).val()) || 0;
                 });
+
+                const isSplitPayment = $('.payment-row').length > 1;
+                if (isSplitPayment && totalPaid !== rawTotalDue) {
+                    Swal.fire('Nominal belum pas', 'Split payment harus sama persis dengan total transaksi.', 'warning');
+                    return;
+                }
                 
                 if (totalPaid < rawTotalDue) {
                     Swal.fire('Insufficient Amount', 'The total paid amount is less than the total due.', 'warning');

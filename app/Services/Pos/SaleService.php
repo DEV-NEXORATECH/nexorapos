@@ -947,7 +947,14 @@ class SaleService
     public function invoice($id)
     {
         $companyId = auth()->user()?->company_id;
-        $sale = Sale::with(['store', 'customer', 'user'])->where('company_id', $companyId)->findOrFail($id);
+        $sale = Sale::with([
+            'store',
+            'customer',
+            'user',
+            'payments.method',
+            'sale_items.product',
+            'sale_items.product_variant',
+        ])->where('company_id', $companyId)->findOrFail($id);
         return view('admin.pos.sale.invoice', compact('sale'));
     }
     // Generate PDF invoice
