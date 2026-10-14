@@ -69,6 +69,11 @@ class AdminMiddleware
             $candidates[] = 'admin-panel/pos/sell';
         }
 
+        // Cancelling a sale from the invoice is a POS action as well.
+        if (Str::startsWith($currentUri, 'admin-panel/sales/delete')) {
+            $candidates[] = 'admin-panel/pos/sell';
+        }
+
         $lastSlash = strrpos($currentUri, '/');
         if ($lastSlash !== false) {
             $candidates[] = substr($currentUri, 0, $lastSlash);
