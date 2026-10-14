@@ -41,7 +41,10 @@ class MidtransPaymentService
                     'quantity' => 1,
                     'name' => $itemName,
                 ]],
-                'enabled_payments' => ['qris'],
+                // Snap uses `other_qris` for the generic QRIS channel.
+                // `qris` is a Core API payment type and leaves Snap with no
+                // available channel, which results in "No payment channels available".
+                'enabled_payments' => ['other_qris'],
                 'credit_card' => [
                     'secure' => (bool) config('services.midtrans.is_3ds', true),
                 ],

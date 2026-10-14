@@ -517,13 +517,16 @@ a:hover { color: #002E58 !important; }
 
 /* Print styles for POS screen */
 @media print {
-    body * {
+    /* Only the POS checkout screen should use the full-screen print layout.
+       Do not hide invoice pages, otherwise the browser print preview is blank. */
+    body.pos-fullscreen-mode * {
         visibility: hidden !important;
     }
-    .pos-right-panel, .pos-right-panel * {
+    body.pos-fullscreen-mode .pos-right-panel,
+    body.pos-fullscreen-mode .pos-right-panel * {
         visibility: visible !important;
     }
-    .pos-right-panel {
+    body.pos-fullscreen-mode .pos-right-panel {
         position: absolute !important;
         left: 0 !important;
         top: 0 !important;
@@ -534,10 +537,10 @@ a:hover { color: #002E58 !important; }
         border: none !important;
     }
     /* Hide action buttons during print */
-    .pos-cart-header button, 
-    .pos-cart-header a, 
-    .pos-cart-footer button, 
-    .pos-cart-footer div.d-flex {
+    body.pos-fullscreen-mode .pos-cart-header button,
+    body.pos-fullscreen-mode .pos-cart-header a,
+    body.pos-fullscreen-mode .pos-cart-footer button,
+    body.pos-fullscreen-mode .pos-cart-footer div.d-flex {
         display: none !important;
     }
 }

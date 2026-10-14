@@ -41,12 +41,32 @@
         #invoice .table-wrap > table { min-width: 820px; }
     }
     @media print {
-        #invoice, #invoice * { visibility: visible !important; }
+        html, body {
+            visibility: visible !important;
+            overflow: visible !important;
+            background: #fff !important;
+        }
+        .invoice-page,
+        .invoice-page .content,
+        .invoice-shell,
+        #invoice,
+        #invoice * {
+            visibility: visible !important;
+        }
         .main-header, .sidebar, .navbar, .topbar, .footer, .invoice-toolbar,
         .main-panel > .content > .container-fluid > .d-flex > div { display: none !important; }
-        .main-panel { margin-left: 0 !important; width: 100% !important; }
+        .main-panel, .invoice-page, .invoice-page .content,
+        .invoice-shell, #invoice {
+            display: block !important;
+            position: static !important;
+            width: 100% !important;
+            max-width: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+        }
         .content, .container-fluid { padding: 0 !important; margin: 0 !important; }
-        #invoice .card { box-shadow: none; }
+        #invoice .card { box-shadow: none !important; }
     }
 </style>
 <div class="main-panel invoice-page">
