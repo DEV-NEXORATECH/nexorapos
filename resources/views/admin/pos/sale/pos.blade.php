@@ -594,8 +594,11 @@
                     return;
                 }
 
-                let totalText = $('#total').text().replace(/[^0-9]/g, '');
-                rawTotalDue = parseInt(totalText) || 0;
+                // The POS total is rendered with two decimal places. Removing
+                // every non-digit character turns 12000.00 into 1200000, so
+                // preserve the decimal separator when reading it back.
+                const totalText = $('#total').text().replace(/[^0-9.,-]/g, '').replace(/,/g, '');
+                rawTotalDue = Math.round(parseFloat(totalText) || 0);
                 
                 if (rawTotalDue === 0) {
                     Swal.fire('Empty Cart', 'Please add items to cart first', 'warning');
