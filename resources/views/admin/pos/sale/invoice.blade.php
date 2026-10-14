@@ -95,29 +95,14 @@
                         <div class="col-md-3">
                             <small class="text-muted">Sale Status</small>
                             <div>
-                                @php($ssBadge = 'badge-secondary')
-                                @php
-                                    $ssBadge = match($sale->status) {
-                                        'completed' => 'badge-success',
-                                        'cancelled', 'void' => 'badge-danger',
-                                        default => 'badge-secondary',
-                                    };
-                                @endphp
+                                @php($ssBadge = $sale->status === 'completed' ? 'badge-success' : (in_array($sale->status, ['cancelled', 'void'], true) ? 'badge-danger' : 'badge-secondary'))
                                 <span class="badge {{ $ssBadge }}">{{ ucfirst($sale->status) }}</span>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <small class="text-muted">Payment Status</small>
                             <div>
-                                @php($psBadge = 'badge-secondary')
-                                @php
-                                    $psBadge = match($sale->payment_status ?? 'UNPAID') {
-                                        'PAID' => 'badge-success',
-                                        'PARTIAL' => 'badge-warning',
-                                        'REFUNDED' => 'badge-info',
-                                        default => 'badge-secondary',
-                                    };
-                                @endphp
+                                @php($psBadge = ($sale->payment_status ?? 'UNPAID') === 'PAID' ? 'badge-success' : (($sale->payment_status ?? 'UNPAID') === 'PARTIAL' ? 'badge-warning' : (($sale->payment_status ?? 'UNPAID') === 'REFUNDED' ? 'badge-info' : 'badge-secondary')))
                                 <span class="badge {{ $psBadge }}">{{ $sale->payment_status ?? 'UNPAID' }}</span>
                             </div>
                         </div>
