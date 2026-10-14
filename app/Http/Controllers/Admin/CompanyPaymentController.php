@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\CompanyPayment;
+use App\Models\Pos\Sale;
 use App\Services\MidtransPaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -56,6 +57,51 @@ class CompanyPaymentController extends Controller
         }
     }
 
+    public function createPosQris(Request $request)
+    {
+        $user = auth()->user();
+        abort_unless($user, 403);
+
+        $data = $request->validate([
+            'sale_id' => ['required', 'integer', 'exists:sales,id'],
+            'amount' => ['required', 'numeric', 'min:1'],
+        ]);
+
+        $company = $user->company;
+        abort_unless($company, 403);
+
+        $sale = Sale::where('id', $data['sale_id'])
+            ->where('company_id', $company->id)
+            ->firstOrFail();
+
+        $amount = (int) round((float) $data['amount']);
+        if ($amount < 1) {
+            return response()->json(['message' => 'Nominal QRIS harus lebih dari 0.'], 422);
+        }
+
+        $payment = CompanyPayment::create([
+            'company_id' => $company->id,
+            'sale_id' => $sale->id,
+            'purpose' => 'pos',
+            'order_id' => 'POS-'.$sale->id.'-'.now()->format('YmdHis').'-'.Str::upper(Str::random(5)),
+            'amount' => $amount,
+            'status' => 'pending',
+        ]);
+
+        try {
+            $snap = $this->midtrans->createQrisTransaction($payment, $company->name.' - '.$sale->invoice_number);
+            $payment->update(['snap_token' => $snap['token']]);
+
+            return response()->json([
+                'snap_token' => $snap['token'],
+                'order_id' => $payment->order_id,
+            ]);
+        } catch (\Throwable $exception) {
+            $payment->update(['status' => 'failed', 'raw_response' => ['message' => $exception->getMessage()]]);
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+    }
+
     public function notification(Request $request)
     {
         $payload = $request->all();
@@ -77,6 +123,10 @@ class CompanyPaymentController extends Controller
             ]);
 
             if ($isPaid && ! $payment->wasChanged('paid_at')) {
+                return;
+            }
+
+            if ($isPaid && $payment->purpose === 'pos') {
                 return;
             }
 

@@ -8,9 +8,11 @@ class CompanyPayment extends Model
 {
     protected $fillable = [
         'company_id',
+        'sale_id',
         'order_id',
         'amount',
         'status',
+        'purpose',
         'payment_type',
         'transaction_id',
         'fraud_status',
@@ -28,5 +30,10 @@ class CompanyPayment extends Model
     public function company()
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function sale()
+    {
+        return $this->belongsTo(\App\Models\Pos\Sale::class);
     }
 }

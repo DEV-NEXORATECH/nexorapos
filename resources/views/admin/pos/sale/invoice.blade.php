@@ -3,11 +3,25 @@
 @section('title', 'Sale Detail — ' . ($sale->invoice_number ?? '#'.$sale->id))
 
 @section('content')
+<style>
+    .invoice-shell { max-width: 1180px; margin: 0 auto; }
+    .invoice-toolbar { gap: .5rem; flex-wrap: wrap; }
+    #invoice .card { border: 0; border-radius: 16px; box-shadow: 0 8px 24px rgba(17, 55, 92, .08); overflow: hidden; }
+    #invoice .card-header { background: linear-gradient(135deg, #07579f, #0d79c7); color: #fff; border: 0; padding: 1rem 1.25rem; }
+    #invoice .card-header .card-title { margin: 0; font-weight: 700; }
+    #invoice .table thead th { background: #edf6ff; color: #12558d; border: 0; font-size: .78rem; text-transform: uppercase; letter-spacing: .03em; }
+    #invoice .table td { vertical-align: middle; border-color: #edf2f7; }
+    .invoice-total { font-size: 1.35rem; color: #07579f; }
+    .invoice-label { color: #7a8a9a; font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; }
+    .invoice-value { color: #17324d; font-weight: 600; }
+    @media (max-width: 768px) { .invoice-toolbar .btn { flex: 1 1 auto; } #invoice .table { min-width: 820px; } #invoice .card-body.table-wrap { overflow-x: auto; } }
+    @media print { .invoice-toolbar, .main-panel > .content > .container-fluid > .d-flex > div { display: none !important; } #invoice .card { box-shadow: none; } }
+</style>
 <div class="main-panel">
     <div class="content">
-        <div class="container-fluid">
+        <div class="container-fluid invoice-shell">
             {{-- Header --}}
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-3 invoice-toolbar">
                 <h4 class="page-title mb-0">Sale Detail</h4>
                 <div>
                     <a href="{{ url('admin-panel/sales/listing') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
@@ -29,12 +43,12 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-3">
-                            <small class="text-muted">Invoice Number</small>
-                            <div><strong>{{ $sale->invoice_number ?? '#'.$sale->id }}</strong></div>
+                            <div class="invoice-label">Invoice Number</div>
+                            <div class="invoice-value">{{ $sale->invoice_number ?? '#'.$sale->id }}</div>
                         </div>
                         <div class="col-md-3">
-                            <small class="text-muted">Transaction Date</small>
-                            <div>{{ $sale->created_at?->format('d M Y H:i') }}</div>
+                            <div class="invoice-label">Transaction Date</div>
+                            <div class="invoice-value">{{ $sale->created_at?->format('d M Y H:i') }}</div>
                         </div>
                         <div class="col-md-3">
                             <small class="text-muted">Sale Status</small>
@@ -67,16 +81,16 @@
                     <hr>
                     <div class="row">
                         <div class="col-md-4">
-                            <small class="text-muted">Store</small>
-                            <div>{{ optional($sale->store)->name ?? '-' }}</div>
+                            <div class="invoice-label">Store</div>
+                            <div class="invoice-value">{{ optional($sale->store)->name ?? '-' }}</div>
                         </div>
                         <div class="col-md-4">
-                            <small class="text-muted">Cashier</small>
-                            <div>{{ optional($sale->user)->name ?? '-' }}</div>
+                            <div class="invoice-label">Cashier</div>
+                            <div class="invoice-value">{{ optional($sale->user)->name ?? '-' }}</div>
                         </div>
                         <div class="col-md-4">
-                            <small class="text-muted">Customer</small>
-                            <div>{{ optional($sale->customer)->name ?? 'Walk-in' }}</div>
+                            <div class="invoice-label">Customer</div>
+                            <div class="invoice-value">{{ optional($sale->customer)->name ?? 'Walk-in' }}</div>
                             @if($sale->customer)
                             <small>{{ $sale->customer->phone ?? '' }} {{ $sale->customer->email ? '| '.$sale->customer->email : '' }}</small>
                             @endif
@@ -88,7 +102,7 @@
             {{-- Items Table --}}
             <div class="card mb-3">
                 <div class="card-header"><div class="card-title">Items ({{ $sale->sale_items->count() }})</div></div>
-                <div class="card-body p-0">
+                <div class="card-body p-0 table-wrap">
                     <table class="table table-bordered mb-0">
                         <thead>
                             <tr>
@@ -172,15 +186,15 @@
                                 </tr>
                                 <tr style="border-top:2px solid var(--color-blue-200);">
                                     <td><strong>Grand Total</strong></td>
-                                    <td class="text-right"><strong>{{ number_format($sale->total ?? 0, 2) }}</strong></td>
+                                    <td class="text-right"><strong class="invoice-total">Rp {{ number_format($sale->total ?? 0, 0, ',', '.') }}</strong></td>
                                 </tr>
                                 <tr>
                                     <td>Paid</td>
-                                    <td class="text-right">{{ number_format($sale->paid_amount ?? 0, 2) }}</td>
+                                    <td class="text-right">Rp {{ number_format($sale->paid_amount ?? 0, 0, ',', '.') }}</td>
                                 </tr>
                                 <tr>
                                     <td>Change</td>
-                                    <td class="text-right">{{ number_format($sale->change_amount ?? 0, 2) }}</td>
+                                    <td class="text-right">Rp {{ number_format($sale->change_amount ?? 0, 0, ',', '.') }}</td>
                                 </tr>
                             </table>
                         </div>

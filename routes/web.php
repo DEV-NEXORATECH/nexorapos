@@ -64,6 +64,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckCompanyLicense::class, 'Adm
     Route::post('admin-panel/features/billing', [FeatureController::class, 'updateBilling']);
     Route::post('admin-panel/features/payment/qris', [CompanyPaymentController::class, 'createQris']);
     Route::post('admin-panel/settings/license/payment/qris', [CompanyPaymentController::class, 'createQris']);
+    Route::post('admin-panel/pos/payment/qris', [CompanyPaymentController::class, 'createPosQris']);
 
     // Companies
     Route::get('admin-panel/companies/listing', [\App\Http\Controllers\Admin\CompanyController::class, 'index']);

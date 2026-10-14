@@ -2,6 +2,7 @@
 namespace App\Services\Pos;
 use App\Models\Pos\Customer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use App\Pos\Customer\CustomerStoreValidation;
 use App\Pos\Customer\CustomerUpdateValidation;
 class CustomerService{
@@ -67,6 +68,48 @@ class CustomerService{
     public function add()
     {
         return view('admin.pos.customer.add');
+    }
+
+    public function apiStore(Request $request)
+    {
+        $companyId = auth()->user()?->company_id;
+
+        if (! $companyId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akun belum terhubung ke company.',
+            ], 422);
+        }
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255', 'unique:customers,email'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'address' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $customer = Customer::create([
+            'company_id' => $companyId,
+            'customer_code' => $this->nextCustomerCode(),
+            'name' => $data['name'],
+            'email' => $data['email'] ?? null,
+            'phone' => $data['phone'] ?? null,
+            'address' => $data['address'] ?? null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'customer' => $customer,
+        ]);
+    }
+
+    private function nextCustomerCode(): string
+    {
+        do {
+            $code = 'CUS-'.now()->format('YmdHis').'-'.Str::upper(Str::random(4));
+        } while (Customer::where('customer_code', $code)->exists());
+
+        return $code;
     }
 
    public function store(Request $request)

@@ -365,6 +365,7 @@
         update: "{{ url('admin-panel/pos/cart/update') }}",
         remove: "{{ url('admin-panel/pos/cart/remove') }}",
         checkout: "{{ url('admin-panel/pos/checkout') }}",
+        posQris: "{{ url('admin-panel/pos/payment/qris') }}",
         apiCustomer: "{{ url('admin-panel/pos/customers/api') }}",
         createStore: "{{ url('admin-panel/stores/add') }}",
         customAmount: "{{ url('admin-panel/pos/cart/custom') }}",
@@ -784,6 +785,15 @@
                 calculateChange();
             });
 
+            $(document).on('change', '.payment-method-select', function() {
+                const isQris = $(this).find('option:selected').text().trim().toLowerCase() === 'qris';
+                const row = $(this).closest('.payment-row');
+                row.find('.qris-hint').remove();
+                if (isQris) {
+                    row.append('<div class="col-12 qris-hint text-info small mt-1"><i class="fas fa-qrcode"></i> QRIS Midtrans akan dibuka setelah checkout.</div>');
+                }
+            });
+
             function calculateChange() {
                 let totalPaid = 0;
                 $('.payment-amount-input').each(function() {
@@ -812,6 +822,14 @@
                 let btn = $(this);
                 btn.prop('disabled', true).text('Processing...');
 
+                let qrisAmount = 0;
+                $('.payment-row').each(function() {
+                    const methodName = $(this).find('.payment-method-select option:selected').text().trim().toLowerCase();
+                    if (methodName === 'qris') {
+                        qrisAmount += parseInt($(this).find('.payment-amount-input').val()) || 0;
+                    }
+                });
+
                 let formData = $('#checkoutForm').serializeArray();
                 formData.push({name: 'customer_id', value: $('#customerId').val()});
                 formData.push({name: 'store_id', value: $('#storeId').val() || 1});
@@ -826,12 +844,35 @@
                         btn.prop('disabled', false).text('Confirm Payment');
                         if (res.success) {
                             $('#checkoutModal').modal('hide');
-                            Swal.fire('Success', 'Payment completed successfully!', 'success').then(() => {
-                                if (res.redirect) {
-                                    window.open(res.redirect, '_blank');
-                                }
+                            const openInvoice = () => {
+                                if (res.redirect) window.open(res.redirect, '_blank');
                                 window.location.reload();
-                            });
+                            };
+
+                            if (qrisAmount > 0 && typeof window.snap !== 'undefined') {
+                                $.ajax({
+                                    url: urls.posQris,
+                                    type: 'POST',
+                                    data: {
+                                        sale_id: res.sale_id,
+                                        amount: qrisAmount,
+                                        _token: $('meta[name="csrf-token"]').attr('content'),
+                                    },
+                                    success: function(payment) {
+                                        window.snap.pay(payment.snap_token, {
+                                            onSuccess: openInvoice,
+                                            onPending: openInvoice,
+                                            onError: function() { Swal.fire('QRIS gagal', 'Pembayaran QRIS gagal diproses.', 'error'); },
+                                            onClose: function() { Swal.fire('QRIS belum dibayar', 'QRIS ditutup sebelum pembayaran selesai.', 'info').then(openInvoice); },
+                                        });
+                                    },
+                                    error: function(err) {
+                                        Swal.fire('QRIS gagal dibuat', err.responseJSON?.message || 'Periksa konfigurasi Midtrans.', 'error').then(openInvoice);
+                                    }
+                                });
+                            } else {
+                                Swal.fire('Success', 'Payment completed successfully!', 'success').then(openInvoice);
+                            }
                         }
                     },
                     error: function(err) {
@@ -843,4 +884,5 @@
             });
         });
     </script>
+    <script src="{{ config('services.midtrans.is_production') ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js' }}" data-client-key="{{ config('services.midtrans.client_key') }}"></script>
 @endpush
