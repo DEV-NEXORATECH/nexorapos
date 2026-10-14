@@ -90,7 +90,10 @@
                     @endif
                     <a class="dropdown-item" href="{{ route('profile.edit') }}#password"><i class="la la-lock"></i> Change Password</a>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="{{ route('logout') }}"><i class="fa fa-power-off"></i> Logout</a>
+                    <form method="POST" action="{{ route('logout') }}" class="m-0">
+                        @csrf
+                        <button type="submit" class="dropdown-item border-0 bg-transparent w-100 text-left"><i class="fa fa-power-off"></i> Logout</button>
+                    </form>
                 </ul>
             </li>
         </ul>
