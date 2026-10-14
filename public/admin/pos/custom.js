@@ -260,11 +260,6 @@ document.addEventListener('DOMContentLoaded', function () {
 $(document).ready(function() {
     $('.print').on('click', function(e) {
         e.preventDefault();
-        var printContents = $('#invoice').html();
-        var originalContents = document.body.innerHTML;
-
-        document.body.innerHTML = printContents;
         window.print();
-        document.body.innerHTML = originalContents;
     });
 });

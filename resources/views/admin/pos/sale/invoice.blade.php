@@ -4,18 +4,38 @@
 
 @section('content')
 <style>
-    .invoice-shell { max-width: 1180px; margin: 0 auto; }
-    .invoice-toolbar { gap: .5rem; flex-wrap: wrap; }
+    .invoice-shell { max-width: 1180px; width: 100%; min-width: 0; margin: 0 auto; overflow: hidden; }
+    .invoice-toolbar { gap: .5rem; flex-wrap: wrap; min-width: 0; }
+    .invoice-actions { display: flex; justify-content: flex-end; gap: .5rem; flex-wrap: wrap; min-width: 0; }
     #invoice .card { border: 0; border-radius: 16px; box-shadow: 0 8px 24px rgba(17, 55, 92, .08); overflow: hidden; }
     #invoice .card-header { background: linear-gradient(135deg, #07579f, #0d79c7); color: #fff; border: 0; padding: 1rem 1.25rem; }
     #invoice .card-header .card-title { margin: 0; font-weight: 700; }
     #invoice .table thead th { background: #edf6ff; color: #12558d; border: 0; font-size: .78rem; text-transform: uppercase; letter-spacing: .03em; }
-    #invoice .table td { vertical-align: middle; border-color: #edf2f7; }
+    #invoice .table td { vertical-align: middle; border-color: #edf2f7; overflow-wrap: anywhere; }
+    #invoice .table-wrap { max-width: 100%; overflow-x: auto; }
+    #invoice .table-wrap > table { width: 100%; table-layout: fixed; }
     .invoice-total { font-size: 1.35rem; color: #07579f; }
     .invoice-label { color: #7a8a9a; font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; }
     .invoice-value { color: #17324d; font-weight: 600; }
-    @media (max-width: 768px) { .invoice-toolbar .btn { flex: 1 1 auto; } #invoice .table { min-width: 820px; } #invoice .card-body.table-wrap { overflow-x: auto; } }
-    @media print { .invoice-toolbar, .main-panel > .content > .container-fluid > .d-flex > div { display: none !important; } #invoice .card { box-shadow: none; } }
+    .invoice-brand { display: flex; align-items: center; gap: .75rem; }
+    .invoice-brand img { width: 42px; height: 42px; object-fit: contain; border-radius: 10px; background: #fff; padding: 3px; }
+    @media (max-width: 900px) {
+        .invoice-toolbar > h4 { width: 100%; }
+        .invoice-actions { width: 100%; justify-content: flex-start; }
+        .invoice-actions .btn, .invoice-actions form { flex: 1 1 auto; }
+        .invoice-actions form .btn { width: 100%; }
+    }
+    @media (max-width: 768px) {
+        .invoice-toolbar .btn { flex: 1 1 auto; }
+        #invoice .table-wrap > table { min-width: 820px; }
+    }
+    @media print {
+        .main-header, .sidebar, .navbar, .topbar, .footer, .invoice-toolbar,
+        .main-panel > .content > .container-fluid > .d-flex > div { display: none !important; }
+        .main-panel { margin-left: 0 !important; width: 100% !important; }
+        .content, .container-fluid { padding: 0 !important; margin: 0 !important; }
+        #invoice .card { box-shadow: none; }
+    }
 </style>
 <div class="main-panel">
     <div class="content">
@@ -23,7 +43,7 @@
             {{-- Header --}}
             <div class="d-flex justify-content-between align-items-center mb-3 invoice-toolbar">
                 <h4 class="page-title mb-0">Sale Detail</h4>
-                <div>
+                <div class="invoice-actions">
                     <a href="{{ url('admin-panel/sales/listing') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
                     <button class="btn btn-primary print"><i class="fas fa-print"></i> Print</button>
                     <a href="{{ url('admin-panel/pos/pdf', $sale->id) }}" class="btn btn-secondary"><i class="fas fa-file-pdf"></i> Download PDF</a>
@@ -39,7 +59,15 @@
             <div id="invoice">
             {{-- Sale Header Card --}}
             <div class="card mb-3">
-                <div class="card-header"><div class="card-title">Transaction Information</div></div>
+                <div class="card-header">
+                    <div class="invoice-brand">
+                        <img src="{{ asset('admin/images/retail-point-of-sale-logo.png') }}" alt="Retail Point Of Sale">
+                        <div>
+                            <div class="card-title">Retail Point Of Sale</div>
+                            <small>Transaction Information</small>
+                        </div>
+                    </div>
+                </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-3">
