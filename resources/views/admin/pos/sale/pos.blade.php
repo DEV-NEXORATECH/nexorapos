@@ -101,6 +101,9 @@
                     <a href="{{ url('cfd/'.auth()->id()) }}" target="_blank" class="btn btn-sm btn-outline-primary" style="border-radius:8px; font-weight:600; margin-right: 5px;" title="Open Customer Facing Display">
                         <i class="fas fa-desktop"></i> CFD
                     </a>
+                    <a href="{{ route('logout') }}" class="btn btn-sm btn-outline-danger pos-logout-btn" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
                     <button type="button" class="btn pos-add-customer-btn">
                         + Add Customer
                     </button>
