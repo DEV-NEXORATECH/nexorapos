@@ -62,6 +62,7 @@
                     @if(!in_array($sale->status, ['cancelled', 'void']))
                     <form action="{{ url('admin-panel/sales/delete', $sale->id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Yakin ingin membatalkan sale ini?');">
                         @csrf
+                        @method('DELETE')
                         <button type="submit" class="btn btn-danger"><i class="fas fa-times"></i> Cancel Sale</button>
                     </form>
                     @endif
