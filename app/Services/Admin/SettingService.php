@@ -59,13 +59,18 @@ public function index()
         $user = auth()->user();
         // License status must remain viewable even when an older deployment
         // has not run the feature/license migrations yet.
-        $features = Schema::hasTable('features')
+        $hasFeatureSchema = Schema::hasTable('features')
+            && Schema::hasColumns('features', ['key', 'name', 'display_order']);
+        $hasCompanyFeatureSchema = Schema::hasTable('company_features')
+            && Schema::hasColumns('company_features', ['company_id', 'feature_key', 'is_enabled']);
+
+        $features = $hasFeatureSchema
             ? Feature::orderBy('display_order')->orderBy('name')->get()
             : collect();
         $companies = $user?->isSuperAdmin()
             ? Company::orderBy('name')->get()
             : Company::where('id', $user?->company_id)->get();
-        $companyFeatures = Schema::hasTable('company_features')
+        $companyFeatures = $hasCompanyFeatureSchema
             ? CompanyFeature::all()
             ->groupBy('company_id')
             ->map(fn ($items) => $items->keyBy('feature_key'))

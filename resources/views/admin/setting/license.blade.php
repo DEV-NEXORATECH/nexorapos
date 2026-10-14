@@ -185,7 +185,7 @@
             });
         </script>
     @endif
-    @if(!auth()->user()?->isSuperAdmin())
+    @unless(auth()->user()?->isSuperAdmin())
         @foreach($companies as $company)
             @php($license = $company->licenseSnapshot())
             @if($license['is_locked'])
@@ -226,5 +226,5 @@
                 </script>
             @endif
         @endforeach
-    @endif
+    @endunless
 @endpush

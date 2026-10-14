@@ -219,7 +219,7 @@ class Company extends Model
             return $this->enabledFeatureKeysCache;
         }
 
-        if (! Schema::hasTable('company_features')) {
+        if (! Schema::hasTable('company_features') || ! Schema::hasColumns('company_features', ['company_id', 'feature_key', 'is_enabled'])) {
             return $this->enabledFeatureKeysCache = [];
         }
 
