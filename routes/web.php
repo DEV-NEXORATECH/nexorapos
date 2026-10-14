@@ -58,6 +58,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckCompanyLicense::class, 'Adm
     Route::get('admin-panel/features/create', [FeatureController::class, 'create']);
     Route::get('admin-panel/features/{id}/manage', [FeatureController::class, 'show']);
     Route::post('admin-panel/features/company', [FeatureController::class, 'storeCompany']);
+    Route::post('admin-panel/features/{id}/domain/retry', [FeatureController::class, 'retryDomain']);
     Route::post('admin-panel/features/update', [FeatureController::class, 'update']);
     Route::post('admin-panel/features/billing', [FeatureController::class, 'updateBilling']);
 

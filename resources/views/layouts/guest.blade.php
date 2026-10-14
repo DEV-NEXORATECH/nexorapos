@@ -13,7 +13,7 @@
     </head>
     <body class="font-sans text-slate-900 antialiased bg-blue-50">
         <div class="flex min-h-screen items-center justify-center px-5 py-10">
-            <main class="w-full max-w-md rounded-2xl border border-blue-100 bg-white px-7 py-8 shadow-xl shadow-blue-900/10 sm:px-9">
+            <main class="w-full max-w-4xl rounded-2xl border border-blue-100 bg-white px-7 py-8 shadow-xl shadow-blue-900/10 sm:px-9">
                 <div class="mb-7 text-center">
                     <img src="{{ asset('admin/images/retail-point-of-sale-logo.png') }}" alt="Retail Point Of sale" class="mx-auto h-16 w-auto object-contain">
                     <h1 class="mt-4 text-2xl font-bold text-blue-700">Retail Point Of sale</h1>

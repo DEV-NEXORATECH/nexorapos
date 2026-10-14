@@ -42,6 +42,11 @@
                                 <small class="form-text text-muted">Dibuat otomatis dari nama company + nomor urut. Tidak bisa diedit.</small>
                             </div>
                             <div class="col-md-4 mb-3">
+                                <label class="form-label">Domain Toko</label>
+                                <input type="text" id="company-domain-preview" class="form-control" value="Auto: nama-company.{{ config('services.hostinger.domain') }}" disabled readonly>
+                                <small class="form-text text-muted">Subdomain dibuat otomatis setelah company disimpan.</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
                                 <label class="form-label">Legal Name</label>
                                 <input type="text" name="legal_name" class="form-control" value="{{ old('legal_name') }}" placeholder="PT/CV/Nama legal">
                                 @error('legal_name')<div class="nexora-field-error">{{ $message }}</div>@enderror
@@ -175,6 +180,20 @@
 
 @push('script')
     <script>
+        const companyNameInput = document.querySelector('input[name="name"]');
+        const companyDomainPreview = document.querySelector('#company-domain-preview');
+        const hostingerDomain = @json(config('services.hostinger.domain'));
+
+        companyNameInput?.addEventListener('input', function () {
+            const slug = this.value
+                .toLowerCase()
+                .trim()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '') || 'nama-company';
+
+            companyDomainPreview.value = 'Auto: ' + slug + '.' + hostingerDomain;
+        });
+
         document.querySelector('.nexora-billing-period')?.addEventListener('change', function(e) {
             const months = document.querySelector('.nexora-billing-months');
             if (!months) return;

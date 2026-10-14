@@ -36,6 +36,9 @@
                             <span>Company berhasil dibuat</span>
                             <strong>{{ session('created_company_code') }}</strong>
                             <p>Berikan company code ini ke admin company untuk login. Code dibuat otomatis dan tidak bisa diubah.</p>
+                            @if(session('created_company_domain'))
+                                <p class="mb-0">URL toko: <a href="{{ session('created_company_domain') }}" target="_blank" rel="noopener">{{ session('created_company_domain') }}</a></p>
+                            @endif
                         </div>
                     </div>
                 @endif
@@ -108,6 +111,25 @@
                                         <span class="nexora-status {{ $licenseInactive ? 'nexora-status-danger' : 'nexora-status-success' }}">
                                             {{ $licenseInactive ? 'Access Locked' : 'Operational Access' }}
                                         </span>
+                                    </div>
+                                    <div class="mt-2 small">
+                                        <strong>Domain toko:</strong>
+                                        @if($company->subdomain)
+                                            <a href="https://{{ $company->subdomain }}.{{ config('services.hostinger.domain') }}" target="_blank" rel="noopener">
+                                                {{ $company->subdomain }}.{{ config('services.hostinger.domain') }}
+                                            </a>
+                                            <span class="nexora-status {{ $company->domain_status === 'active' ? 'nexora-status-success' : ($company->domain_status === 'failed' ? 'nexora-status-danger' : 'nexora-status-warning') }}">
+                                                {{ strtoupper($company->domain_status) }}
+                                            </span>
+                                        @else
+                                            <span class="text-muted">Belum dibuat</span>
+                                        @endif
+                                        @if($company->domain_status !== 'active')
+                                            <form method="POST" action="{{ url('admin-panel/features/'.$company->id.'/domain/retry') }}" class="d-inline ms-2">
+                                                @csrf
+                                                <button type="submit" class="btn btn-outline-primary btn-sm">Buat / Coba Lagi</button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </div>
 

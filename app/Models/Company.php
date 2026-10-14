@@ -12,6 +12,10 @@ class Company extends Model
     protected $fillable = [
         'name',
         'company_code',
+        'subdomain',
+        'domain_status',
+        'domain_error',
+        'domain_created_at',
         'logo',
         'legal_name',
         'npwp',
@@ -43,6 +47,7 @@ class Company extends Model
         'payment_due_at' => 'date',
         'grace_period_days' => 'integer',
         'blocked_at' => 'datetime',
+        'domain_created_at' => 'datetime',
     ];
 
     public function users()

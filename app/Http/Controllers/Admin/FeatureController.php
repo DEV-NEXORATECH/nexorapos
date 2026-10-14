@@ -15,10 +15,14 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use App\Support\AuditLogger;
 use Database\Seeders\RolePermissionSeeder;
+use App\Services\HostingerDnsService;
 
 class FeatureController extends Controller
 {
-    public function __construct(private CompanyCodeGenerator $companyCodeGenerator)
+    public function __construct(
+        private CompanyCodeGenerator $companyCodeGenerator,
+        private HostingerDnsService $hostingerDnsService,
+    )
     {
     }
 
@@ -176,10 +180,49 @@ class FeatureController extends Controller
             return $company;
         });
 
+        try {
+            $this->hostingerDnsService->createFor($company);
+        } catch (\Throwable $exception) {
+            $company->forceFill([
+                'domain_status' => 'failed',
+                'domain_error' => $exception->getMessage(),
+            ])->save();
+        }
+
         return redirect('admin-panel/features')->with(
             'success',
             'Company berhasil dibuat. Company Code: '.$company->company_code.'. Berikan kode ini ke admin company untuk login.'
-        )->with('created_company_code', $company->company_code);
+        )->with('created_company_code', $company->company_code)
+            ->with('created_company_domain', $this->companyDomain($company));
+    }
+
+    public function retryDomain($id)
+    {
+        if (! auth()->user()?->isSuperAdmin()) {
+            abort(403, 'Only Super Admin can manage company domains.');
+        }
+
+        $company = Company::findOrFail($id);
+
+        try {
+            $this->hostingerDnsService->createFor($company);
+
+            return redirect()->back()->with('success', 'Subdomain berhasil dibuat: '.$this->companyDomain($company));
+        } catch (\Throwable $exception) {
+            $company->forceFill([
+                'domain_status' => 'failed',
+                'domain_error' => $exception->getMessage(),
+            ])->save();
+
+            return redirect()->back()->with('failed', 'Subdomain gagal dibuat: '.$exception->getMessage());
+        }
+    }
+
+    private function companyDomain(Company $company): string
+    {
+        return $company->subdomain
+            ? 'https://'.$company->subdomain.'.'.config('services.hostinger.domain')
+            : '-';
     }
 
     public function updateBilling(Request $request)

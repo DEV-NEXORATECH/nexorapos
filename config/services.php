@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'hostinger' => [
+        'api_token' => env('HOSTINGER_API_TOKEN'),
+        'domain' => env('HOSTINGER_DOMAIN', 'karirandalan.com'),
+        'record_type' => env('HOSTINGER_DNS_RECORD_TYPE', 'CNAME'),
+        'record_target' => env('HOSTINGER_DNS_RECORD_TARGET'),
+        'ttl' => (int) env('HOSTINGER_DNS_TTL', 300),
+    ],
+
 ];
