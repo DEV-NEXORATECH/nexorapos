@@ -133,8 +133,8 @@
     <div class="invoice-wrapper" style="margin-left:-15px; border:1px solid #DCEEFF; padding:15px; padding-bottom:50px; box-shadow:0 0 10px rgba(0, 46, 88, 0.12);">
         <div class="header">
             <div class="left logo">
-                @if (file_exists(public_path('admin/images/logo.png')))
-                    <img src="{{ public_path('admin/images/logo.png') }}" alt="Logo">
+                @if (file_exists(public_path('admin/images/retail-point-of-sale-logo.png')))
+                    <img src="{{ public_path('admin/images/retail-point-of-sale-logo.png') }}" alt="Retail Point Of Sale">
                 @else
                     <div style="font-size: 24px; font-weight: bold;">{{ optional($sale->store)->name }}</div>
                 @endif
@@ -177,18 +177,13 @@
                 </thead>
                 <tbody>
                     @foreach ($sale->sale_items as $index => $it)
-                        @php
-                            $lineBase = ($it->price ?? 0) * ($it->quantity ?? 0);
-                            $lineDiscount = ($it->discount ?? 0) * ($it->quantity ?? 0);
-                            $lineTotal = $lineBase - $lineDiscount;
-                        @endphp
                         <tr>
                             <td>{{ $index + 1 }}</td>
                             <td>{{ optional($it->product)->name }}</td>
                             <td style="text-align:center;">{{ $it->quantity }}</td>
-                            <td style="text-align:right;">{{ number_format($it->price, 2) }}</td>
-                            <td style="text-align:right;">{{ number_format($it->discount, 2) }}</td>
-                            <td style="text-align:right;">{{ number_format($lineTotal, 2) }}</td>
+                            <td style="text-align:right;">{{ number_format($it->price ?? 0, 2) }}</td>
+                            <td style="text-align:right;">{{ number_format($it->discount ?? 0, 2) }}</td>
+                            <td style="text-align:right;">{{ number_format((($it->price ?? 0) * ($it->quantity ?? 0)) - (($it->discount ?? 0) * ($it->quantity ?? 0)), 2) }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -200,19 +195,19 @@
                 <table>
                     <tr>
                         <td>Subtotal:</td>
-                        <td style="text-align:right;">{{ number_format($sale->subtotal, 2) }}</td>
+                        <td style="text-align:right;">{{ number_format($sale->subtotal ?? 0, 2) }}</td>
                     </tr>
                     <tr>
                         <td>Discount:</td>
-                        <td style="text-align:right;">{{ number_format($sale->discount, 2) }}</td>
+                        <td style="text-align:right;">{{ number_format($sale->discount ?? 0, 2) }}</td>
                     </tr>
                     <tr>
                         <td>Tax:</td>
-                        <td style="text-align:right;">{{ number_format($sale->tax, 2) }}</td>
+                        <td style="text-align:right;">{{ number_format($sale->tax ?? 0, 2) }}</td>
                     </tr>
                     <tr>
                         <td><strong>Total:</strong></td>
-                        <td style="text-align:right;"><strong>{{ number_format($sale->total, 2) }}</strong></td>
+                        <td style="text-align:right;"><strong>{{ number_format($sale->total ?? 0, 2) }}</strong></td>
                     </tr>
                 </table>
             </div>

@@ -146,11 +146,6 @@
                         </thead>
                         <tbody>
                             @foreach($sale->sale_items as $i => $it)
-                                @php
-                                    $lineBase = ($it->price ?? 0) * ($it->quantity ?? 0);
-                                    $lineDiscount = ($it->discount ?? 0) * ($it->quantity ?? 0);
-                                    $lineTotal = $lineBase - $lineDiscount + ($it->tax ?? 0);
-                                @endphp
                                 <tr>
                                     <td>{{ $i + 1 }}</td>
                                     <td>{{ optional($it->product)->name ?? '-' }}</td>
@@ -160,7 +155,7 @@
                                     <td class="text-right">{{ number_format($it->price ?? 0, 2) }}</td>
                                     <td class="text-right">{{ number_format($it->discount ?? 0, 2) }}</td>
                                     <td class="text-right">{{ number_format($it->tax ?? 0, 2) }}</td>
-                                    <td class="text-right">{{ number_format($lineTotal, 2) }}</td>
+                                    <td class="text-right">{{ number_format((($it->price ?? 0) * ($it->quantity ?? 0)) - (($it->discount ?? 0) * ($it->quantity ?? 0)) + ($it->tax ?? 0), 2) }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
