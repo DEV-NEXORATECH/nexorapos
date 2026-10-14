@@ -35,7 +35,7 @@ class SaleService
     public function index()
     {
         if (request()->ajax()) {
-            $data = Sale::with(["store", "customer", "user", "sale_items", "company"])->with(['company']);
+            $data = Sale::with(["store", "customer", "user", "sale_items", "payments.method", "company"]);
             return \Yajra\DataTables\Facades\DataTables::of($data)
                 ->addColumn('invoice', function($row) { return $row->invoice_number; })
                 ->addColumn('date', function($row) { return $row->created_at ? $row->created_at->format("d M Y") : "-"; })
@@ -43,20 +43,20 @@ class SaleService
                 ->addColumn('customer', function($row) { return $row->customer ? $row->customer->name : "-"; })
                 ->addColumn('cashier', function($row) { return "-"; })
                 ->addColumn('items', function($row) { return $row->sale_items ? $row->sale_items->sum("quantity") : 0; })
-                ->addColumn('subtotal', function($row) { return "Rp " . number_format($row->sub_total); })
-                ->addColumn('discount', function($row) { return "Rp " . number_format($row->total_discount); })
-                ->addColumn('tax', function($row) { return "Rp " . number_format($row->total_tax); })
-                ->addColumn('grand_total', function($row) { return "Rp " . number_format($row->grand_total); })
-                ->addColumn('paid', function($row) { return "Rp " . number_format($row->paid_amount); })
-                ->addColumn('change', function($row) { return "Rp " . number_format($row->change_amount); })
-                ->addColumn('payment_method', function($row) { return $row->payment_method; })
+                ->addColumn('subtotal', function($row) { return "Rp " . number_format((float) $row->subtotal, 0, ',', '.'); })
+                ->addColumn('discount', function($row) { return "Rp " . number_format((float) $row->discount, 0, ',', '.'); })
+                ->addColumn('tax', function($row) { return "Rp " . number_format((float) $row->tax, 0, ',', '.'); })
+                ->addColumn('grand_total', function($row) { return "Rp " . number_format((float) $row->total, 0, ',', '.'); })
+                ->addColumn('paid', function($row) { return "Rp " . number_format((float) $row->paid_amount, 0, ',', '.'); })
+                ->addColumn('change', function($row) { return "Rp " . number_format((float) $row->change_amount, 0, ',', '.'); })
+                ->addColumn('payment_method', function($row) { return $row->payments->map(fn ($payment) => $payment->method?->name)->filter()->unique()->implode(', ') ?: '-'; })
                 ->addColumn('payment_status', function($row) { return $row->payment_status; })
-                ->addColumn('sale_status', function($row) { return $row->sale_status; })
+                ->addColumn('sale_status', function($row) { return $row->status; })
                 ->addColumn('created', function($row) { return $row->created_at ? $row->created_at->format("H:i") : "-"; })
                 ->addColumn('company', function($row) { return $row->company ? $row->company->name : "-"; })
                 ->addColumn('created_by', function($row) { return "-"; })
                 ->addColumn('created_at', function($row) { return $row->created_at ? $row->created_at->format("d M Y H:i") : "-"; })
-                ->addColumn('action', function($row) { return '<a href="'.url('admin-panel/sale/edit/'.$row->id).'" class="nexora-action-btn is-warning"><i class="fas fa-edit"></i></a><a href="'.url('admin-panel/sale/delete/'.$row->id).'" class="nexora-action-btn is-danger no-ajax" onclick="return confirm(\'Delete?\')"><i class="fas fa-trash"></i></a>'; })
+                ->addColumn('action', function($row) { return '<a href="'.url('admin-panel/pos/invoice/'.$row->id).'" class="nexora-action-btn is-info" title="View invoice"><i class="fas fa-eye"></i></a>'; })
                 
                 
                 
@@ -310,7 +310,9 @@ class SaleService
         $sale = Sale::with(['payments'])->where('company_id', $companyId)->find($id);
         if ($sale) {
             $this->cancelSale($sale);
-            return redirect()->back()->with('success', 'Sale cancelled successfully');
+            $isCashier = strtolower((string) auth()->user()?->role?->role) === 'kasir';
+            $destination = $isCashier ? 'admin-panel/pos/sell' : 'admin-panel/sales/listing';
+            return redirect()->to($destination)->with('success', 'Sale cancelled successfully');
         }
         return redirect()->back()->with('failed', 'Record Not Found or Unauthorized');
     }

@@ -56,7 +56,8 @@
             <div class="d-flex justify-content-between align-items-center mb-3 invoice-toolbar">
                 <h4 class="page-title mb-0">Sale Detail</h4>
                 <div class="invoice-actions">
-                    <a href="{{ url('admin-panel/sales/listing') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
+                    @php($isCashier = strtolower((string) auth()->user()?->role?->role) === 'kasir')
+                    <a href="{{ url($isCashier ? 'admin-panel/pos/sell' : 'admin-panel/sales/listing') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
                     <button class="btn btn-primary print"><i class="fas fa-print"></i> Print</button>
                     <a href="{{ url('admin-panel/pos/pdf', $sale->id) }}" class="btn btn-secondary"><i class="fas fa-file-pdf"></i> Download PDF</a>
                     @if(!in_array($sale->status, ['cancelled', 'void']))

@@ -3,14 +3,24 @@
 @section('title', 'Sales')
 
 @section('content')
-<div class="main-panel">
+<style>
+    .sales-list-page { min-width: 0; overflow-x: hidden; }
+    .sales-table-wrap { width: 100%; overflow-x: auto; }
+    #salesTable { width: 100% !important; min-width: 1500px; }
+    #salesTable th, #salesTable td { white-space: nowrap; vertical-align: middle; }
+    @media (max-width: 768px) {
+        .sales-list-page .content { padding-left: 10px !important; padding-right: 10px !important; }
+    }
+</style>
+<div class="main-panel sales-list-page">
     <div class="content">
         <div class="container-fluid">
                         <div class="superadmin-header-card mb-4">
                 <h4><i class="fas fa-list"></i> Sales</h4>
                 <a href="{{ url('admin-panel/pos/sell') }}" class="btn btn-secondary" style="border: none;">Add New Sale</a>
             </div>
-                            <table class="table table-bordered" id="salesTable">
+                            <div class="sales-table-wrap">
+                            <table class="table table-bordered nexora-data-table" id="salesTable">
                                 <thead>
                                     <tr>
                                         <th>Invoice</th>
@@ -39,6 +49,7 @@
                                     <!-- AJAX loaded by DataTables -->
                                 </tbody>
                             </table>
+                            </div>
         </div>
     </div>
 </div>
@@ -54,7 +65,9 @@
         $('.nexora-data-table').DataTable({
             processing: true,
             serverSide: true,
-            ajax: '{{ url("admin-panel/sale/listing") }}',
+            ajax: '{{ url("admin-panel/sales/listing") }}',
+            scrollX: true,
+            autoWidth: false,
             columns: [
                 { data: 'invoice', name: 'invoice_number' },
                 { data: 'date', name: 'created_at' },
