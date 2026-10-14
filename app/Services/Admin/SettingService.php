@@ -5,6 +5,7 @@ use App\Models\CompanyFeature;
 use App\Models\Feature;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use App\Support\AuditLogger;
 use App\Validations\Admin\Setting\SettingStoreValidation;
 use App\Validations\Admin\Setting\SettingUpdateValidation;
@@ -56,13 +57,19 @@ public function index()
     public function license()
     {
         $user = auth()->user();
-        $features = Feature::orderBy('display_order')->orderBy('name')->get();
+        // License status must remain viewable even when an older deployment
+        // has not run the feature/license migrations yet.
+        $features = Schema::hasTable('features')
+            ? Feature::orderBy('display_order')->orderBy('name')->get()
+            : collect();
         $companies = $user?->isSuperAdmin()
             ? Company::orderBy('name')->get()
             : Company::where('id', $user?->company_id)->get();
-        $companyFeatures = CompanyFeature::all()
+        $companyFeatures = Schema::hasTable('company_features')
+            ? CompanyFeature::all()
             ->groupBy('company_id')
-            ->map(fn ($items) => $items->keyBy('feature_key'));
+            ->map(fn ($items) => $items->keyBy('feature_key'))
+            : collect();
 
         return view('admin.setting.license', compact('companies', 'features', 'companyFeatures'));
     }
