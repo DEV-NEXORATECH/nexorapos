@@ -32,8 +32,35 @@ class HostingerDnsService
             return;
         }
 
+        $accountUsername = (string) config('services.hostinger.account_username');
+        if ($accountUsername === '') {
+            $company->forceFill([
+                'domain_status' => 'pending',
+                'domain_error' => 'HOSTINGER_ACCOUNT_USERNAME belum dikonfigurasi untuk mendaftarkan subdomain ke hosting.',
+            ])->save();
+
+            return;
+        }
+
         if (! in_array($type, ['A', 'CNAME'], true)) {
             throw new RuntimeException('HOSTINGER_DNS_RECORD_TYPE harus A atau CNAME.');
+        }
+
+        // DNS record alone does not attach the hostname to the Hostinger website
+        // or trigger the hosting SSL certificate. Register it as a real hosting
+        // subdomain first, using the same public directory as the main website.
+        $hostingResponse = Http::withToken($token)
+            ->acceptJson()
+            ->timeout(20)
+            ->post('https://developers.hostinger.com/api/hosting/v1/accounts/'
+                .rawurlencode($accountUsername).'/websites/'.rawurlencode($domain).'/subdomains', [
+                    'subdomain' => $subdomain,
+                    'directory' => $subdomain,
+                    'is_using_public_directory' => true,
+                ]);
+
+        if ($hostingResponse->failed() && $hostingResponse->status() !== 409) {
+            throw new RuntimeException('Hostinger subdomain gagal (HTTP '.$hostingResponse->status().'): '.Str::limit($hostingResponse->body(), 500));
         }
 
         $response = Http::withToken($token)
