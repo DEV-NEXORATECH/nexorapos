@@ -116,6 +116,13 @@ class FeatureController extends Controller
             ? null
             : $data['payment_amount'];
 
+        // Sandbox helper: new companies can receive a tiny QRIS test amount
+        // without requiring the Super Admin to enter it manually.
+        if ($data['payment_amount'] === null
+            && filter_var(env('QRIS_TEST_MODE', false), FILTER_VALIDATE_BOOLEAN)) {
+            $data['payment_amount'] = 50;
+        }
+
         $company = DB::transaction(function () use ($data) {
             $company = new Company();
             $companyPayload = [
