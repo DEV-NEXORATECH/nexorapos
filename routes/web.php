@@ -71,6 +71,18 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
+// Compatibility aliases for older menu links that omit /listing.
+Route::middleware('auth')->group(function () {
+    Route::get('admin-panel/products', fn () => redirect('admin-panel/products/listing'));
+    Route::get('admin-panel/sales', fn () => redirect('admin-panel/sales/listing'));
+    Route::get('admin-panel/customers', fn () => redirect('admin-panel/customer/listing'));
+    Route::get('admin-panel/suppliers', fn () => redirect('admin-panel/supplier/listing'));
+    Route::get('admin-panel/payments', fn () => redirect('admin-panel/payments/listing'));
+    Route::get('admin-panel/payment-methods', fn () => redirect('admin-panel/payment-methods/listing'));
+    Route::get('admin-panel/stores', fn () => redirect('admin-panel/stores/listing'));
+    Route::get('admin-panel/purchases', fn () => redirect('admin-panel/purchase/listing'));
+});
+
 Route::middleware(['auth', \App\Http\Middleware\CheckCompanyLicense::class, 'Admin', 'XSS'])->group(function () {
     Route::get('admin-panel/dashboard', [AdminController::class, 'adminPanel'])->name('dashboard');
     Route::get('admin-panel/business-process', [AdminController::class, 'businessProcess']);
