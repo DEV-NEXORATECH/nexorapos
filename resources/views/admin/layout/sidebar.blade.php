@@ -125,15 +125,30 @@
 
                     @if ($filteredPermissions->isNotEmpty())
                         @php
-
                         $currentRoute = Route::current()->uri();
                         $allRoutes = $filteredPermissions->pluck('route')->toArray();
                         $isCategoryActive = in_array($currentRoute, $allRoutes);
 
+                        $categoryIcons = [
+                            'pos' => 'la la-cash-register',
+                            'sales' => 'la la-shopping-bag',
+                            'products' => 'la la-cube',
+                            'customers' => 'la la-address-book',
+                            'suppliers' => 'la la-truck',
+                            'payments' => 'la la-money',
+                            'reports' => 'la la-bar-chart',
+                            'stores' => 'la la-home',
+                            'taxes' => 'la la-percent',
+                            'discounts' => 'la la-ticket',
+                            'roles' => 'la la-key',
+                            'settings' => 'la la-cog',
+                        ];
+                        $categoryIcon = $categoryIcons[$category->feature_key ?? ''] ?? ($category->icon ?: 'la la-circle');
+
                         @endphp
                         <li class="nav-item dropdown {{ $isCategoryActive ? 'show' : '' }}">
                             <a href="#categoryDropdown{{ $category->id }}" class="nav-link dropdown-toggle" data-toggle="collapse" role="button" aria-expanded="{{ $isCategoryActive ? 'true' : 'false' }}" aria-controls="categoryDropdown{{ $category->id }}">
-                                <i class="{{ $category->icons ?? $category->icon ?? 'la la-circle' }}"></i>
+                                <i class="{{ $categoryIcon }}"></i>
                                 <span>{{ $category->name }}</span>
                             </a>
                             <ul class="collapse list-unstyled ml-3 {{ $isCategoryActive ? 'show' : '' }}" id="categoryDropdown{{ $category->id }}">

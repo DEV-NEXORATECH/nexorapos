@@ -81,6 +81,8 @@ Route::middleware('auth')->group(function () {
     Route::get('admin-panel/payment-methods', fn () => redirect('admin-panel/payment-methods/listing'));
     Route::get('admin-panel/stores', fn () => redirect('admin-panel/stores/listing'));
     Route::get('admin-panel/purchases', fn () => redirect('admin-panel/purchase/listing'));
+    Route::get('admin-panel/taxes', fn () => redirect('admin-panel/tax/listing'));
+    Route::get('admin-panel/taxes/listing', fn () => redirect('admin-panel/tax/listing'));
 });
 
 Route::middleware(['auth', \App\Http\Middleware\CheckCompanyLicense::class, 'Admin', 'XSS'])->group(function () {

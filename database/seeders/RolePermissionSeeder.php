@@ -35,12 +35,14 @@ class RolePermissionSeeder extends Seeder
             $featuresData = [
                 'pos' => [
                     'name' => 'POS',
+                    'icon' => 'la la-cash-register',
                     'permissions' => [
                         ['name' => 'Buka Kasir', 'route' => 'admin-panel/pos/sell'],
                     ],
                 ],
                 'sales' => [
                     'name' => 'Sales',
+                    'icon' => 'la la-shopping-bag',
                     'permissions' => [
                         ['name' => 'Lihat Penjualan', 'route' => 'admin-panel/sales/listing'],
                         ['name' => 'Daily Reconciliation', 'route' => 'admin-panel/sales/reconciliation'],
@@ -48,6 +50,7 @@ class RolePermissionSeeder extends Seeder
                 ],
                 'products' => [
                     'name' => 'Products',
+                    'icon' => 'la la-cube',
                     'permissions' => [
                         ['name' => 'Kelola Produk', 'route' => 'admin-panel/products/listing'],
                         ['name' => 'Kelola Kategori', 'route' => 'admin-panel/categories/listing'],
@@ -56,12 +59,14 @@ class RolePermissionSeeder extends Seeder
                 ],
                 'customers' => [
                     'name' => 'Customers',
+                    'icon' => 'la la-address-book',
                     'permissions' => [
                         ['name' => 'Kelola Pelanggan', 'route' => 'admin-panel/customer/listing'],
                     ],
                 ],
                 'suppliers' => [
                     'name' => 'Suppliers',
+                    'icon' => 'la la-truck',
                     'permissions' => [
                         ['name' => 'Kelola Supplier', 'route' => 'admin-panel/supplier/listing'],
                         ['name' => 'Pembelian/Purchases', 'route' => 'admin-panel/purchase/listing'],
@@ -69,42 +74,49 @@ class RolePermissionSeeder extends Seeder
                 ],
                 'payments' => [
                     'name' => 'Payments',
+                    'icon' => 'la la-money',
                     'permissions' => [
                         ['name' => 'Kelola Metode Pembayaran', 'route' => 'admin-panel/payment-methods/listing'],
                     ],
                 ],
                 'reports' => [
                     'name' => 'Reports',
+                    'icon' => 'la la-bar-chart',
                     'permissions' => [
                         ['name' => 'Rekonsiliasi Penjualan', 'route' => 'admin-panel/sales/reconciliation'],
                     ],
                 ],
                 'stores' => [
                     'name' => 'Stores',
+                    'icon' => 'la la-home',
                     'permissions' => [
                         ['name' => 'Kelola Toko', 'route' => 'admin-panel/stores/listing'],
                     ],
                 ],
                 'taxes' => [
                     'name' => 'Taxes',
+                    'icon' => 'la la-percent',
                     'permissions' => [
-                        ['name' => 'Kelola Pajak', 'route' => 'admin-panel/taxes/listing'],
+                        ['name' => 'Kelola Pajak', 'route' => 'admin-panel/tax/listing'],
                     ],
                 ],
                 'discounts' => [
                     'name' => 'Discounts',
+                    'icon' => 'la la-ticket',
                     'permissions' => [
                         ['name' => 'Kelola Diskon', 'route' => 'admin-panel/discounts/listing'],
                     ],
                 ],
                 'roles' => [
                     'name' => 'Roles & Access',
+                    'icon' => 'la la-key',
                     'permissions' => [
                         ['name' => 'Kelola Hak Akses', 'route' => 'admin-panel/roles/listing'],
                     ],
                 ],
                 'settings' => [
                     'name' => 'Settings',
+                    'icon' => 'la la-cog',
                     'permissions' => [
                         ['name' => 'Pengaturan Sistem', 'route' => 'admin-panel/settings/listing'],
                         ['name' => 'Company Settings', 'route' => 'admin-panel/settings/company'],
@@ -119,11 +131,12 @@ class RolePermissionSeeder extends Seeder
             $order = 10;
             foreach ($featuresData as $featureKey => $data) {
                 // Create Category
-                $category = PermissionCategory::withoutGlobalScopes()->firstOrCreate([
+                $category = PermissionCategory::withoutGlobalScopes()->updateOrCreate([
                     'company_id' => $company->id,
                     'feature_key' => $featureKey,
                 ], [
                     'name' => $data['name'],
+                    'icon' => $data['icon'],
                     'display_order' => $order,
                 ]);
 
