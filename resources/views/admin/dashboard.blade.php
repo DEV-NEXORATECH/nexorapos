@@ -12,6 +12,29 @@
                     <div class="alert alert-success">{{ Session::get('success') }}</div>
                 @endif
 
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3">
+                        <div class="nexora-blue-card is-success">
+                            <div class="nexora-blue-card-icon"><i class="la la-money"></i></div>
+                            <div class="nexora-blue-card-info">
+                                <span class="nexora-blue-card-label">Total Income</span>
+                                <span class="nexora-blue-card-value">Rp {{ number_format($payments, 0, ',', '.') }}</span>
+                                <small>{{ $paymentCount }} payment aktif</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="nexora-blue-card is-warning">
+                            <div class="nexora-blue-card-icon"><i class="la la-qrcode"></i></div>
+                            <div class="nexora-blue-card-info">
+                                <span class="nexora-blue-card-label">QRIS Income</span>
+                                <span class="nexora-blue-card-value">Rp {{ number_format($qrisPayments, 0, ',', '.') }}</span>
+                                <small>{{ $qrisPaymentCount }} QRIS payment aktif</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 @if (Session::has('failed'))
                     <div class="alert alert-danger">{{ Session::get('failed') }}</div>
                 @endif
@@ -442,7 +465,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 labels: ['Purchases', 'Sales', 'Payments'],
                 datasets: [{
                     label: 'Count',
-                    data: [{{ $purchases }}, {{ $sales }}, {{ $payments > 0 ? 1 : 0 }}],
+                    data: [{{ $purchases }}, {{ $sales }}, {{ $paymentCount }}],
                     backgroundColor: ['#6366F1', '#3B82F6', '#10B981'],
                     borderRadius: 8,
                     barThickness: 40,

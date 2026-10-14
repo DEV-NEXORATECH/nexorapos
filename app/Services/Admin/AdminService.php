@@ -19,6 +19,7 @@ use App\Models\Pos\Payment;
 use App\Models\Company;
 use App\Models\CompanyFeature;
 use App\Models\Feature;
+use Illuminate\Support\Facades\Schema;
 class AdminService
 {
     public function adminPanel()
@@ -36,7 +37,14 @@ class AdminService
         $purchases=Purchase::when($companyId, fn ($query) => $query->where('company_id', $companyId))->count();
         $items=PurchaseItem::when($companyId, fn ($query) => $query->where('company_id', $companyId))->count();
         $sales=Sale::when($companyId, fn ($query) => $query->where('company_id', $companyId))->count();
-        $payments=Payment::when($companyId, fn ($query) => $query->where('company_id', $companyId))->sum('amount');
+        $paymentQuery = Payment::when($companyId, fn ($query) => $query->where('company_id', $companyId));
+        if (Schema::hasColumn('payments', 'status')) {
+            $paymentQuery->where('status', 'active');
+        }
+        $payments = (clone $paymentQuery)->sum('amount');
+        $paymentCount = (clone $paymentQuery)->count();
+        $qrisPayments = (clone $paymentQuery)->whereHas('method', fn ($query) => $query->whereRaw('LOWER(name) = ?', ['qris']))->sum('amount');
+        $qrisPaymentCount = (clone $paymentQuery)->whereHas('method', fn ($query) => $query->whereRaw('LOWER(name) = ?', ['qris']))->count();
         $platformStats = null;
 
         if ($user?->isSuperAdmin()) {
@@ -51,7 +59,7 @@ class AdminService
             ];
         }
 
-        return view('admin.dashboard', compact('userCount', 'store', 'cats', 'products', 'variants', 'suppliers', 'customers', 'taxes', 'purchases', 'items', 'sales', 'payments', 'platformStats'));
+        return view('admin.dashboard', compact('userCount', 'store', 'cats', 'products', 'variants', 'suppliers', 'customers', 'taxes', 'purchases', 'items', 'sales', 'payments', 'paymentCount', 'qrisPayments', 'qrisPaymentCount', 'platformStats'));
     }
 
   

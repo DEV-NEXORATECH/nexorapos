@@ -135,6 +135,15 @@
                                 | Note: {{ $company->block_reason }}
                             @endif
                         </div>
+
+                        @if(!auth()->user()?->isSuperAdmin() && (float) $company->payment_amount > 0)
+                            <div class="mt-3">
+                                <button type="button" class="btn btn-success license-qris-btn" data-company-id="{{ $company->id }}">
+                                    <i class="fas fa-qrcode"></i> Bayar / Perpanjang via QRIS
+                                </button>
+                                <small class="text-muted ml-2">Nominal: Rp {{ number_format($company->payment_amount, 0, ',', '.') }}</small>
+                            </div>
+                        @endif
                     </div>
                 </div>
             @endforeach
@@ -144,6 +153,38 @@
 @endsection
 
 @push('script')
+    @if(!auth()->user()?->isSuperAdmin() && $companies->contains(fn ($company) => (float) $company->payment_amount > 0))
+        <script src="{{ config('services.midtrans.is_production') ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js' }}" data-client-key="{{ config('services.midtrans.client_key') }}"></script>
+        <script>
+            document.querySelectorAll('.license-qris-btn').forEach((button) => {
+                button.addEventListener('click', async () => {
+                    button.disabled = true;
+                    try {
+                        const response = await fetch('{{ url('admin-panel/settings/license/payment/qris') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            },
+                            body: JSON.stringify({}),
+                        });
+                        const data = await response.json();
+                        if (!response.ok) throw new Error(data.message || 'Pembayaran gagal dibuat.');
+                        window.snap.pay(data.snap_token, {
+                            onSuccess: () => Swal.fire('Berhasil', 'Pembayaran diterima. License akan diperpanjang otomatis.', 'success').then(() => window.location.reload()),
+                            onPending: () => Swal.fire('Menunggu pembayaran', 'Selesaikan pembayaran QRIS di Midtrans.', 'info'),
+                            onError: () => Swal.fire('Gagal', 'Pembayaran QRIS gagal.', 'error'),
+                            onClose: () => { button.disabled = false; },
+                        });
+                    } catch (error) {
+                        button.disabled = false;
+                        Swal.fire('Gagal', error.message, 'error');
+                    }
+                });
+            });
+        </script>
+    @endif
     @if(!auth()->user()?->isSuperAdmin())
         @foreach($companies as $company)
             @php($license = $company->licenseSnapshot())

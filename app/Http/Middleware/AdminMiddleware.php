@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Models\Permission;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 class AdminMiddleware
@@ -61,6 +62,12 @@ class AdminMiddleware
     private function resolvePermission($role, string $currentUri)
     {
         $candidates = [$currentUri];
+
+        // POS actions (cart, shift, checkout, invoice) belong to the POS
+        // permission even though they use different endpoint URLs.
+        if (Str::startsWith($currentUri, 'admin-panel/pos/')) {
+            $candidates[] = 'admin-panel/pos/sell';
+        }
 
         $lastSlash = strrpos($currentUri, '/');
         if ($lastSlash !== false) {

@@ -325,6 +325,13 @@ class SaleService
         $stores = Store::when($companyId, function ($q) use ($companyId) { return $q->where('company_id', $companyId); })
             ->when($assignedStoreId, function ($q) use ($assignedStoreId) { return $q->where('id', $assignedStoreId); })
             ->get();
+
+        // Existing companies may have been created before payment methods were
+        // seeded. Ensure QRIS is available in the POS checkout automatically.
+        if ($companyId) {
+            Method::firstOrCreate(['company_id' => $companyId, 'name' => 'QRIS']);
+        }
+
         $methods = Method::when($companyId, function ($q) use ($companyId) { return $q->where('company_id', $companyId); })->get();
         $products = Product::with('tax','category','product_variants')->when($companyId, function ($q) use ($companyId) { return $q->where('company_id', $companyId); })->get();
         $openShift = $this->currentOpenShift($companyId);

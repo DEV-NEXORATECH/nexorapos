@@ -18,10 +18,16 @@ class CompanyPaymentController extends Controller
 
     public function createQris(Request $request)
     {
-        abort_unless(auth()->user()?->isSuperAdmin(), 403);
+        $user = auth()->user();
+        abort_unless($user, 403);
 
-        $data = $request->validate(['company_id' => ['required', 'integer', 'exists:companies,id']]);
-        $company = Company::findOrFail($data['company_id']);
+        if ($user->isSuperAdmin()) {
+            $data = $request->validate(['company_id' => ['required', 'integer', 'exists:companies,id']]);
+            $company = Company::findOrFail($data['company_id']);
+        } else {
+            $company = $user->company;
+            abort_unless($company, 403);
+        }
         $amount = (int) round((float) $company->payment_amount);
 
         if ($amount < 1) {

@@ -10,6 +10,7 @@ class CheckCompanyLicense
 {
     private const ALLOWED_WHEN_LOCKED = [
         'admin-panel/settings/license',
+        'admin-panel/settings/license/payment',
         'profile',
         'logout',
     ];
