@@ -4,7 +4,7 @@
 
 @section('content')
 
-    <div class="main-panel">
+    <div class="main-panel dashboard-page">
         <div class="content">
             <div class="container-fluid">
 
@@ -190,6 +190,27 @@
 
 @push('script')
 <style>
+    .dashboard-page, .dashboard-page .content, .dashboard-page .container-fluid {
+        min-width: 0 !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+    }
+    .dashboard-page .row, .dashboard-page .card, .dashboard-page canvas {
+        min-width: 0 !important;
+        max-width: 100% !important;
+    }
+    .dashboard-page .nexora-license-card-grid {
+        min-width: 0 !important;
+        width: 100% !important;
+    }
+    @media (max-width: 1199px) {
+        .dashboard-page .nexora-license-card-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-width: 767px) {
+        .dashboard-page .nexora-license-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .dashboard-page .content { padding-left: 10px !important; padding-right: 10px !important; }
+    }
+
     /* ===== Blue Background Cards (Platform Stats) ===== */
     .nexora-blue-card {
         background: #0058A6;

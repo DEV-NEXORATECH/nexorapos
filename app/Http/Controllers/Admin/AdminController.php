@@ -19,6 +19,11 @@ class AdminController extends Controller
 
     public function adminPanel()
     {
+        $user = auth()->user();
+        if ($user && strtolower((string) $user->role?->role) === 'kasir') {
+            return redirect('admin-panel/pos/sell');
+        }
+
         return $this->adminService->adminPanel();
     }
 

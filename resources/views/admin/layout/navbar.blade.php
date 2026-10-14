@@ -77,7 +77,7 @@
                             <div class="u-text">
                                 <h4>{{ $navUser->name }}</h4>
                                 <p class="text-muted mb-1">{{ $navUser->email }}</p>
-                                <p class="text-muted mb-1">{{ $navUser->role?->name ?? ($navUser->isSuperAdmin() ? 'Super Admin' : 'User') }}</p>
+                        <p class="text-muted mb-1">{{ $navUser->role?->role ?? ($navUser->isSuperAdmin() ? 'Super Admin' : 'User') }}</p>
                                 <p class="text-muted mb-2">{{ $navCompany?->company_code ?? 'Super Admin' }}</p>
                             </div>
                         </div>
