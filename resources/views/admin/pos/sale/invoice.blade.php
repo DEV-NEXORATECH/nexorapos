@@ -4,6 +4,8 @@
 
 @section('content')
 <style>
+    html, body { max-width: 100%; overflow-x: hidden !important; }
+    .main-panel, .main-panel .content { min-width: 0 !important; max-width: 100% !important; overflow-x: hidden; }
     .invoice-shell { max-width: 1180px; width: 100%; min-width: 0; margin: 0 auto; overflow: hidden; }
     .invoice-toolbar { gap: .5rem; flex-wrap: wrap; min-width: 0; }
     .invoice-actions { display: flex; justify-content: flex-end; gap: .5rem; flex-wrap: wrap; min-width: 0; }
@@ -24,6 +26,13 @@
         .invoice-actions { width: 100%; justify-content: flex-start; }
         .invoice-actions .btn, .invoice-actions form { flex: 1 1 auto; }
         .invoice-actions form .btn { width: 100%; }
+    }
+    @media (max-width: 767px) {
+        .invoice-shell > .row > [class*="col-md-"],
+        #invoice > .row > [class*="col-md-"] { flex: 0 0 100%; max-width: 100%; }
+        #invoice .card-body { padding: .85rem; }
+        #invoice .card-header { padding: .85rem 1rem; }
+        .invoice-brand img { width: 36px; height: 36px; }
     }
     @media (max-width: 768px) {
         .invoice-toolbar .btn { flex: 1 1 auto; }
