@@ -187,7 +187,9 @@
     @endif
     @unless(auth()->user()?->isSuperAdmin())
         @foreach($companies as $company)
-            @php($license = $company->licenseSnapshot())
+            @php
+                $license = $company->licenseSnapshot();
+            @endphp
             @if($license['is_locked'])
                 <script>
                     Swal.fire({
