@@ -954,7 +954,11 @@ class SaleService
             'payments.method',
             'sale_items.product',
             'sale_items.product_variant',
-        ])->where('company_id', $companyId)->findOrFail($id);
+        ])
+            // Company users remain tenant-isolated. Super Admin has no
+            // company_id, so do not accidentally search for company_id = NULL.
+            ->when($companyId, fn ($query) => $query->where('company_id', $companyId))
+            ->findOrFail($id);
         return view('admin.pos.sale.invoice', compact('sale'));
     }
     // Generate PDF invoice
