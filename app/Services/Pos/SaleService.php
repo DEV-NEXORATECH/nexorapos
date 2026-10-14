@@ -544,6 +544,10 @@ class SaleService
                 ], 422);
             }
 
+            // Normalize snapshots created by older POS versions. Those
+            // snapshots may not contain discount/tax fields yet.
+            $cart = $this->normalizeCart($cart);
+
             session(['pos_cart' => $cart]);
 
             if (Schema::hasColumn('held_bills', 'status')) {
@@ -667,9 +671,13 @@ class SaleService
     {
         $subtotal = 0; $tax = 0; $discount = 0; $total = 0;
         foreach($cart as $item){
-            $lineBase = $item['price']*$item['quantity'];
-            $lineDiscount = $item['discount']*$item['quantity'];
-            $lineTax = (($lineBase - $lineDiscount) * ($item['tax_percent'] ?? 0))/100;
+            $price = (float) ($item['price'] ?? 0);
+            $quantity = max(0, (float) ($item['quantity'] ?? 0));
+            $itemDiscount = max(0, (float) ($item['discount'] ?? 0));
+            $taxPercent = max(0, (float) ($item['tax_percent'] ?? 0));
+            $lineBase = $price * $quantity;
+            $lineDiscount = $itemDiscount * $quantity;
+            $lineTax = (($lineBase - $lineDiscount) * $taxPercent)/100;
             $subtotal += $lineBase;
             $discount += $lineDiscount;
             $tax += $lineTax;
@@ -678,10 +686,28 @@ class SaleService
         return compact('subtotal','discount','tax','total');
     }
 
+    private function normalizeCart(array $cart): array
+    {
+        return collect($cart)->map(function ($item) {
+            $item = is_array($item) ? $item : [];
+            $item['product_id'] = (int) ($item['product_id'] ?? 0);
+            $item['product_variant_id'] = ! empty($item['product_variant_id'])
+                ? (int) $item['product_variant_id']
+                : null;
+            $item['quantity'] = max(1, (int) ($item['quantity'] ?? 1));
+            $item['price'] = max(0, (float) ($item['price'] ?? 0));
+            $item['discount'] = max(0, (float) ($item['discount'] ?? 0));
+            $item['tax_percent'] = max(0, (float) ($item['tax_percent'] ?? 0));
+            $item['product_name'] = $item['product_name'] ?? 'Product';
+
+            return $item;
+        })->all();
+    }
+
     // Checkout
     public function checkout(Request $request)
     {
-        $cart = session()->get('pos_cart', []);
+        $cart = $this->normalizeCart(session()->get('pos_cart', []));
         if (empty($cart)) {
             return response()->json(['success'=>false,'message'=>'Cart is empty'],422);
         }
