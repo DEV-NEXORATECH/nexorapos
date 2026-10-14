@@ -42,42 +42,41 @@ class RolePermissionSeeder extends Seeder
                 'sales' => [
                     'name' => 'Sales',
                     'permissions' => [
-                        ['name' => 'Lihat Penjualan', 'route' => 'admin-panel/sales'],
+                        ['name' => 'Lihat Penjualan', 'route' => 'admin-panel/sales/listing'],
                         ['name' => 'Daily Reconciliation', 'route' => 'admin-panel/sales/reconciliation'],
                     ],
                 ],
                 'products' => [
                     'name' => 'Products',
                     'permissions' => [
-                        ['name' => 'Kelola Produk', 'route' => 'admin-panel/products'],
-                        ['name' => 'Kelola Kategori', 'route' => 'admin-panel/products/categories'],
-                        ['name' => 'Kelola Stok', 'route' => 'admin-panel/inventory'],
+                        ['name' => 'Kelola Produk', 'route' => 'admin-panel/products/listing'],
+                        ['name' => 'Kelola Kategori', 'route' => 'admin-panel/categories/listing'],
+                        ['name' => 'Kelola Stok', 'route' => 'admin-panel/stock/listing'],
                     ],
                 ],
                 'customers' => [
                     'name' => 'Customers',
                     'permissions' => [
-                        ['name' => 'Kelola Pelanggan', 'route' => 'admin-panel/customers'],
+                        ['name' => 'Kelola Pelanggan', 'route' => 'admin-panel/customer/listing'],
                     ],
                 ],
                 'suppliers' => [
                     'name' => 'Suppliers',
                     'permissions' => [
-                        ['name' => 'Kelola Supplier', 'route' => 'admin-panel/suppliers'],
-                        ['name' => 'Pembelian/Purchases', 'route' => 'admin-panel/purchases'],
+                        ['name' => 'Kelola Supplier', 'route' => 'admin-panel/supplier/listing'],
+                        ['name' => 'Pembelian/Purchases', 'route' => 'admin-panel/purchase/listing'],
                     ],
                 ],
                 'payments' => [
                     'name' => 'Payments',
                     'permissions' => [
-                        ['name' => 'Kelola Metode Pembayaran', 'route' => 'admin-panel/payments'],
+                        ['name' => 'Kelola Metode Pembayaran', 'route' => 'admin-panel/payment-methods/listing'],
                     ],
                 ],
                 'reports' => [
                     'name' => 'Reports',
                     'permissions' => [
-                        ['name' => 'Laporan Penjualan', 'route' => 'admin-panel/reports/sales'],
-                        ['name' => 'Laporan Keuangan', 'route' => 'admin-panel/reports/financial'],
+                        ['name' => 'Rekonsiliasi Penjualan', 'route' => 'admin-panel/sales/reconciliation'],
                     ],
                 ],
                 'stores' => [
@@ -129,7 +128,7 @@ class RolePermissionSeeder extends Seeder
                 ]);
 
                 foreach ($data['permissions'] as $permData) {
-                    $permission = Permission::withoutGlobalScopes()->firstOrCreate([
+                    $permission = Permission::withoutGlobalScopes()->updateOrCreate([
                         'company_id' => $company->id,
                         'permission_category_id' => $category->id,
                         'name' => $permData['name'],
