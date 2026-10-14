@@ -76,6 +76,18 @@ class HostingerDnsService
             return;
         }
 
+        // 409 means the hosting subdomain already exists. Keep it managed by
+        // Hostinger; do not fall back to the old DNS-only flow.
+        if ($hostingResponse->status() === 409) {
+            $company->forceFill([
+                'domain_status' => 'active',
+                'domain_error' => null,
+                'domain_created_at' => $company->domain_created_at ?: now(),
+            ])->save();
+
+            return;
+        }
+
         $response = Http::withToken($token)
             ->acceptJson()
             ->timeout(20)
