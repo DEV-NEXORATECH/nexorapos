@@ -95,15 +95,13 @@
                         <div class="col-md-3">
                             <small class="text-muted">Sale Status</small>
                             <div>
-                                @php($ssBadge = $sale->status === 'completed' ? 'badge-success' : (in_array($sale->status, ['cancelled', 'void'], true) ? 'badge-danger' : 'badge-secondary'))
-                                <span class="badge {{ $ssBadge }}">{{ ucfirst($sale->status) }}</span>
+                                <span class="badge {{ $saleStatusBadge }}">{{ ucfirst($sale->status) }}</span>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <small class="text-muted">Payment Status</small>
                             <div>
-                                @php($psBadge = ($sale->payment_status ?? 'UNPAID') === 'PAID' ? 'badge-success' : (($sale->payment_status ?? 'UNPAID') === 'PARTIAL' ? 'badge-warning' : (($sale->payment_status ?? 'UNPAID') === 'REFUNDED' ? 'badge-info' : 'badge-secondary')))
-                                <span class="badge {{ $psBadge }}">{{ $sale->payment_status ?? 'UNPAID' }}</span>
+                                <span class="badge {{ $paymentStatusBadge }}">{{ $paymentStatus }}</span>
                             </div>
                         </div>
                     </div>

@@ -1023,7 +1023,25 @@ class SaleService
             // company_id, so do not accidentally search for company_id = NULL.
             ->when($companyId, fn ($query) => $query->where('company_id', $companyId))
             ->findOrFail($id);
-        return view('admin.pos.sale.invoice', compact('sale'));
+
+        $saleStatusBadge = $sale->status === 'completed'
+            ? 'badge-success'
+            : (in_array($sale->status, ['cancelled', 'void'], true) ? 'badge-danger' : 'badge-secondary');
+
+        $paymentStatus = $sale->payment_status ?? 'UNPAID';
+        $paymentStatusBadge = match ($paymentStatus) {
+            'PAID' => 'badge-success',
+            'PARTIAL' => 'badge-warning',
+            'REFUNDED' => 'badge-info',
+            default => 'badge-secondary',
+        };
+
+        return view('admin.pos.sale.invoice', compact(
+            'sale',
+            'saleStatusBadge',
+            'paymentStatus',
+            'paymentStatusBadge'
+        ));
     }
     // Generate PDF invoice
     public function pdf($id)
