@@ -211,3 +211,21 @@ Response error standar:
   "data": null
 }
 ```
+
+## Perubahan auth/navigation mobile — 19 Oktober 2026
+
+MobileApiAuth kini menjalankan MobileApiAuthorize setelah validasi Bearer. MobileAccess memetakan route permission yang sudah ada menjadi capability mobile. /auth/me mengirim user.permissions, active_shift (dengan store), require_active_shift, role.id/name, dan is_super_admin. /admin/mobile-menu mengirim permissions selain menu/action flags; endpoint ini tersedia untuk semua role terautentikasi dan mendukung sesi global Super Admin sebelum pemilihan company.
+
+Tindakan API langsung diperiksa berdasarkan permission. Non-super-admin tidak dapat mengganti company_id atau mengakses store di luar company/assignment. Checkout-only dapat membaca invoice sendiri, sedangkan riwayat/invoice kasir lain membutuhkan permission penjualan. Route web pada payload hanya identifier permission dan tidak boleh digunakan sebagai endpoint mobile. Role IDs tetap berasal dari database per company, bukan angka tetap.
+
+Perubahan ini tidak menjalankan migration/seeder dan tidak mengganti perhitungan transaksi. Deploy source backend sebelum memakai mobile fase 2. Tes menggunakan SQLite :memory:: MobileApiTest, RolePermissionTest, PosSaleCheckoutTest, PosStockAdjustmentTest — 25 tes, 137 assertion lulus. UAT empat akun production/perangkat belum dijalankan. Tidak ada password-reset REST endpoint baru pada fase ini.
+
+## Fase 3 POS — 19 Oktober 2026
+
+Katalog mobile mendukung gambar, variants/harga varian, pencarian varian, dan pagination. /auth/me mengumumkan capabilities checkout_idempotency (hanya bila unique index company_id/idempotency_key tersedia), checkout_atomic_rejection, qris_recovery, serta held_merge. Capability penolakan atomik memungkinkan mobile membuka kembali keranjang setelah penolakan 422 yang pasti, dengan harga/stok terbaru; timeout tetap terkunci.
+
+Checkout memvalidasi nominal tunai/non-tunai/split dan permission diskon. discount pada request checkout tetap nominal per unit; mobile membagi diskon total baris dengan quantity. Pajak per baris dibulatkan ke Rupiah utuh. QRIS dicatat pending dan tidak melunasi sale sebelum webhook yang valid. Pembuatan QRIS mereservasi satu order per sale dan mengambil token/order yang sama saat replay; timeout gateway tidak memicu order baru. Rekonsiliasi admin diperlukan jika order belum memiliki token. Webhook memeriksa signature/nominal, menjaga status paid tetap final, serta tidak mengaktifkan kembali invoice void.
+
+Restore held bill mengembalikan metadata lengkap dan replayable oleh pemilik. Merge mengunci bill dan memerlukan toko/customer sama. Laporan shift pribadi mengembalikan summary live. Expected cash hanya memasukkan cash/tunai aktif net kembalian, mengecualikan QRIS; close menolak invoice pending. Payload close adalah closing_cash/note. Split preview memakai split_total/is_balanced. Void mengunci sale sebelum pengembalian stok.
+
+Verifikasi lokal: 31 tes backend, 184 assertion, dengan SQLite :memory: dan gateway Midtrans palsu. Tidak ada migrasi/seeder atau pembayaran production yang dijalankan. Deploy perubahan backend sebelum mobile fase 3; lakukan UAT perangkat dan Midtrans sandbox menggunakan akun resmi. Printer dan endpoint kas masuk/keluar manual belum ditambahkan.

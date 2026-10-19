@@ -200,11 +200,12 @@ class AccessController extends Controller
 
     public function mobileMenu(Request $request)
     {
-        $companyId = $this->companyId($request);
         $user = $request->user();
+        // Super admin may restore a global session before selecting a company.
+        $companyId = $user->isSuperAdmin() ? ($request->query('company_id') ?: null) : $this->companyId($request);
         $permissionRoutes = $user->isSuperAdmin()
             ? Permission::pluck('route')->all()
-            : $user->role?->permissions()->pluck('route')->all() ?? [];
+            : app(\App\Services\MobileAccess::class)->routes($user);
 
         $categories = PermissionCategory::withoutGlobalScopes()
             ->with(['permissions' => fn ($q) => $q->orderBy('route')])
@@ -229,7 +230,7 @@ class AccessController extends Controller
             ->filter(fn ($menu) => $menu['can_view'] || $menu['can_create'] || $menu['can_update'] || $menu['can_delete'])
             ->values();
 
-        return $this->json(true, 'Mobile menu permission.', ['menus' => $categories]);
+        return $this->json(true, 'Mobile menu permission.', ['menus' => $categories, 'permissions' => app(\App\Services\MobileAccess::class)->permissions($user)]);
     }
 
     private function userRecord(Request $request, int $id): User

@@ -164,6 +164,11 @@ class AuthController extends Controller
             'email' => $user->email,
             'phone' => $user->phone,
             'is_super_admin' => (bool) $user->is_super_admin,
+            'capabilities' => ['checkout_atomic_rejection' => true, 'checkout_idempotency' => Schema::hasColumn('sales', 'idempotency_key') && Schema::hasIndex('sales', ['company_id', 'idempotency_key'], 'unique'), 'qris_recovery' => Schema::hasTable('company_payments') && Schema::hasIndex('company_payments', ['order_id'], 'unique') && Schema::hasColumn('payments', 'status'), 'held_merge' => Schema::hasTable('held_bills')],
+            'permissions' => app(\App\Services\MobileAccess::class)->permissions($user),
+            'active_shift' => \Illuminate\Support\Facades\Schema::hasTable('cashier_shifts')
+                ? \App\Models\Pos\CashierShift::with('store')->where('company_id', $user->company_id)->where('user_id', $user->id)->where('status', 'open')->latest('opened_at')->first() : null,
+            'require_active_shift' => true,
             'company' => $user->company ? [
                 'id' => $user->company->id,
                 'name' => $user->company->name,

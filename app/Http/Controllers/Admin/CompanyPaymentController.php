@@ -110,11 +110,15 @@ class CompanyPaymentController extends Controller
         abort_unless($this->midtrans->verifyNotification($payload), 403);
 
         $payment = CompanyPayment::where('order_id', $payload['order_id'] ?? '')->firstOrFail();
+        abort_unless(abs((float) ($payload['gross_amount'] ?? 0) - (float) $payment->amount) < 0.001, 422, 'Nominal notifikasi tidak sesuai pembayaran.');
         $status = $payload['transaction_status'] ?? 'pending';
         $isPaid = in_array($status, ['settlement', 'capture'], true)
             && (($status !== 'capture') || ($payload['fraud_status'] ?? 'accept') === 'accept');
 
         DB::transaction(function () use ($payment, $payload, $status, $isPaid) {
+            $payment = CompanyPayment::whereKey($payment->id)->lockForUpdate()->firstOrFail();
+            if ($payment->status === 'paid' && ! $isPaid) return;
+
             $payment->update([
                 'status' => $isPaid ? 'paid' : $status,
                 'payment_type' => $payload['payment_type'] ?? null,
@@ -130,7 +134,7 @@ class CompanyPaymentController extends Controller
 
             if ($payment->purpose === 'pos') {
                 $sale = Sale::whereKey($payment->sale_id)->lockForUpdate()->first();
-                if ($sale && $isPaid) {
+                if ($sale && $isPaid && ! in_array(strtolower($sale->status), ['void', 'voided', 'cancelled'], true)) {
                     $paidNonQris = Payment::where('sale_id', $sale->id)
                         ->whereHas('method', fn ($query) => $query->whereRaw('LOWER(name) <> ?', ['qris']))
                         ->when(Schema::hasColumn('payments', 'status'), fn ($query) => $query->where('status', 'active'))

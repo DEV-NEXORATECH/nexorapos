@@ -38,6 +38,6 @@ class MobileApiAuth
 
         $token->forceFill(['last_used_at' => now()])->save();
 
-        return $next($request);
+        return app(MobileApiAuthorize::class)->handle($request, $next);
     }
 }

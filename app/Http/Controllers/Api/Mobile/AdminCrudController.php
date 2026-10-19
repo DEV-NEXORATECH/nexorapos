@@ -222,6 +222,7 @@ class AdminCrudController extends Controller
             $query->where('company_id', $companyId);
         }
 
+        if (! $request->user()->isSuperAdmin() && $request->user()->store_id && Schema::hasColumn((new $model())->getTable(), 'store_id')) $query->where('store_id', $request->user()->store_id);
         if ($request->search) {
             $this->applySearch($query, $model, (string) $request->search);
         }
@@ -357,6 +358,7 @@ class AdminCrudController extends Controller
             $query->where('company_id', $companyId);
         }
 
+        if (! request()->user()->isSuperAdmin() && request()->user()->store_id && Schema::hasColumn((new $model())->getTable(), 'store_id')) $query->where('store_id', request()->user()->store_id);
         return $query->findOrFail($id);
     }
 

@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\Mobile\CompanyAdminController;
 use App\Http\Controllers\Api\Mobile\PosController;
 use App\Http\Controllers\Api\Mobile\ReportController;
 use App\Http\Controllers\Api\Mobile\SalesController;
+use App\Http\Controllers\Api\Mobile\BillingController;
 use App\Http\Controllers\Api\Mobile\UploadController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CompanyPaymentController;
@@ -27,6 +28,8 @@ Route::prefix('mobile/v1')->group(function () {
         Route::get('companies', [CatalogController::class, 'companies']);
         Route::get('dashboard', [CatalogController::class, 'dashboard']);
         Route::get('license', [CatalogController::class, 'license']);
+        Route::post('billing/license/qris', [BillingController::class, 'createQris']);
+        Route::get('billing/license/qris/{orderId}', [BillingController::class, 'status']);
         Route::get('features', [CatalogController::class, 'features']);
         Route::get('stores', [CatalogController::class, 'stores']);
         Route::get('categories', [CatalogController::class, 'categories']);

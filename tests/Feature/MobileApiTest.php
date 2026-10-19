@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Hash;
 
 uses(RefreshDatabase::class);
 
-function makeMobileApiFixture(): array
+function makeMobileApiFixture(bool $management = false): array
 {
     $company = Company::create([
         'name' => 'Mobile Company',
@@ -50,6 +50,10 @@ function makeMobileApiFixture(): array
         'display_order' => 1,
     ]);
     $permissions = collect([
+        ['name' => 'POS Sell', 'route' => 'admin-panel/pos/sell'],
+        ['name' => 'Sales List', 'route' => 'admin-panel/sales/listing'],
+        ['name' => 'Sales Reconciliation', 'route' => 'admin-panel/sales/reconciliation'],
+        ['name' => 'Sales Void', 'route' => 'admin-panel/sales/void'],
         ['name' => 'Product List', 'route' => 'admin-panel/products/listing'],
         ['name' => 'Product Add', 'route' => 'admin-panel/products/add'],
         ['name' => 'Product Edit', 'route' => 'admin-panel/products/edit'],
@@ -60,6 +64,11 @@ function makeMobileApiFixture(): array
         'route' => $permission['route'],
     ]));
 
+    if ($management) {
+        foreach (['categories/add', 'products/add', 'stock/add', 'roles/add', 'users/add'] as $route) {
+            $permissions->push(Permission::create(['company_id' => $company->id, 'permission_category_id' => $permissionCategory->id, 'name' => $route, 'route' => 'admin-panel/'.$route]));
+        }
+    }
     $role = Role::create(['company_id' => $company->id, 'role' => 'Kasir']);
     $role->permissions()->sync($permissions->pluck('id')->all());
     $user = User::factory()->create([
@@ -105,7 +114,7 @@ test('mobile api login returns bearer token and profile', function () {
     $response->assertOk()
         ->assertJsonPath('success', true)
         ->assertJsonPath('data.token_type', 'Bearer')
-        ->assertJsonPath('data.user.company.company_code', 'MOBILE');
+        ->assertJsonPath('data.user.company.company_code', 'MOBILE')->assertJsonPath('data.user.capabilities.checkout_idempotency', true)->assertJsonPath('data.user.capabilities.qris_recovery', true);
 });
 
 test('mobile api can refresh token and manage devices', function () {
@@ -258,7 +267,7 @@ test('mobile api can hold merge and split preview bills', function () {
 });
 
 test('mobile admin api can manage master data and stock movement', function () {
-    $fixture = makeMobileApiFixture();
+    $fixture = makeMobileApiFixture(true);
 
     $token = $this->postJson('/api/mobile/v1/auth/login', [
         'email' => 'mobile@example.test',
@@ -299,7 +308,7 @@ test('mobile admin api can manage master data and stock movement', function () {
 });
 
 test('mobile admin api can create role and user within company', function () {
-    $fixture = makeMobileApiFixture();
+    $fixture = makeMobileApiFixture(true);
 
     $token = $this->postJson('/api/mobile/v1/auth/login', [
         'email' => 'mobile@example.test',
@@ -325,4 +334,199 @@ test('mobile admin api can create role and user within company', function () {
     ])->assertCreated()->assertJsonPath('data.user.store.id', $fixture['store']->id);
 
     expect(User::where('email', 'staff-mobile@example.test')->where('company_id', $fixture['company']->id)->exists())->toBeTrue();
+});
+
+
+test('mobile session exposes server role id permissions and current shift', function () {
+    $fixture = makeMobileApiFixture();
+    $token = $this->postJson('/api/mobile/v1/auth/login', ['email' => 'mobile@example.test', 'password' => 'password', 'company_code' => 'MOBILE'])->json('data.access_token');
+    $this->withToken($token)->getJson('/api/mobile/v1/auth/me')->assertOk()->assertJsonPath('data.user.role.id', $fixture['user']->role_id)->assertJsonPath('data.user.role.name', 'Kasir')->assertJsonPath('data.user.active_shift', null);
+    $this->withToken($token)->postJson('/api/mobile/v1/pos/shifts/open', ['store_id' => $fixture['store']->id, 'opening_cash' => 0])->assertCreated();
+    $this->withToken($token)->getJson('/api/mobile/v1/auth/me')->assertOk()->assertJsonPath('data.user.active_shift.status', 'open');
+});
+
+test('mobile denies direct actions when permission is absent and handles revocation immediately', function () {
+    $fixture = makeMobileApiFixture();
+    $token = $this->postJson('/api/mobile/v1/auth/login', ['email' => 'mobile@example.test', 'password' => 'password', 'company_code' => 'MOBILE'])->json('data.access_token');
+    $this->withToken($token)->getJson('/api/mobile/v1/admin/users')->assertForbidden();
+    $this->withToken($token)->postJson('/api/mobile/v1/admin/categories', ['name' => 'Forbidden'])->assertForbidden();
+    $fixture['user']->role->permissions()->detach();
+    $this->withToken($token)->postJson('/api/mobile/v1/pos/checkout', [])->assertForbidden();
+    $this->withToken($token)->getJson('/api/mobile/v1/products')->assertForbidden();
+});
+
+test('mobile rejects a foreign company and an unassigned store', function () {
+    $fixture = makeMobileApiFixture();
+    $fixture['user']->update(['store_id' => $fixture['store']->id]);
+    $other = Store::create(['company_id' => $fixture['company']->id, 'name' => 'Other store', 'code' => 'OTHER']);
+    $token = $this->postJson('/api/mobile/v1/auth/login', ['email' => 'mobile@example.test', 'password' => 'password', 'company_code' => 'MOBILE'])->json('data.access_token');
+    $this->withToken($token)->getJson('/api/mobile/v1/products?company_id=99999')->assertForbidden();
+    $this->withToken($token)->getJson('/api/mobile/v1/products?store_id='.$other->id)->assertForbidden();
+    $this->withToken($token)->getJson('/api/mobile/v1/stores')->assertOk()->assertJsonCount(1, 'data.stores');
+});
+
+test('warehouse gets inventory but cannot checkout without pos permission', function () {
+    $fixture = makeMobileApiFixture();
+    $role = $fixture['user']->role; $role->update(['role' => 'Gudang']);
+    $role->permissions()->sync(Permission::where('company_id', $fixture['company']->id)->where('route', 'admin-panel/products/listing')->pluck('id')->all());
+    $token = $this->postJson('/api/mobile/v1/auth/login', ['email' => 'mobile@example.test', 'password' => 'password', 'company_code' => 'MOBILE'])->json('data.access_token');
+    $this->withToken($token)->getJson('/api/mobile/v1/auth/me')->assertOk()->assertJsonPath('data.user.role.name', 'Gudang');
+    $this->withToken($token)->getJson('/api/mobile/v1/admin/mobile-menu')->assertOk();
+    $this->withToken($token)->getJson('/api/mobile/v1/products')->assertOk();
+    $this->withToken($token)->postJson('/api/mobile/v1/pos/checkout', [])->assertForbidden();
+});
+
+test('global super admin can restore menu before company selection', function () {
+    $fixture = makeMobileApiFixture();
+    $fixture['user']->update(['is_super_admin' => true, 'company_id' => null, 'role_id' => null]);
+    $token = $this->postJson('/api/mobile/v1/auth/login', ['email' => 'mobile@example.test', 'password' => 'password'])->assertOk()->json('data.access_token');
+    $this->withToken($token)->getJson('/api/mobile/v1/auth/me')->assertOk()->assertJsonPath('data.user.is_super_admin', true)->assertJsonPath('data.user.permissions.0', '*');
+    $this->withToken($token)->getJson('/api/mobile/v1/admin/mobile-menu')->assertOk()->assertJsonPath('data.permissions.0', '*');
+    $this->withToken($token)->getJson('/api/mobile/v1/companies')->assertOk();
+});
+
+
+test('checkout-only permission can read own invoice but not another cashier invoice', function () {
+    $fixture = makeMobileApiFixture();
+    $fixture['user']->role->permissions()->sync(Permission::where('company_id', $fixture['company']->id)->where('route', 'admin-panel/pos/sell')->pluck('id')->all());
+    $token = $this->postJson('/api/mobile/v1/auth/login', ['email' => 'mobile@example.test', 'password' => 'password', 'company_code' => 'MOBILE'])->json('data.access_token');
+    $saleId = $this->withToken($token)->postJson('/api/mobile/v1/pos/checkout', ['store_id' => $fixture['store']->id, 'items' => [['product_id' => $fixture['product']->id, 'quantity' => 1, 'discount' => 0]], 'payments' => [['method_id' => $fixture['method']->id, 'amount' => 110]], 'idempotency_key' => 'invoice-owner-test'])->assertCreated()->json('data.sale.id');
+    $this->withToken($token)->getJson('/api/mobile/v1/pos/sales/'.$saleId)->assertOk();
+    $other = User::factory()->create(['company_id' => $fixture['company']->id]);
+    $otherSale = Sale::findOrFail($saleId)->replicate(); $otherSale->user_id = $other->id; $otherSale->invoice_number .= '-OTHER'; $otherSale->idempotency_key = 'other-invoice-key'; $otherSale->save();
+    $this->withToken($token)->getJson('/api/mobile/v1/pos/sales/'.$otherSale->id)->assertNotFound();
+    $this->withToken($token)->getJson('/api/mobile/v1/pos/sales')->assertForbidden();
+});
+
+
+function mobileCashierToken(): array {
+    $fixture = makeMobileApiFixture();
+    $token = test()->postJson('/api/mobile/v1/auth/login', ['email' => 'mobile@example.test', 'password' => 'password', 'company_code' => 'MOBILE'])->json('data.access_token');
+    return [$fixture, $token];
+}
+function mobileCheckoutPayload(array $fixture, array $payments, string $key): array {
+    return ['store_id' => $fixture['store']->id, 'items' => [['product_id' => $fixture['product']->id, 'quantity' => 1, 'discount' => 0]], 'payments' => $payments, 'idempotency_key' => $key];
+}
+function mobilePaidNotification($payment, string $status = 'settlement', ?string $amount = null): array {
+    $gross = $amount ?? number_format((float) $payment->amount, 2, '.', '');
+    return ['order_id' => $payment->order_id, 'status_code' => '200', 'gross_amount' => $gross, 'transaction_status' => $status, 'signature_key' => hash('sha512', $payment->order_id.'200'.$gross.'test-server-key')];
+}
+
+test('qris checkout remains unpaid and repeated creation reuses one gateway order', function () {
+    [$f, $token] = mobileCashierToken();
+    config(['services.midtrans.server_key' => 'test-server-key']);
+    \Illuminate\Support\Facades\Http::fake(['*' => \Illuminate\Support\Facades\Http::response(['token' => 'test-snap-token'], 201)]);
+    $method = Method::create(['company_id' => $f['company']->id, 'name' => 'QRIS']);
+    $saleId = $this->withToken($token)->postJson('/api/mobile/v1/pos/checkout', mobileCheckoutPayload($f, [['method_id' => $method->id, 'amount' => 110]], 'qris-safe'))->assertCreated()->assertJsonPath('data.sale.payment_status', 'UNPAID')->assertJsonPath('data.sale.status', 'pending')->json('data.sale.id');
+    $one = $this->withToken($token)->postJson('/api/mobile/v1/pos/payments/qris', ['sale_id' => $saleId, 'amount' => 110])->assertCreated();
+    $this->withToken($token)->postJson('/api/mobile/v1/pos/payments/qris', ['sale_id' => $saleId, 'amount' => 110])->assertOk()->assertJsonPath('data.order_id', $one->json('data.order_id'));
+    \Illuminate\Support\Facades\Http::assertSentCount(1);
+    expect(\App\Models\CompanyPayment::where('sale_id', $saleId)->count())->toBe(1);
+    $this->withToken($token)->getJson('/api/mobile/v1/pos/sales/'.$saleId)->assertOk()->assertJsonPath('data.sale.qris_payment.order_id', $one->json('data.order_id'));
+    $payment = \App\Models\CompanyPayment::where('sale_id', $saleId)->firstOrFail();
+    $this->postJson('/api/midtrans/notification', mobilePaidNotification($payment))->assertOk();
+    $this->postJson('/api/midtrans/notification', mobilePaidNotification($payment))->assertOk();
+    $this->postJson('/api/midtrans/notification', mobilePaidNotification($payment, 'pending'))->assertOk();
+    expect($payment->fresh()->status)->toBe('paid');
+    expect(Sale::find($saleId)->payment_status)->toBe('PAID');
+});
+
+test('uncertain qris creation never creates a second gateway order', function () {
+    [$f, $token] = mobileCashierToken(); config(['services.midtrans.server_key' => 'test-server-key']);
+    \Illuminate\Support\Facades\Http::fake(fn () => throw new \Illuminate\Http\Client\ConnectionException('timeout'));
+    $method = Method::create(['company_id' => $f['company']->id, 'name' => 'QRIS']);
+    $saleId = $this->withToken($token)->postJson('/api/mobile/v1/pos/checkout', mobileCheckoutPayload($f, [['method_id' => $method->id, 'amount' => 110]], 'qris-timeout'))->assertCreated()->json('data.sale.id');
+    $this->withToken($token)->postJson('/api/mobile/v1/pos/payments/qris', ['sale_id' => $saleId, 'amount' => 110])->assertStatus(502);
+    $this->withToken($token)->postJson('/api/mobile/v1/pos/payments/qris', ['sale_id' => $saleId, 'amount' => 110])->assertStatus(409);
+    expect(\App\Models\CompanyPayment::where('sale_id', $saleId)->count())->toBe(1);
+    expect(Sale::find($saleId)->payment_status)->not->toBe('PAID');
+});
+
+test('cashier shift cash excludes qris after a split payment settles', function () {
+    [$f, $token] = mobileCashierToken(); config(['services.midtrans.server_key' => 'test-server-key']);
+    \Illuminate\Support\Facades\Http::fake(['*' => \Illuminate\Support\Facades\Http::response(['token' => 'test-snap-token'], 201)]);
+    $method = Method::create(['company_id' => $f['company']->id, 'name' => 'QRIS']);
+    $this->withToken($token)->postJson('/api/mobile/v1/pos/shifts/open', ['store_id' => $f['store']->id, 'opening_cash' => 1000])->assertCreated();
+    $saleId = $this->withToken($token)->postJson('/api/mobile/v1/pos/checkout', mobileCheckoutPayload($f, [['method_id' => $f['method']->id, 'amount' => 50], ['method_id' => $method->id, 'amount' => 60]], 'split-qris'))->assertCreated()->assertJsonPath('data.sale.payment_status', 'PARTIAL')->json('data.sale.id');
+    $this->withToken($token)->postJson('/api/mobile/v1/pos/shifts/close', ['closing_cash' => 1050])->assertStatus(422);
+    $this->withToken($token)->postJson('/api/mobile/v1/pos/payments/qris', ['sale_id' => $saleId, 'amount' => 60])->assertCreated();
+    $payment = \App\Models\CompanyPayment::where('sale_id', $saleId)->firstOrFail();
+    $this->postJson('/api/midtrans/notification', mobilePaidNotification($payment, 'settlement', '61.00'))->assertStatus(422);
+    $this->postJson('/api/midtrans/notification', mobilePaidNotification($payment))->assertOk();
+    $this->withToken($token)->getJson('/api/mobile/v1/pos/shifts/report')->assertOk()->assertJsonPath('data.summary.expected_cash', 1050);
+    $this->withToken($token)->postJson('/api/mobile/v1/pos/shifts/close', ['closing_cash' => 1050])->assertOk();
+});
+
+test('mobile rejects invalid tender totals and unauthorized discounts', function () {
+    [$f, $token] = mobileCashierToken();
+    $this->withToken($token)->postJson('/api/mobile/v1/pos/checkout', mobileCheckoutPayload($f, [['method_id' => $f['method']->id, 'amount' => 100]], 'short'))->assertStatus(422);
+    $payload = mobileCheckoutPayload($f, [['method_id' => $f['method']->id, 'amount' => 110]], 'discount'); $payload['items'][0]['discount'] = 1;
+    $this->withToken($token)->postJson('/api/mobile/v1/pos/checkout', $payload)->assertForbidden();
+});
+
+test('held bill restore response is replayable and carries customer store and snapshot', function () {
+    [$f, $token] = mobileCashierToken();
+    $id = $this->withToken($token)->postJson('/api/mobile/v1/pos/held-bills', ['store_id' => $f['store']->id, 'bill_name' => 'Counter', 'items' => [['product_id' => $f['product']->id, 'quantity' => 1, 'discount' => 0]], 'totals' => ['total' => 110]])->assertCreated()->json('data.held_bill.id');
+    $this->withToken($token)->postJson('/api/mobile/v1/pos/held-bills/'.$id.'/restore')->assertOk()->assertJsonPath('data.held_bill.store_id', $f['store']->id)->assertJsonCount(1, 'data.items');
+    $this->withToken($token)->postJson('/api/mobile/v1/pos/held-bills/'.$id.'/restore')->assertOk()->assertJsonCount(1, 'data.items');
+});
+
+
+test('mobile paginated catalog finds variants and checkout uses server variant price', function () {
+    [$f, $token] = mobileCashierToken();
+    $variant = \App\Models\Pos\ProductVariant::create(['company_id' => $f['company']->id, 'product_id' => $f['product']->id, 'name' => 'Large Cup', 'sku' => 'VAR-L', 'barcode' => 'VARIANT123', 'price' => 150, 'cost' => 75]);
+    $this->withToken($token)->getJson('/api/mobile/v1/products?search=VARIANT123&per_page=1')->assertOk()->assertJsonCount(1, 'data.products.data')->assertJsonPath('data.products.data.0.variants.0.id', $variant->id);
+    $permission = Permission::create(['company_id' => $f['company']->id, 'permission_category_id' => PermissionCategory::where('company_id', $f['company']->id)->first()->id, 'name' => 'Discounts', 'route' => 'admin-panel/discounts/listing']);
+    $f['user']->role->permissions()->attach($permission->id);
+    $payload = mobileCheckoutPayload($f, [['method_id' => $f['method']->id, 'amount' => 308]], 'variant-price');
+    $payload['items'][0] = ['product_id' => $f['product']->id, 'product_variant_id' => $variant->id, 'quantity' => 2, 'discount' => 10];
+    $sale = $this->withToken($token)->postJson('/api/mobile/v1/pos/checkout', $payload)->assertCreated()->json('data.sale');
+    expect((float) $sale['total'])->toBe(308.0); expect((float) $sale['discount'])->toBe(20.0); expect((float) $f['product']->fresh()->stock_quantity)->toBe(3.0);
+});
+
+
+test('admin analytics aggregates real paid sales in WIB and excludes another company', function () {
+    $this->travelTo(\Carbon\CarbonImmutable::parse('2026-10-19 12:00:00', 'UTC'));
+    [$f, $token] = mobileCashierToken(); $f['user']->role->update(['role' => 'Admin']);
+    $id = $this->withToken($token)->postJson('/api/mobile/v1/pos/checkout', mobileCheckoutPayload($f, [['method_id' => $f['method']->id, 'amount' => 120]], 'dash-today'))->assertCreated()->json('data.sale.id');
+    Sale::whereKey($id)->update(['created_at' => '2026-10-18 18:00:00']);
+    $prevId = $this->withToken($token)->postJson('/api/mobile/v1/pos/checkout', mobileCheckoutPayload($f, [['method_id' => $f['method']->id, 'amount' => 110]], 'dash-prev'))->assertCreated()->json('data.sale.id');
+    Sale::whereKey($prevId)->update(['created_at' => '2026-10-17 18:00:00']);
+    $other = Company::create(['name' => 'Foreign Company', 'company_code' => 'FOREIGN', 'is_active' => true]);
+    $foreign = Sale::findOrFail($id)->replicate(); $foreign->company_id = $other->id; $foreign->idempotency_key = 'foreign-sale'; $foreign->invoice_number .= '-FOREIGN'; $foreign->total = 999999; $foreign->save();
+    $response = $this->withToken($token)->getJson('/api/mobile/v1/dashboard?analytics=1&from=2026-10-19&to=2026-10-19')->assertOk();
+    $response->assertJsonPath('data.analytics.kpis.revenue', 110)->assertJsonPath('data.analytics.kpis.transactions', 1)->assertJsonPath('data.analytics.kpis.average_order_value', 110)->assertJsonPath('data.analytics.kpis.sales_growth', 0)->assertJsonPath('data.analytics.sales_series.0.date', '2026-10-19')->assertJsonPath('data.analytics.sales_series.0.value', 110)->assertJsonPath('data.analytics.payments.0.value', 110)->assertJsonPath('data.analytics.top_products.0.quantity', 1);
+    $this->withToken($token)->getJson('/api/mobile/v1/dashboard?analytics=1&company_id='.$other->id)->assertForbidden();
+    $this->withToken($token)->getJson('/api/mobile/v1/dashboard?scope=platform')->assertForbidden();
+    $this->withToken($token)->getJson('/api/mobile/v1/companies?company_record_id='.$other->id)->assertForbidden();
+});
+
+test('admin dashboard enforces assigned store and validates custom period', function () {
+    [$f, $token] = mobileCashierToken(); $f['user']->role->update(['role' => 'Admin']);
+    $other = Store::create(['company_id' => $f['company']->id, 'name' => 'Other', 'code' => 'DASH-OTHER']);
+    $f['user']->update(['store_id' => $f['store']->id]);
+    $this->withToken($token)->getJson('/api/mobile/v1/dashboard?analytics=1&store_id='.$other->id)->assertForbidden();
+    $this->withToken($token)->getJson('/api/mobile/v1/dashboard?analytics=1&from=2026-01-01&to=2026-10-19')->assertStatus(422);
+    $this->withToken($token)->getJson('/api/mobile/v1/dashboard?analytics=1&from=2026-10-20&to=2026-10-19')->assertStatus(422);
+    $this->withToken($token)->getJson('/api/mobile/v1/dashboard?analytics=1')->assertOk()->assertJsonPath('data.analytics.period.store_id', $f['store']->id)->assertJsonPath('data.analytics.kpis.revenue', 0)->assertJsonPath('data.analytics.kpis.sales_growth', null);
+});
+
+test('cashier cannot request admin financial analytics even with sales view', function () {
+    [$f, $token] = mobileCashierToken();
+    $this->withToken($token)->getJson('/api/mobile/v1/dashboard?analytics=1')->assertForbidden();
+    $this->withToken($token)->getJson('/api/mobile/v1/dashboard')->assertOk();
+});
+
+test('super admin dashboard is platform-wide and billing excludes POS receipts', function () {
+    $this->travelTo(\Carbon\CarbonImmutable::parse('2026-10-19 12:00:00', 'UTC'));
+    [$f, $token] = mobileCashierToken(); $f['user']->update(['is_super_admin' => true]);
+    Company::create(['name' => 'Inactive', 'company_code' => 'INACTIVE-DASH', 'is_active' => false, 'subscription_status' => 'inactive']);
+    \App\Models\CompanyPayment::create(['company_id' => $f['company']->id, 'order_id' => 'LICENSE-DASH', 'amount' => 50000, 'purpose' => 'license', 'status' => 'paid', 'paid_at' => now()]);
+    \App\Models\CompanyPayment::create(['company_id' => $f['company']->id, 'order_id' => 'POS-DASH', 'amount' => 999999, 'purpose' => 'pos', 'status' => 'paid', 'paid_at' => now()]);
+    \App\Models\AuditLog::create(['company_id' => $f['company']->id, 'actor_user_id' => $f['user']->id, 'action' => 'update', 'module' => 'company', 'target_id' => $f['company']->id, 'created_at' => now()]);
+    $response = $this->withToken($token)->getJson('/api/mobile/v1/dashboard?scope=platform&from=2026-10-19&to=2026-10-19&company_id='.$f['company']->id)->assertOk();
+    $response->assertJsonPath('data.platform.kpis.billing_paid', 50000)->assertJsonCount(min(5, Company::count()), 'data.platform.latest_companies')->assertJsonPath('data.platform.activity.0.module', 'company')->assertJsonMissingPath('data.platform.activity.0.old_value');
+    expect($response->json('data.platform.kpis.companies'))->toBe(Company::count());
+    $this->withToken($token)->getJson('/api/mobile/v1/companies?company_record_id='.$f['company']->id)->assertOk()->assertJsonPath('data.company.company_code', 'MOBILE')->assertJsonPath('data.license.status', 'ACTIVE');
+    $this->withToken($token)->getJson('/api/mobile/v1/admin/audit-logs?scope=platform')->assertOk()->assertJsonCount(1, 'data.audit_logs.data');
 });

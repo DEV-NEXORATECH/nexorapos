@@ -57,6 +57,7 @@ class PosController extends Controller
                 ->first();
 
             if ($existingSale) {
+                abort_unless((int) $existingSale->user_id === (int) $userId && (int) $existingSale->store_id === (int) $data['store_id'], 409, 'Idempotency key sudah digunakan oleh transaksi lain.');
                 return $this->json(true, 'Checkout sudah pernah diproses.', [
                     'sale' => $existingSale,
                     'idempotent_replay' => true,
@@ -84,7 +85,11 @@ class PosController extends Controller
         }
 
         $totals = $this->totals($items);
-        $paidAmount = collect($payments)->sum('amount');
+        $tenderedAmount = (float) collect($payments)->sum('amount');
+        if ($tenderedAmount < $totals['total'] || (count($payments) > 1 && abs($tenderedAmount - $totals['total']) > 0.001) || (count($payments) === 1 && strtolower(trim((string) Method::find($payments[0]['method_id'])->name)) !== 'cash' && strtolower(trim((string) Method::find($payments[0]['method_id'])->name)) !== 'tunai' && abs($tenderedAmount - $totals['total']) > 0.001)) {
+            return $this->json(false, 'Nominal pembayaran tidak sesuai total transaksi.', null, 422);
+        }
+        $paidAmount = (float) collect($payments)->reject(fn ($payment) => $payment['is_qris'])->sum('amount');
         $openShift = $this->currentOpenShift($companyId, $userId);
 
         try {
@@ -107,8 +112,8 @@ class PosController extends Controller
                 $sale->total = $totals['total'];
                 $sale->paid_amount = $paidAmount;
                 $sale->change_amount = max(0, $paidAmount - $totals['total']);
-                $sale->status = 'completed';
-                $sale->payment_status = $paidAmount >= $totals['total'] ? 'PAID' : 'PARTIAL';
+                $sale->status = $paidAmount >= $totals['total'] ? 'completed' : 'pending';
+                $sale->payment_status = $paidAmount >= $totals['total'] ? 'PAID' : ($paidAmount > 0 ? 'PARTIAL' : 'UNPAID');
                 $sale->save();
 
                 foreach ($payments as $index => $payment) {
@@ -120,7 +125,7 @@ class PosController extends Controller
                         'reference' => 'PAY-'.$sale->invoice_number.'-'.($index + 1),
                     ];
                     if (Schema::hasColumn('payments', 'status')) {
-                        $payload['status'] = 'active';
+                        $payload['status'] = $payment['is_qris'] ? 'pending' : 'active';
                     }
                     Payment::create($payload);
                 }
@@ -170,6 +175,11 @@ class PosController extends Controller
                 return $sale->load(['sale_items.product', 'payments.method', 'store', 'customer']);
             });
         } catch (\Throwable $e) {
+            if ($idempotencyKey && Schema::hasColumn('sales', 'idempotency_key')) {
+                $replay = Sale::with(['sale_items.product', 'payments.method', 'store', 'customer'])->where('company_id', $companyId)->where('user_id', $userId)->where('store_id', $data['store_id'])->where('idempotency_key', $idempotencyKey)->first();
+                if ($replay) return $this->json(true, 'Checkout sudah diproses.', ['sale' => $replay, 'idempotent_replay' => true]);
+            }
+            if ($e instanceof \Illuminate\Database\QueryException) return $this->json(false, 'Hasil checkout belum dapat dipastikan. Periksa riwayat dan referensi transaksi yang sama.', null, 503);
             return $this->json(false, $e->getMessage(), null, 422);
         }
 
@@ -187,6 +197,7 @@ class PosController extends Controller
         $bills = HeldBill::with(['store', 'customer'])
             ->where('company_id', $companyId)
             ->where('user_id', $request->user()->id)
+            ->when(! $request->user()->isSuperAdmin() && $request->user()->store_id, fn ($q) => $q->where('store_id', $request->user()->store_id))
             ->where('status', 'held')
             ->latest()
             ->get();
@@ -261,7 +272,10 @@ class PosController extends Controller
             return $this->json(false, 'Ada held bill yang tidak valid atau sudah tidak aktif.', null, 422);
         }
 
+        if ($bills->pluck('store_id')->unique()->count() !== 1 || $bills->pluck('customer_id')->unique()->count() !== 1) return $this->json(false, 'Gabungkan hanya bill dari toko dan customer yang sama.', null, 422);
         $merged = DB::transaction(function () use ($bills, $companyId, $request, $data) {
+            $bills = HeldBill::where('company_id', $companyId)->where('user_id', $request->user()->id)->whereIn('id', $bills->pluck('id'))->where('status', 'held')->lockForUpdate()->get();
+            abort_unless($bills->count() === count(array_unique($data['held_bill_ids'])), 409, 'Bill telah diproses oleh permintaan lain.');
             $items = $bills->flatMap(fn ($bill) => $bill->cart_snapshot ?? [])->values()->all();
             $total = $bills->sum(fn ($bill) => (float) data_get($bill->totals_snapshot, 'total', 0));
 
@@ -292,7 +306,7 @@ class PosController extends Controller
         $companyId = $this->companyId($request);
         $bill = HeldBill::where('company_id', $companyId)
             ->where('user_id', $request->user()->id)
-            ->where('status', 'held')
+            ->whereIn('status', ['held', 'restored'])
             ->findOrFail($id);
 
         $bill->forceFill([
@@ -301,6 +315,7 @@ class PosController extends Controller
         ])->save();
 
         return $this->json(true, 'Held bill berhasil direstore.', [
+            'held_bill' => $bill->load('customer'),
             'items' => $bill->cart_snapshot,
             'totals' => $bill->totals_snapshot,
         ]);
@@ -363,6 +378,8 @@ class PosController extends Controller
         }
 
         $sale = DB::transaction(function () use ($sale, $data, $companyId, $request) {
+            $sale = Sale::where('company_id', $companyId)->whereKey($sale->id)->lockForUpdate()->firstOrFail();
+            abort_if(in_array(strtolower($sale->status), ['cancelled', 'void', 'voided'], true), 409, 'Invoice sudah dibatalkan.');
             $oldValue = $sale->only(['id', 'status', 'payment_status', 'total']);
 
             foreach ($sale->sale_items as $item) {
@@ -470,13 +487,15 @@ class PosController extends Controller
             return $this->json(false, 'Tidak ada shift yang sedang open.', null, 422);
         }
 
+        if (Sale::where('company_id', $companyId)->where('cashier_shift_id', $shift->id)->where('status', 'pending')->exists()) return $this->json(false, 'Selesaikan atau void invoice pending sebelum menutup shift.', null, 422);
         $sales = Sale::where('company_id', $companyId)
             ->where('cashier_shift_id', $shift->id)
             ->where('status', 'completed')
             ->get();
 
         $salesTotal = (float) $sales->sum('total');
-        $expectedCash = (float) $shift->opening_cash + $salesTotal;
+        $cashTotal = \App\Models\Pos\Payment::whereIn('sale_id', $sales->pluck('id'))->whereHas('method', fn ($q) => $q->whereIn(\Illuminate\Support\Facades\DB::raw('LOWER(TRIM(name))'), ['cash', 'tunai']))->where('status', 'active')->sum('amount');
+        $expectedCash = (float) $shift->opening_cash + (float) $cashTotal - (float) $sales->sum('change_amount');
         $closingCash = (float) $data['closing_cash'];
 
         $shift->forceFill([
@@ -502,11 +521,21 @@ class PosController extends Controller
         $companyId = $this->companyId($request);
         $shifts = CashierShift::with(['store', 'user'])
             ->where('company_id', $companyId)
+            ->where('user_id', $request->user()->id)
+            ->when($request->store_id, fn ($q) => $q->where('store_id', $request->store_id))
             ->when($request->date, fn ($q) => $q->whereDate('opened_at', $request->date))
             ->latest('opened_at')
             ->paginate((int) $request->get('per_page', 20));
 
-        return $this->json(true, 'Shift report.', ['shifts' => $shifts]);
+                $active = $this->currentOpenShift($companyId, $request->user()->id);
+        $summary = null;
+        if ($active) {
+            $sales = Sale::where('company_id', $companyId)->where('cashier_shift_id', $active->id)->where('status', 'completed')->get();
+            $cash = Payment::whereIn('sale_id', $sales->pluck('id'))->where('status', 'active')->whereHas('method', fn ($q) => $q->whereIn(DB::raw('LOWER(TRIM(name))'), ['cash', 'tunai']))->sum('amount');
+            $cash = (float) $cash - (float) $sales->sum('change_amount');
+            $summary = ['sales_count' => $sales->count(), 'sales_total' => (float) $sales->sum('total'), 'cash_total' => $cash, 'opening_cash' => (float) $active->opening_cash, 'expected_cash' => (float) $active->opening_cash + $cash];
+        }
+        return $this->json(true, 'Shift report.', ['shifts' => $shifts, 'summary' => $summary]);
     }
 
     private function normalizeItems(array $rows, int $companyId): array
@@ -523,17 +552,20 @@ class PosController extends Controller
                 return ['error' => 'Produk tidak ditemukan.'];
             }
 
-            if (! empty($row['product_variant_id']) && ! ProductVariant::whereKey($row['product_variant_id'])->where('product_id', $product->id)->exists()) {
+            $variant = ! empty($row['product_variant_id']) ? ProductVariant::whereKey($row['product_variant_id'])->where('product_id', $product->id)->first() : null;
+            if (! empty($row['product_variant_id']) && ! $variant) {
                 return ['error' => 'Variant tidak valid untuk '.$product->name.'.'];
             }
 
             $quantity = (float) $row['quantity'];
-            $price = $isCustom ? (float) ($row['price'] ?? 0) : (float) $product->price;
+            $price = $isCustom ? (float) ($row['price'] ?? 0) : (float) ($variant?->price ?? $product->price);
             $discount = (float) ($row['discount'] ?? 0);
+            if ($discount > $price) return ['error' => 'Diskon melebihi harga item.'];
+            if ($discount > 0) abort_unless(app(\App\Services\MobileAccess::class)->allows(request()->user(), 'pos.discount'), 403, 'Anda tidak memiliki izin diskon.');
             $taxPercent = (float) ($product->tax->rate ?? 0);
             $lineBase = $price * $quantity;
             $lineDiscount = $discount * $quantity;
-            $lineTax = round(($lineBase - $lineDiscount) * $taxPercent / 100, 2);
+            $lineTax = round(($lineBase - $lineDiscount) * $taxPercent / 100, 0);
 
             $items[] = [
                 'product_id' => $product->id,
@@ -551,6 +583,7 @@ class PosController extends Controller
     private function normalizePayments(array $rows, int $companyId): array
     {
         $payments = [];
+        if (count(array_unique(array_column($rows, 'method_id'))) !== count($rows)) return ['error' => 'Metode pembayaran tidak boleh duplikat.'];
 
         foreach ($rows as $row) {
             if (! Method::where('company_id', $companyId)->whereKey($row['method_id'])->exists()) {
@@ -558,6 +591,7 @@ class PosController extends Controller
             }
 
             $payments[] = [
+                'is_qris' => strtolower(trim((string) Method::where('company_id', $companyId)->find($row['method_id'])->name)) === 'qris',
                 'method_id' => (int) $row['method_id'],
                 'amount' => (float) $row['amount'],
             ];

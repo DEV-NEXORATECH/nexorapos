@@ -15,9 +15,11 @@ class ReportController extends Controller
 {
     public function auditLogs(Request $request)
     {
+        $global = $request->query('scope') === 'platform';
+        abort_if($global && ! $request->user()->isSuperAdmin(), 403);
         $companyId = $this->companyId($request);
-        $logs = AuditLog::query()
-            ->where('company_id', $companyId)
+        $logs = AuditLog::withoutGlobalScopes()
+            ->when(! $global, fn ($q) => $q->where('company_id', $companyId))
             ->when($request->module, fn ($q) => $q->where('module', $request->module))
             ->when($request->action, fn ($q) => $q->where('action', $request->action))
             ->latest('created_at')
@@ -31,6 +33,7 @@ class ReportController extends Controller
         $companyId = $this->companyId($request);
         $sales = Sale::with(['store', 'customer', 'user', 'payments.method'])
             ->where('company_id', $companyId)
+            ->when(! $request->user()->isSuperAdmin() && $request->user()->store_id, fn ($q) => $q->where('store_id', $request->user()->store_id))
             ->when($request->date, fn ($q) => $q->whereDate('created_at', $request->date))
             ->latest()
             ->get();
@@ -82,7 +85,7 @@ class ReportController extends Controller
     {
         $companyId = $this->companyId($request);
         $date = $request->get('date', now()->toDateString());
-        $sales = Sale::with('payments.method')->where('company_id', $companyId)->whereDate('created_at', $date)->get();
+        $sales = Sale::with('payments.method')->where('company_id', $companyId)->when(! $request->user()->isSuperAdmin() && $request->user()->store_id, fn ($q) => $q->where('store_id', $request->user()->store_id))->whereDate('created_at', $date)->get();
         $payments = Payment::whereIn('sale_id', $sales->pluck('id'))->with('method')->get();
 
         $rows = $payments

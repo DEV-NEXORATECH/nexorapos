@@ -18,10 +18,16 @@ class CatalogController extends Controller
 {
     public function dashboard(Request $request)
     {
+        if ($request->query('scope') === 'platform') {
+            abort_unless($request->user()->isSuperAdmin(), 403);
+            return $this->json(true, 'Dashboard platform.', ['platform' => app(\App\Services\MobileDashboard::class)->platform($request)]);
+        }
         $companyId = $this->companyId($request);
+        $analytics = $request->boolean('analytics') ? app(\App\Services\MobileDashboard::class)->company($request, (int) $companyId) : null;
 
         return $this->json(true, 'Dashboard mobile.', [
             'company' => $this->companyPayload($request, $companyId),
+            'analytics' => $analytics,
             'counts' => [
                 'stores' => Store::where('company_id', $companyId)->count(),
                 'categories' => ProductCategory::where('company_id', $companyId)->count(),
@@ -38,10 +44,14 @@ class CatalogController extends Controller
             return $this->json(false, 'Hanya Super Admin yang bisa melihat seluruh company.', null, 403);
         }
 
+        if ($request->query('company_record_id')) {
+            $record = Company::findOrFail($request->integer('company_record_id'));
+            return $this->json(true, 'Company detail.', ['company' => $this->companyPayload($request, $record->id, $record), 'license' => $record->licenseSnapshot()]);
+        }
         $companies = Company::query()
             ->orderBy('name')
             ->get()
-            ->map(fn (Company $company) => $this->companyPayload($request, $company->id));
+            ->map(fn (Company $company) => $this->companyPayload($request, $company->id, $company));
 
         return $this->json(true, 'Company list.', ['companies' => $companies]);
     }
@@ -83,7 +93,7 @@ class CatalogController extends Controller
     public function stores(Request $request)
     {
         $companyId = $this->companyId($request);
-        $stores = Store::where('company_id', $companyId)->orderBy('name')->get(['id', 'name', 'code', 'company_id']);
+        $stores = Store::where('company_id', $companyId)->when(! $request->user()->isSuperAdmin() && $request->user()->store_id, fn ($q) => $q->whereKey($request->user()->store_id))->orderBy('name')->get(['id', 'name', 'code', 'company_id']);
 
         return $this->json(true, 'Store list.', ['stores' => $stores]);
     }
@@ -99,23 +109,56 @@ class CatalogController extends Controller
     public function products(Request $request)
     {
         $companyId = $this->companyId($request);
-        $products = Product::with(['category:id,name', 'tax:id,name,rate'])
+        $query = Product::with(['category:id,name', 'tax:id,name,rate', 'product_variants'])
             ->where('company_id', $companyId)
             ->when($request->category_id, fn ($q) => $q->where('category_id', $request->category_id))
-            ->orderBy('name')
-            ->get()
-            ->map(fn (Product $product) => [
+            ->when($request->search, function ($q, $search) {
+                $q->where(function ($nested) use ($search) {
+                    $nested->where('name', 'like', '%'.$search.'%')
+                        ->orWhere('sku', 'like', '%'.$search.'%')
+                        ->orWhere('barcode', 'like', '%'.$search.'%')->orWhereHas('product_variants', fn ($variants) => $variants->where('name', 'like', '%'.$search.'%')->orWhere('sku', 'like', '%'.$search.'%')->orWhere('barcode', 'like', '%'.$search.'%'));
+                });
+            })
+            ->when($request->barcode, fn ($q) => $q->where('barcode', $request->barcode))
+            ->when($request->sku, fn ($q) => $q->where('sku', $request->sku))
+            ->orderBy('name');
+
+        if ($request->has('per_page')) {
+            $products = $query->paginate(min((int) $request->get('per_page', 20), 100));
+            $products->setCollection($products->getCollection()->map(fn (Product $product) => [
                 'id' => $product->id,
                 'name' => $product->name,
                 'sku' => $product->sku,
                 'barcode' => $product->barcode,
                 'price' => (float) $product->price,
                 'cost' => (float) $product->cost,
+                'image_url' => $product->image ? asset('admin/product_images/'.$product->image) : null,
+                'minimum_stock' => (int) ($product->minimum_stock ?? 0),
+                'variants' => $product->product_variants->map(fn ($variant) => ['id' => $variant->id, 'name' => $variant->name, 'sku' => $variant->sku, 'barcode' => $variant->barcode, 'price' => (float) $variant->price])->values(),
                 'track_stock' => (bool) $product->track_stock,
                 'stock_quantity' => (int) ($product->stock_quantity ?? 0),
                 'category' => $product->category,
                 'tax' => $product->tax,
-            ]);
+            ]));
+
+            return $this->json(true, 'Product list.', ['products' => $products]);
+        }
+
+        $products = $query->get()->map(fn (Product $product) => [
+            'id' => $product->id,
+            'name' => $product->name,
+            'sku' => $product->sku,
+            'barcode' => $product->barcode,
+            'price' => (float) $product->price,
+            'cost' => (float) $product->cost,
+                'image_url' => $product->image ? asset('admin/product_images/'.$product->image) : null,
+                'minimum_stock' => (int) ($product->minimum_stock ?? 0),
+                'variants' => $product->product_variants->map(fn ($variant) => ['id' => $variant->id, 'name' => $variant->name, 'sku' => $variant->sku, 'barcode' => $variant->barcode, 'price' => (float) $variant->price])->values(),
+            'track_stock' => (bool) $product->track_stock,
+            'stock_quantity' => (int) ($product->stock_quantity ?? 0),
+            'category' => $product->category,
+            'tax' => $product->tax,
+        ]);
 
         return $this->json(true, 'Product list.', ['products' => $products]);
     }
@@ -123,7 +166,20 @@ class CatalogController extends Controller
     public function customers(Request $request)
     {
         $companyId = $this->companyId($request);
-        $customers = Customer::where('company_id', $companyId)->orderBy('name')->get();
+        $query = Customer::where('company_id', $companyId)
+            ->when($request->search, function ($q, $search) {
+                $q->where(function ($nested) use ($search) {
+                    $nested->where('name', 'like', '%'.$search.'%')
+                        ->orWhere('email', 'like', '%'.$search.'%')
+                        ->orWhere('phone', 'like', '%'.$search.'%')
+                        ->orWhere('customer_code', 'like', '%'.$search.'%');
+                });
+            })
+            ->orderBy('name');
+
+        $customers = $request->has('per_page')
+            ? $query->paginate(min((int) $request->get('per_page', 20), 100))
+            : $query->get();
 
         return $this->json(true, 'Customer list.', ['customers' => $customers]);
     }
@@ -163,9 +219,9 @@ class CatalogController extends Controller
         return $request->user()?->company_id;
     }
 
-    private function companyPayload(Request $request, ?int $companyId): ?array
+    private function companyPayload(Request $request, ?int $companyId, ?Company $loaded = null): ?array
     {
-        $company = Company::find($companyId);
+        $company = $loaded ?? Company::find($companyId);
         if (! $company) {
             return null;
         }
@@ -180,6 +236,12 @@ class CatalogController extends Controller
             'phone' => $company->phone,
             'address' => $company->address,
             'is_active' => (bool) $company->is_active,
+            'created_at' => $company->created_at,
+            'subscription_status' => $company->subscription_status,
+            'payment_due_at' => $company->payment_due_at,
+            'payment_amount' => $company->payment_amount,
+            'grace_period_days' => $company->grace_period_days,
+            'max_users' => $company->max_users,
         ];
     }
 
