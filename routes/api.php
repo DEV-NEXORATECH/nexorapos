@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Mobile\CatalogController;
 use App\Http\Controllers\Api\Mobile\CompanyAdminController;
 use App\Http\Controllers\Api\Mobile\PosController;
 use App\Http\Controllers\Api\Mobile\ReportController;
+use App\Http\Controllers\Api\Mobile\SalesController;
 use App\Http\Controllers\Api\Mobile\UploadController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CompanyPaymentController;
@@ -33,6 +34,12 @@ Route::prefix('mobile/v1')->group(function () {
         Route::get('customers', [CatalogController::class, 'customers']);
         Route::post('customers', [CatalogController::class, 'storeCustomer']);
         Route::get('payment-methods', [CatalogController::class, 'paymentMethods']);
+
+        Route::get('pos/sales', [SalesController::class, 'index']);
+        Route::get('pos/sales/{id}', [SalesController::class, 'show']);
+        Route::get('pos/reconciliation', [SalesController::class, 'reconciliation']);
+        Route::post('pos/payments/qris', [SalesController::class, 'createQris']);
+        Route::get('pos/payments/qris/{orderId}', [SalesController::class, 'qrisStatus']);
 
         Route::post('admin/companies', [CompanyAdminController::class, 'store']);
         Route::put('admin/companies/{id}', [CompanyAdminController::class, 'update']);

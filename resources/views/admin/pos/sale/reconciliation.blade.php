@@ -3,66 +3,52 @@
 @section('title', 'Daily Reconciliation')
 
 @section('content')
-<div class="main-panel">
+<div class="main-panel reconciliation-page">
     <div class="content">
         <div class="container-fluid">
-            <div class="d-flex justify-content-between align-items-center flex-wrap mb-3" style="gap: 12px;">
-                <div>
+            <div class="reconciliation-page-header">
+                <div class="reconciliation-page-heading">
+                    <span class="reconciliation-eyebrow"><i class="la la-balance-scale"></i> Finance & Reports</span>
                     <h4 class="page-title mb-1">Daily Reconciliation</h4>
                     <p class="text-muted mb-0">Cocokkan total struk dengan uang masuk per metode pembayaran.</p>
                 </div>
-                <form method="GET" action="{{ url('admin-panel/sales/reconciliation') }}" class="d-flex align-items-center" style="gap: 8px;">
-                    <input type="date" name="date" value="{{ $date }}" class="form-control">
-                    <button class="btn btn-primary" type="submit">Filter</button>
-                    <button class="btn btn-secondary print" type="button">Print</button>
+                <form method="GET" action="{{ url('admin-panel/sales/reconciliation') }}" class="reconciliation-filter-form">
+                    <label for="reconciliation-date">Tanggal laporan</label>
+                    <div class="reconciliation-filter-controls">
+                        <input id="reconciliation-date" type="date" name="date" value="{{ $date }}" class="form-control">
+                        <button class="btn btn-primary" type="submit"><i class="la la-filter"></i> Filter</button>
+                        <button class="btn btn-secondary print" type="button"><i class="la la-print"></i> Print</button>
+                    </div>
                 </form>
             </div>
 
             <div id="invoice">
-                <div class="row">
-                    <div class="col-md-3 mb-3">
-                        <div class="card">
-                            <div class="card-body">
-                                <p class="card-category mb-1">Total Struk</p>
-                                <h4 class="card-title">{{ $summary['sales_count'] }}</h4>
-                            </div>
-                        </div>
+                <div class="reconciliation-stat-grid">
+                    <div class="reconciliation-stat-card">
+                        <div class="reconciliation-stat-icon"><i class="la la-file-text"></i></div>
+                        <div><small>Total Struk</small><strong>{{ $summary['sales_count'] }}</strong><span>Transaksi hari ini</span></div>
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <div class="card">
-                            <div class="card-body">
-                                <p class="card-category mb-1">Net Sales</p>
-                                <h4 class="card-title">{{ number_format($summary['net_sales'], 2) }}</h4>
-                            </div>
-                        </div>
+                    <div class="reconciliation-stat-card">
+                        <div class="reconciliation-stat-icon"><i class="la la-line-chart"></i></div>
+                        <div><small>Net Sales</small><strong>Rp {{ number_format($summary['net_sales'], 0, ',', '.') }}</strong><span>Total penjualan bersih</span></div>
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <div class="card">
-                            <div class="card-body">
-                                <p class="card-category mb-1">Payment Masuk</p>
-                                <h4 class="card-title">{{ number_format($summary['payment_total'], 2) }}</h4>
-                            </div>
-                        </div>
+                    <div class="reconciliation-stat-card">
+                        <div class="reconciliation-stat-icon"><i class="la la-money"></i></div>
+                        <div><small>Payment Masuk</small><strong>Rp {{ number_format($summary['payment_total'], 0, ',', '.') }}</strong><span>Total pembayaran diterima</span></div>
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <div class="card">
-                            <div class="card-body">
-                                <p class="card-category mb-1">Selisih</p>
-                                <h4 class="card-title {{ abs($summary['difference']) > 0 ? 'text-danger' : 'text-success' }}">
-                                    {{ number_format($summary['difference'], 2) }}
-                                </h4>
-                            </div>
-                        </div>
+                    <div class="reconciliation-stat-card {{ abs($summary['difference']) > 0 ? 'has-difference' : 'is-balanced' }}">
+                        <div class="reconciliation-stat-icon"><i class="la la-{{ abs($summary['difference']) > 0 ? 'warning' : 'check-circle' }}"></i></div>
+                        <div><small>Selisih</small><strong>Rp {{ number_format($summary['difference'], 0, ',', '.') }}</strong><span>{{ abs($summary['difference']) > 0 ? 'Perlu diperiksa' : 'Laporan seimbang' }}</span></div>
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-5 mb-3">
-                        <div class="card">
-                            <div class="card-header">
-                                <div class="card-title">Breakdown Pembayaran</div>
-                            </div>
-                            <div class="card-body">
+                <div class="reconciliation-panels">
+                    <div class="card reconciliation-panel-card">
+                        <div class="card-header">
+                            <div><span class="reconciliation-panel-eyebrow">Payment overview</span><div class="card-title">Breakdown Pembayaran</div></div>
+                        </div>
+                        <div class="card-body">
+                            <div class="reconciliation-table-wrap">
                                 <table class="table table-bordered mb-0">
                                     <thead>
                                         <tr>
@@ -89,12 +75,12 @@
                         </div>
                     </div>
 
-                    <div class="col-md-7 mb-3">
-                        <div class="card">
-                            <div class="card-header">
-                                <div class="card-title">Ringkasan Jam Ramai</div>
-                            </div>
-                            <div class="card-body">
+                    <div class="card reconciliation-panel-card">
+                        <div class="card-header">
+                            <div><span class="reconciliation-panel-eyebrow">Sales activity</span><div class="card-title">Ringkasan Jam Ramai</div></div>
+                        </div>
+                        <div class="card-body">
+                            <div class="reconciliation-table-wrap">
                                 <table class="table table-bordered mb-0">
                                     <thead>
                                         <tr>
@@ -120,12 +106,16 @@
                     </div>
                 </div>
 
-                <div class="card">
+                <div class="card reconciliation-sales-card">
                     <div class="card-header">
-                        <div class="card-title">Daftar Struk {{ \Carbon\Carbon::parse($date)->format('d M Y') }}</div>
+                        <div>
+                            <span class="reconciliation-panel-eyebrow">Transaction detail</span>
+                            <div class="card-title">Daftar Struk {{ \Carbon\Carbon::parse($date)->format('d M Y') }}</div>
+                        </div>
                     </div>
                     <div class="card-body">
-                        <table class="table table-bordered table-striped" id="reconciliationTable">
+                        <div class="reconciliation-table-wrap">
+                        <table class="table table-bordered" id="reconciliationTable">
                             <thead>
                                 <tr>
                                     <th>Invoice</th>
@@ -165,6 +155,7 @@
                                 @endforeach
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 </div>
             </div>

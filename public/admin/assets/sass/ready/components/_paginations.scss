@@ -4,7 +4,7 @@
   > li {
     > a, &:first-child > a, &:last-child > a, > span, &:first-child > span, &:last-child > span {
       border-radius: 100px !important;
-      margin: 0 2px;
+      margin: 0 4px;
       color: #777777;
       border-color: #ddd;
     }

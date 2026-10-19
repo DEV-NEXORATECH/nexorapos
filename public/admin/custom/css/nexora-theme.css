@@ -941,6 +941,533 @@ a:hover {
     font-size: 16px;
 }
 
+.license-page .content {
+    padding-top: 26px;
+}
+
+.license-page-header {
+    align-items: flex-end;
+    display: flex;
+    gap: 20px;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.license-page-heading {
+    min-width: 0;
+}
+
+.license-page-eyebrow,
+.license-company-eyebrow {
+    color: var(--nexora-blue);
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .1em;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+}
+
+.license-page-eyebrow i,
+.license-company-eyebrow i {
+    font-size: 14px;
+    margin-right: 4px;
+}
+
+.license-page .page-title {
+    color: var(--nexora-ink);
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.license-page-header p {
+    max-width: 680px;
+}
+
+.license-manage-btn {
+    border-radius: 8px;
+    flex: 0 0 auto;
+    font-weight: 700;
+    padding: 10px 15px;
+}
+
+.license-company-card {
+    border: 1px solid var(--nexora-border);
+    border-radius: 14px;
+    box-shadow: 0 12px 30px rgba(0, 46, 88, .08);
+    overflow: hidden;
+}
+
+.license-company-header {
+    align-items: flex-start;
+    background: linear-gradient(135deg, #F7FBFF 0%, #FFFFFF 70%);
+    border-bottom: 1px solid var(--nexora-border);
+    display: flex;
+    gap: 18px;
+    justify-content: space-between;
+    padding: 22px 24px;
+}
+
+.license-company-header .card-title {
+    color: var(--nexora-ink);
+    font-size: 23px;
+    font-weight: 800;
+}
+
+.license-company-code {
+    color: var(--nexora-muted);
+}
+
+.license-company-code strong {
+    color: var(--nexora-ink);
+}
+
+.license-code-separator {
+    color: var(--nexora-border-dark, #A9C7DF);
+    margin: 0 7px;
+}
+
+.license-company-header .nexora-status {
+    flex: 0 0 auto;
+    margin-top: 2px;
+}
+
+.license-page .card-body {
+    padding: 24px;
+}
+
+.license-summary-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-bottom: 22px;
+}
+
+.license-summary-cell .nexora-license-summary {
+    min-height: 82px;
+}
+
+.license-feature-section-title {
+    align-items: flex-end;
+    border-bottom: 1px solid var(--nexora-border);
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+    margin: 24px 0 14px;
+    padding-bottom: 12px;
+}
+
+.license-feature-section-title h5 {
+    color: var(--nexora-ink);
+    font-size: 18px;
+    font-weight: 800;
+    margin: 0;
+}
+
+.license-feature-section-title p {
+    color: var(--nexora-muted);
+    font-size: 13px;
+    margin: 3px 0 0;
+}
+
+.license-feature-section-title > span {
+    background: var(--nexora-blue-soft);
+    border-radius: 999px;
+    color: var(--nexora-blue);
+    flex: 0 0 auto;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 6px 10px;
+}
+
+.license-feature-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.license-feature-cell .nexora-license-feature {
+    height: 100%;
+    min-height: 88px;
+}
+
+.license-meta {
+    border-top: 1px solid var(--nexora-border);
+    font-size: 13px;
+    margin-top: 18px;
+    padding-top: 14px;
+}
+
+.license-payment-box {
+    align-items: center;
+    background: #F3F9FF;
+    border: 1px solid var(--nexora-border);
+    border-radius: 12px;
+    display: flex;
+    gap: 14px;
+    justify-content: space-between;
+    margin-top: 20px;
+    padding: 15px 16px;
+}
+
+.license-payment-box > div {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.license-payment-box strong {
+    color: var(--nexora-ink);
+    font-size: 14px;
+}
+
+.license-payment-box small {
+    color: var(--nexora-muted);
+}
+
+.license-qris-btn {
+    border-radius: 8px;
+    flex: 0 0 auto;
+    font-weight: 700;
+}
+
+.license-payment-amount {
+    color: var(--nexora-ink);
+    font-size: 15px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.reconciliation-page .content {
+    padding-top: 26px;
+}
+
+.reconciliation-page-header {
+    align-items: flex-end;
+    display: flex;
+    gap: 20px;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.reconciliation-page-heading {
+    min-width: 0;
+}
+
+.reconciliation-eyebrow,
+.reconciliation-panel-eyebrow {
+    color: var(--nexora-blue);
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .1em;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.reconciliation-eyebrow i {
+    font-size: 14px;
+    margin-right: 4px;
+}
+
+.reconciliation-page .page-title {
+    color: var(--nexora-ink);
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.reconciliation-filter-form {
+    align-items: flex-end;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.reconciliation-filter-form label {
+    color: var(--nexora-muted);
+    font-size: 11px;
+    font-weight: 800;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+.reconciliation-filter-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.reconciliation-filter-controls input {
+    border: 1px solid var(--nexora-border);
+    border-radius: 8px;
+    min-height: 38px;
+}
+
+.reconciliation-filter-controls .btn {
+    border-radius: 8px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.reconciliation-stat-grid {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-bottom: 18px;
+}
+
+.reconciliation-stat-card {
+    align-items: center;
+    background: #FFFFFF;
+    border: 1px solid var(--nexora-border);
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 46, 88, .06);
+    display: flex;
+    gap: 12px;
+    min-width: 0;
+    padding: 17px;
+}
+
+.reconciliation-stat-icon {
+    align-items: center;
+    background: var(--nexora-blue-soft);
+    border-radius: 10px;
+    color: var(--nexora-blue);
+    display: flex;
+    flex: 0 0 42px;
+    font-size: 21px;
+    height: 42px;
+    justify-content: center;
+}
+
+.reconciliation-stat-card > div:last-child {
+    min-width: 0;
+}
+
+.reconciliation-stat-card small,
+.reconciliation-stat-card strong,
+.reconciliation-stat-card span {
+    display: block;
+}
+
+.reconciliation-stat-card small {
+    color: var(--nexora-muted);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+}
+
+.reconciliation-stat-card strong {
+    color: var(--nexora-ink);
+    font-size: 20px;
+    line-height: 1.25;
+    margin: 3px 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.reconciliation-stat-card span {
+    color: var(--nexora-muted);
+    font-size: 12px;
+}
+
+.reconciliation-stat-card.has-difference {
+    border-color: #F2C5C5;
+}
+
+.reconciliation-stat-card.has-difference .reconciliation-stat-icon {
+    background: #FFF0F0;
+    color: #C0392B;
+}
+
+.reconciliation-stat-card.has-difference strong {
+    color: #C0392B;
+}
+
+.reconciliation-stat-card.is-balanced .reconciliation-stat-icon {
+    background: #EAF8F0;
+    color: #18804B;
+}
+
+.reconciliation-stat-card.is-balanced strong {
+    color: #18804B;
+}
+
+.reconciliation-panels {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+    margin-bottom: 16px;
+}
+
+.reconciliation-panel-card,
+.reconciliation-sales-card {
+    border: 1px solid var(--nexora-border);
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 46, 88, .05);
+    overflow: hidden;
+}
+
+.reconciliation-panel-card .card-header,
+.reconciliation-sales-card .card-header {
+    background: #FFFFFF;
+    border-bottom: 1px solid var(--nexora-border);
+    padding: 17px 20px;
+}
+
+.reconciliation-panel-card .card-title,
+.reconciliation-sales-card .card-title {
+    color: var(--nexora-ink);
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.reconciliation-panel-card .card-body,
+.reconciliation-sales-card .card-body {
+    padding: 16px 20px 20px;
+}
+
+.reconciliation-table-wrap {
+    overflow-x: auto;
+}
+
+.reconciliation-table-wrap .table {
+    min-width: 360px;
+}
+
+.reconciliation-table-wrap .table th {
+    background: #F3F9FF !important;
+    color: var(--nexora-ink) !important;
+    font-size: 11px;
+    padding: 11px 12px !important;
+    white-space: nowrap;
+}
+
+.reconciliation-table-wrap .table td {
+    color: var(--nexora-ink);
+    font-size: 13px;
+    padding: 11px 12px !important;
+    vertical-align: middle;
+}
+
+.reconciliation-sales-card {
+    margin-bottom: 20px;
+}
+
+.reconciliation-sales-card .table {
+    min-width: 850px;
+}
+
+.reconciliation-sales-card .table td:nth-child(5),
+.reconciliation-sales-card .table td:nth-child(7) {
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.reconciliation-sales-card .table td:nth-child(6) {
+    line-height: 1.55;
+    min-width: 180px;
+}
+
+@media (max-width: 991px) {
+    .reconciliation-stat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .reconciliation-panels {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .reconciliation-page .content {
+        padding: 18px 10px;
+    }
+
+    .reconciliation-page-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .reconciliation-page .page-title {
+        font-size: 23px;
+    }
+
+    .reconciliation-filter-form {
+        align-items: stretch;
+    }
+
+    .reconciliation-filter-controls {
+        flex-wrap: wrap;
+    }
+
+    .reconciliation-filter-controls input {
+        flex: 1 1 100%;
+    }
+
+    .reconciliation-filter-controls .btn {
+        flex: 1;
+    }
+
+    .reconciliation-stat-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .reconciliation-panel-card .card-body,
+    .reconciliation-sales-card .card-body {
+        padding: 12px;
+    }
+}
+
+@media (max-width: 991px) {
+    .license-summary-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .license-feature-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .license-page .content {
+        padding: 18px 10px;
+    }
+
+    .license-page-header,
+    .license-company-header,
+    .license-payment-box {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .license-page .page-title {
+        font-size: 23px;
+    }
+
+    .license-page .card-body,
+    .license-company-header {
+        padding: 18px;
+    }
+
+    .license-summary-grid,
+    .license-feature-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .license-feature-section-title {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .license-qris-btn,
+    .license-payment-amount {
+        width: 100%;
+        text-align: center;
+    }
+}
+
 .nexora-profile-summary {
     background: var(--nexora-white);
     border: 1px solid var(--nexora-border);
@@ -1801,12 +2328,59 @@ a:hover {
     width: 10px;
 }
 
+.nexora-notification-menu {
+    min-width: 290px;
+    padding: 8px;
+}
+
+.nexora-notification-item {
+    align-items: flex-start;
+    border-radius: 8px;
+    display: flex;
+    gap: 10px;
+    line-height: 1.35;
+    padding: 10px 12px;
+    white-space: normal;
+}
+
+.nexora-notification-item > i,
+.nexora-notification-empty > i {
+    color: var(--nexora-blue);
+    font-size: 18px;
+    margin-top: 1px;
+}
+
+.nexora-notification-item span {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.nexora-notification-item small {
+    color: var(--nexora-muted);
+    font-size: 12px;
+}
+
+.nexora-notification-empty {
+    align-items: center;
+    color: var(--nexora-muted);
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    white-space: normal;
+}
+
 .nexora-license-pill {
+    border-radius: 10px;
     font-size: 12px;
     font-weight: 800;
     gap: 7px;
+    justify-content: center;
     letter-spacing: .02em;
+    min-width: 126px;
     padding: 0 13px;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .nexora-license-pill-success {

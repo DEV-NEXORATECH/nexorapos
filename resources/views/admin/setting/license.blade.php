@@ -3,11 +3,12 @@
 @section('title', 'License & Features')
 
 @section('content')
-<div class="main-panel">
+<div class="main-panel license-page">
     <div class="content">
         <div class="container-fluid">
-            <div class="d-flex justify-content-between align-items-center flex-wrap mb-3" style="gap: 12px;">
-                <div>
+            <div class="license-page-header">
+                <div class="license-page-heading">
+                    <span class="license-page-eyebrow"><i class="la la-certificate"></i> Account & Billing</span>
                     <h4 class="page-title mb-1">{{ auth()->user()?->isSuperAdmin() ? 'License & Features' : 'License Status' }}</h4>
                     <p class="text-muted mb-0">
                         {{ auth()->user()?->isSuperAdmin()
@@ -16,7 +17,7 @@
                     </p>
                 </div>
                 @if(auth()->user()?->isSuperAdmin())
-                    <a href="{{ url('admin-panel/features') }}" class="btn btn-primary btn-sm">Manage Features</a>
+                    <a href="{{ url('admin-panel/features') }}" class="btn btn-primary license-manage-btn"><i class="la la-sliders"></i> Manage Features</a>
                 @endif
             </div>
 
@@ -27,15 +28,22 @@
                     $totalFeatures = $features->count();
                     $blocked = $license['is_locked'];
                     $licenseInactive = $license['is_locked'] || $company->isLicenseInactive();
+                    foreach ($features as $feature) {
+                        $toggle = $companyFeatures[$company->id][$feature->key] ?? null;
+                        if (($toggle ? $toggle->is_enabled : true) && ! $blocked) {
+                            $enabledCount++;
+                        }
+                    }
                 @endphp
-                <div class="card mb-4">
-                    <div class="card-header d-flex justify-content-between align-items-start flex-wrap" style="gap: 12px;">
+                <div class="card license-company-card mb-4">
+                    <div class="card-header license-company-header">
                         <div>
+                            <span class="license-company-eyebrow"><i class="la la-building"></i> Company license</span>
                             <h4 class="card-title mb-1">{{ $company->name }}</h4>
-                            <p class="card-category mb-0">
-                                Code: <strong>{{ $company->company_code }}</strong>
+                            <p class="card-category mb-0 license-company-code">
+                                Company code <strong>{{ $company->company_code }}</strong>
                                 @if($company->payment_due_at)
-                                    | Due: <strong>{{ $company->payment_due_at->format('d M Y') }}</strong>
+                                    <span class="license-code-separator">•</span> Due <strong>{{ $company->payment_due_at->format('d M Y') }}</strong>
                                 @endif
                             </p>
                         </div>
@@ -44,44 +52,44 @@
                         </span>
                     </div>
                     <div class="card-body">
-                        <div class="row mb-3">
-                            <div class="col-md-2 mb-3">
+                        <div class="license-summary-grid">
+                            <div class="license-summary-cell">
                                 <div class="nexora-license-summary">
                                     <small>Status</small>
                                     <strong>{{ $license['label'] }}</strong>
                                 </div>
                             </div>
-                            <div class="col-md-2 mb-3">
+                            <div class="license-summary-cell">
                                 <div class="nexora-license-summary">
                                     <small>Paket Aktif</small>
                                     <strong>{{ $license['package'] }}</strong>
                                 </div>
                             </div>
-                            <div class="col-md-2 mb-3">
+                            <div class="license-summary-cell">
                                 <div class="nexora-license-summary">
                                     <small>Mulai</small>
                                     <strong>{{ optional($license['started_at'])->format('d M Y') ?? '-' }}</strong>
                                 </div>
                             </div>
-                            <div class="col-md-2 mb-3">
+                            <div class="license-summary-cell">
                                 <div class="nexora-license-summary">
                                     <small>Jatuh Tempo</small>
                                     <strong>{{ optional($license['expiry_date'])->format('d M Y') ?? '-' }}</strong>
                                 </div>
                             </div>
-                            <div class="col-md-2 mb-3">
+                            <div class="license-summary-cell">
                                 <div class="nexora-license-summary">
                                     <small>Grace</small>
                                     <strong>{{ $license['grace_period_days'] }} hari</strong>
                                 </div>
                             </div>
-                            <div class="col-md-2 mb-3">
+                            <div class="license-summary-cell">
                                 <div class="nexora-license-summary">
                                     <small>Nominal</small>
                                     <strong>{{ $license['payment_amount'] ? 'Rp '.number_format($license['payment_amount'], 0, ',', '.') : '-' }}</strong>
                                 </div>
                             </div>
-                            <div class="col-md-2 mb-3">
+                            <div class="license-summary-cell">
                                 <div class="nexora-license-summary">
                                     <small>User Slot</small>
                                     <strong>{{ $company->activeUsersCount() }} / {{ $company->max_users ?: '-' }}</strong>
@@ -107,16 +115,20 @@
                             </div>
                         @endif
 
-                        <div class="row">
+                        <div class="license-feature-section-title">
+                            <div>
+                                <h5>Feature access</h5>
+                                <p>Module yang tersedia untuk company ini.</p>
+                            </div>
+                            <span>{{ $enabledCount }} / {{ $totalFeatures }} active</span>
+                        </div>
+                        <div class="license-feature-grid">
                             @foreach($features as $feature)
                                 @php
                                     $toggle = $companyFeatures[$company->id][$feature->key] ?? null;
                                     $enabled = $toggle ? $toggle->is_enabled : true;
-                                    if ($enabled && ! $blocked) {
-                                        $enabledCount++;
-                                    }
                                 @endphp
-                                <div class="col-md-4 mb-3">
+                                <div class="license-feature-cell">
                                     <div class="nexora-license-feature {{ $enabled && ! $blocked ? 'is-enabled' : 'is-disabled' }}">
                                         <div>
                                             <strong>{{ $feature->name }}</strong>
@@ -127,7 +139,7 @@
                                 </div>
                             @endforeach
                         </div>
-                        <div class="text-muted">
+                        <div class="text-muted license-meta">
                             Active features: <strong>{{ $enabledCount }}</strong> / {{ $totalFeatures }}
                             | Remaining user slots:
                             <strong>{{ is_null($company->remainingUserSlots()) ? 'Unlimited' : $company->remainingUserSlots() }}</strong>
@@ -137,11 +149,15 @@
                         </div>
 
                         @if(!auth()->user()?->isSuperAdmin() && (float) $company->payment_amount > 0)
-                            <div class="mt-3">
+                            <div class="license-payment-box">
+                                <div>
+                                    <strong>Perpanjang license</strong>
+                                    <small>Selesaikan pembayaran dengan QRIS untuk memperpanjang masa aktif.</small>
+                                </div>
                                 <button type="button" class="btn btn-success license-qris-btn" data-company-id="{{ $company->id }}">
                                     <i class="fas fa-qrcode"></i> Bayar / Perpanjang via QRIS
                                 </button>
-                                <small class="text-muted ml-2">Nominal: Rp {{ number_format($company->payment_amount, 0, ',', '.') }}</small>
+                                <span class="license-payment-amount">Rp {{ number_format($company->payment_amount, 0, ',', '.') }}</span>
                             </div>
                         @endif
                     </div>

@@ -4,8 +4,7 @@
 
 @section('content')
 <style>
-    .sales-list-page { min-width: 0; overflow-x: hidden; }
-    .sales-table-wrap { width: 100%; overflow-x: auto; }
+    .sales-list-page { min-width: 0; }
     #salesTable { width: 100% !important; min-width: 1500px; }
     #salesTable th, #salesTable td { white-space: nowrap; vertical-align: middle; }
     @media (max-width: 768px) {
@@ -19,8 +18,8 @@
                 <h4><i class="fas fa-list"></i> Sales</h4>
                 <a href="{{ url('admin-panel/pos/sell') }}" class="btn btn-secondary" style="border: none;">Add New Sale</a>
             </div>
-                            <div class="sales-table-wrap">
-                            <table class="table table-bordered nexora-data-table" id="salesTable">
+                            <div class="nexora-table-scroll">
+                            <table class="table nexora-data-table" id="salesTable" style="width:100%">
                                 <thead>
                                     <tr>
                                         <th>Invoice</th>
@@ -66,7 +65,6 @@
             processing: true,
             serverSide: true,
             ajax: '{{ url("admin-panel/sales/listing") }}',
-            scrollX: true,
             autoWidth: false,
             columns: [
                 { data: 'invoice', name: 'invoice_number' },

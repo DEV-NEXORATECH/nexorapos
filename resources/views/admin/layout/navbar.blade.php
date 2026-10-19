@@ -45,13 +45,45 @@
                 </li>
             @endif
 
-            <li class="nav-item">
-                <a href="#" class="nexora-nav-icon" title="Notifications">
+            <li class="nav-item dropdown">
+                <a href="#" class="nexora-nav-icon" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" title="Notifications">
                     <i class="la la-bell"></i>
                     @if($navLicense && $navLicense['is_warning'])
                         <span class="nexora-dot"></span>
                     @endif
                 </a>
+                <div class="dropdown-menu dropdown-menu-right nexora-notification-menu">
+                    @if($navLicense)
+                        <a href="{{ url('admin-panel/settings/license') }}" class="dropdown-item nexora-notification-item">
+                            <i class="la la-certificate"></i>
+                            <span>
+                                <strong>License {{ $navLicense['label'] }}</strong>
+                                <small>
+                                    @if($navLicense['is_locked'])
+                                        Fitur operasional sedang dikunci.
+                                    @elseif($navLicense['is_warning'])
+                                        Jatuh tempo {{ optional($navLicense['expiry_date'])->format('d M Y') ?? '-' }}.
+                                    @else
+                                        License aktif sampai {{ optional($navLicense['expiry_date'])->format('d M Y') ?? '-' }}.
+                                    @endif
+                                </small>
+                            </span>
+                        </a>
+                    @elseif($navUser->isSuperAdmin())
+                        <a href="{{ url('admin-panel/features') }}" class="dropdown-item nexora-notification-item">
+                            <i class="la la-certificate"></i>
+                            <span>
+                                <strong>Company Features</strong>
+                                <small>Kelola license dan fitur seluruh company.</small>
+                            </span>
+                        </a>
+                    @else
+                        <div class="dropdown-item nexora-notification-empty">
+                            <i class="la la-check-circle"></i>
+                            Tidak ada notifikasi baru.
+                        </div>
+                    @endif
+                </div>
             </li>
 
             <li class="nav-item dropdown">
