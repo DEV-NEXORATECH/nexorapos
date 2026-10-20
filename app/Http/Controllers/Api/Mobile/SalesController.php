@@ -20,14 +20,20 @@ class SalesController extends Controller
     public function index(Request $request)
     {
         $companyId = $this->companyId($request);
+        $request->validate(['date' => ['nullable', 'date_format:Y-m-d'], 'store_id' => ['nullable', 'integer', 'min:1'], 'per_page' => ['nullable', 'integer', 'min:1', 'max:100'], 'page' => ['nullable', 'integer', 'min:1'], 'search' => ['nullable', 'string', 'max:255']]);
+        $assignedStore = ! $request->user()->isSuperAdmin() ? (int) $request->user()->store_id : 0;
+        $requestedStore = (int) $request->query('store_id');
+        abort_if($assignedStore && $requestedStore && $assignedStore !== $requestedStore, 403, 'Toko di luar lingkup akun.');
+        $storeId = $assignedStore ?: $requestedStore;
+        if ($storeId) abort_unless(\App\Models\Pos\Store::where('company_id', $companyId)->whereKey($storeId)->exists(), 403);
+        $start = $request->date ? \Carbon\CarbonImmutable::parse($request->date, 'Asia/Jakarta')->startOfDay()->utc() : null;
 
         $sales = Sale::with(['store:id,name,code', 'customer:id,name', 'user:id,name'])
             ->where('company_id', $companyId)
-            ->when(! $request->user()->isSuperAdmin() && $request->user()->store_id, fn ($q) => $q->where('store_id', $request->user()->store_id))
-            ->when($request->date, fn ($query) => $query->whereDate('created_at', $request->date))
+            ->when($storeId, fn ($q) => $q->where('store_id', $storeId))
+            ->when($start, fn ($q) => $q->where('created_at', '>=', $start)->where('created_at', '<', $start->addDay()))
             ->when($request->payment_status, fn ($query) => $query->where('payment_status', strtoupper($request->payment_status)))
             ->when($request->status, fn ($query) => $query->where('status', $request->status))
-            ->when($request->store_id, fn ($query) => $query->where('store_id', $request->store_id))
             ->when($request->search, function ($query, $search) {
                 $query->where(function ($nested) use ($search) {
                     $nested->where('invoice_number', 'like', '%'.$search.'%')
@@ -60,16 +66,24 @@ class SalesController extends Controller
     public function reconciliation(Request $request)
     {
         $companyId = $this->companyId($request);
-        $date = $request->get('date', now()->toDateString());
+        $request->validate(['date' => ['nullable', 'date_format:Y-m-d'], 'store_id' => ['nullable', 'integer', 'min:1']]);
+        $date = $request->get('date', now('Asia/Jakarta')->toDateString());
+        $assignedStore = ! $request->user()->isSuperAdmin() ? (int) $request->user()->store_id : 0;
+        $requestedStore = (int) $request->query('store_id');
+        abort_if($assignedStore && $requestedStore && $assignedStore !== $requestedStore, 403, 'Toko di luar lingkup akun.');
+        $storeId = $assignedStore ?: $requestedStore;
+        if ($storeId) abort_unless(\App\Models\Pos\Store::where('company_id', $companyId)->whereKey($storeId)->exists(), 403);
+        $start = \Carbon\CarbonImmutable::parse($date, 'Asia/Jakarta')->startOfDay()->utc();
+        $end = $start->addDay();
 
         $sales = Sale::where('company_id', $companyId)
-            ->whereDate('created_at', $date)
+            ->where('created_at', '>=', $start)->where('created_at', '<', $end)
+            ->when($storeId, fn ($q) => $q->where('store_id', $storeId))
             ->whereNotIn('status', ['cancelled', 'void'])
             ->get();
 
         $payments = Payment::with('method:id,name')
             ->where('company_id', $companyId)
-            ->when(! $request->user()->isSuperAdmin() && $request->user()->store_id && $queryStoreScope = true, fn ($q) => $q->where('store_id', $request->user()->store_id))
             ->whereIn('sale_id', $sales->pluck('id'))
             ->when(Schema::hasColumn('payments', 'status'), fn ($query) => $query->where('status', 'active'))
             ->get();
@@ -81,7 +95,7 @@ class SalesController extends Controller
                 'amount' => (float) $rows->sum('amount'),
             ])->values()->all();
 
-        $hourlySales = $sales->groupBy(fn ($sale) => $sale->created_at?->format('H:00') ?? 'Unknown')
+        $hourlySales = $sales->groupBy(fn ($sale) => $sale->created_at?->timezone('Asia/Jakarta')->format('H:00') ?? 'Unknown')
             ->map(fn ($rows, $hour) => [
                 'hour' => $hour,
                 'transactions' => $rows->count(),

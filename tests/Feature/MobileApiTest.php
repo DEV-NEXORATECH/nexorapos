@@ -621,3 +621,32 @@ test('mobile cancel payment refuses a locally settled invoice without contacting
     expect(Sale::find($id)->status)->toBe('completed');
 });
 
+
+test('daily reconciliation scopes assigned store without querying nonexistent payment store column and uses WIB', function () {
+    [$f, $token] = mobileCashierToken();
+    $first = $this->withToken($token)->postJson('/api/mobile/v1/pos/checkout', mobileCheckoutPayload($f, [['method_id' => $f['method']->id, 'amount' => 110]], 'daily-one'))->assertCreated()->json('data.sale.id');
+    $otherStore = Store::create(['company_id' => $f['company']->id, 'name' => 'Other', 'code' => 'DAILY-OTHER']);
+    $payload = mobileCheckoutPayload($f, [['method_id' => $f['method']->id, 'amount' => 110]], 'daily-two'); $payload['store_id'] = $otherStore->id;
+    $second = $this->withToken($token)->postJson('/api/mobile/v1/pos/checkout', $payload)->assertCreated()->json('data.sale.id');
+    Sale::whereIn('id', [$first, $second])->update(['created_at' => '2026-10-19 18:00:00']);
+    $f['user']->update(['store_id' => $f['store']->id]);
+    $this->withToken($token)->getJson('/api/mobile/v1/pos/reconciliation?date=2026-10-20')->assertOk()->assertJsonPath('data.summary.receipt_count', 1)->assertJsonPath('data.summary.net_sales', 110)->assertJsonPath('data.summary.payment_total', 110)->assertJsonPath('data.hourly_sales.0.hour', '01:00');
+    $this->withToken($token)->getJson('/api/mobile/v1/pos/reconciliation?date=2026-10-20&store_id='.$otherStore->id)->assertForbidden();
+    $this->withToken($token)->getJson('/api/mobile/v1/pos/reconciliation?date=bad')->assertStatus(422);
+});
+
+
+test('mobile sales history paginates real invoices and filters date in WIB with store isolation', function () {
+    [$f, $token] = mobileCashierToken();
+    $id = $this->withToken($token)->postJson('/api/mobile/v1/pos/checkout', mobileCheckoutPayload($f, [['method_id' => $f['method']->id, 'amount' => 110]], 'history-wib'))->assertCreated()->json('data.sale.id');
+    Sale::whereKey($id)->update(['created_at' => '2026-10-19 18:00:00']);
+    $f['user']->update(['store_id' => $f['store']->id]);
+    $base = '/api/mobile/v1/pos/sales?per_page=20&store_id='.$f['store']->id;
+    $this->withToken($token)->getJson($base.'&date=2026-10-20&payment_status=paid')->assertOk()->assertJsonCount(1, 'data.sales.data')->assertJsonPath('data.sales.data.0.id', $id)->assertJsonPath('data.sales.current_page', 1);
+    $this->withToken($token)->getJson($base.'&date=2026-10-19')->assertOk()->assertJsonCount(0, 'data.sales.data');
+    $this->withToken($token)->getJson($base.'&search=DOES-NOT-EXIST')->assertOk()->assertJsonCount(0, 'data.sales.data');
+    $this->withToken($token)->getJson('/api/mobile/v1/pos/sales?date=invalid')->assertStatus(422);
+    $other = Store::create(['company_id' => $f['company']->id, 'name' => 'Other', 'code' => 'HISTORY-OTHER']);
+    $this->withToken($token)->getJson('/api/mobile/v1/pos/sales?store_id='.$other->id)->assertForbidden();
+});
+
