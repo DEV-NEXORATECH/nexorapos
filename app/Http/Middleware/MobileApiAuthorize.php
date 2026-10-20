@@ -72,6 +72,7 @@ class MobileApiAuthorize
             $path === 'payment-methods' => 'pos.checkout',
             $path === 'pos/reconciliation' => 'pos.reconciliation',
             preg_match('#^pos/sales/[^/]+/void$#', $path) === 1 => 'pos.sales.void',
+            preg_match('#^pos/sales/[^/]+/cancel-payment$#', $path) === 1 => 'pos.checkout',
             str_starts_with($path, 'pos/sales') => 'pos.sales.view',
             str_starts_with($path, 'pos/shifts') => 'pos.shifts',
             str_starts_with($path, 'pos/held-bills') => 'pos.held-bills',

@@ -77,6 +77,7 @@ Route::prefix('mobile/v1')->group(function () {
         Route::put('admin/{resource}/{id}', [AdminCrudController::class, 'update']);
         Route::delete('admin/{resource}/{id}', [AdminCrudController::class, 'destroy']);
 
+        Route::post('pos/sales/{id}/cancel-payment', [\App\Http\Controllers\Api\Mobile\CancelMobilePayment::class, '__invoke'])->middleware('throttle:15,1');
         Route::post('pos/checkout', [PosController::class, 'checkout'])->middleware('throttle:60,1');
         Route::post('pos/sales/{id}/void', [PosController::class, 'voidSale'])->middleware('throttle:30,1');
         Route::get('pos/held-bills', [PosController::class, 'holdBills']);

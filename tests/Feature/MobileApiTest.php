@@ -530,3 +530,94 @@ test('super admin dashboard is platform-wide and billing excludes POS receipts',
     $this->withToken($token)->getJson('/api/mobile/v1/companies?company_record_id='.$f['company']->id)->assertOk()->assertJsonPath('data.company.company_code', 'MOBILE')->assertJsonPath('data.license.status', 'ACTIVE');
     $this->withToken($token)->getJson('/api/mobile/v1/admin/audit-logs?scope=platform')->assertOk()->assertJsonCount(1, 'data.audit_logs.data');
 });
+
+function qrisCancellationFixture(bool $split = false): array {
+    [$f, $token] = mobileCashierToken();
+    config(['services.midtrans.server_key' => 'test-server-key', 'services.midtrans.is_production' => false]);
+    $qris = Method::create(['company_id' => $f['company']->id, 'name' => 'QRIS']);
+    $payments = [['method_id' => $qris->id, 'amount' => $split ? 60 : 110]];
+    if ($split) $payments[] = ['method_id' => $f['method']->id, 'amount' => 50];
+    $id = test()->withToken($token)->postJson('/api/mobile/v1/pos/checkout', mobileCheckoutPayload($f, $payments, 'cancel-test'))->assertCreated()->json('data.sale.id');
+    $payment = \App\Models\CompanyPayment::create(['company_id' => $f['company']->id, 'sale_id' => $id, 'purpose' => 'pos', 'order_id' => 'CANCEL-TEST-'.$id, 'amount' => $split ? 60 : 110, 'status' => 'pending', 'snap_token' => 'test-cancel-snap']);
+    return [$f, $token, $id, $payment];
+}
+
+test('mobile cancel payment confirms gateway and restores stock only once', function (string $state) {
+    [$f, $token, $id, $payment] = qrisCancellationFixture();
+    \Illuminate\Support\Facades\Http::preventStrayRequests();
+    \Illuminate\Support\Facades\Http::fake(function ($request) use ($state) {
+        if (str_ends_with($request->url(), '/status')) return \Illuminate\Support\Facades\Http::response(['status_code' => $state === 'not_charged' ? '404' : '200', 'transaction_status' => $state], $state === 'not_charged' ? 404 : 200);
+        if (str_contains($request->url(), '/snap/')) return \Illuminate\Support\Facades\Http::response(['canceled_at' => now()->toIso8601String()]);
+        return \Illuminate\Support\Facades\Http::response(['status_code' => '200', 'transaction_status' => 'cancel']);
+    });
+    $url = '/api/mobile/v1/pos/sales/'.$id.'/cancel-payment';
+    $this->withToken($token)->postJson($url, ['reason' => 'Customer batal'])->assertOk()->assertJsonPath('data.sale.status', 'void');
+    expect((int) $f['product']->fresh()->stock_quantity)->toBe(5);
+    expect($payment->fresh()->status)->toBe('cancel');
+    $this->withToken($token)->postJson($url, ['reason' => 'Retry'])->assertOk();
+    expect((int) $f['product']->fresh()->stock_quantity)->toBe(5);
+    \Illuminate\Support\Facades\Http::assertSentCount($state === 'pending' ? 3 : 2);
+})->with(['pending', 'not_charged']);
+
+test('mobile cancel payment refuses paid gateway and uncertain responses', function (string $state, int $expected) {
+    [$f, $token, $id, $payment] = qrisCancellationFixture();
+    \Illuminate\Support\Facades\Http::preventStrayRequests();
+    \Illuminate\Support\Facades\Http::fake(function ($request) use ($state) {
+        if (str_ends_with($request->url(), '/status')) return \Illuminate\Support\Facades\Http::response(['status_code' => '200', 'transaction_status' => $state === 'settlement' ? 'settlement' : 'pending']);
+        return \Illuminate\Support\Facades\Http::response(['status_code' => '500', 'error_messages' => ['Unavailable']], 500);
+    });
+    $this->withToken($token)->postJson('/api/mobile/v1/pos/sales/'.$id.'/cancel-payment', ['reason' => 'Batal'])->assertStatus($expected);
+    expect(Sale::find($id)->status)->toBe('pending');
+    expect((int) $f['product']->fresh()->stock_quantity)->toBe(4);
+    expect($payment->fresh()->status)->toBe('pending');
+})->with([['settlement', 409], ['pending', 409]]);
+
+test('mobile cancel payment refuses received cash in a split and foreign company invoice', function () {
+    [$f, $token, $id] = qrisCancellationFixture(true);
+    \Illuminate\Support\Facades\Http::preventStrayRequests();
+    \Illuminate\Support\Facades\Http::fake();
+    $this->withToken($token)->postJson('/api/mobile/v1/pos/sales/'.$id.'/cancel-payment', ['reason' => 'Batal'])->assertStatus(409);
+    $other = Company::create(['name' => 'Other', 'company_code' => 'CANCEL-OTHER', 'is_active' => true]);
+    Sale::whereKey($id)->update(['company_id' => $other->id]);
+    $this->withToken($token)->postJson('/api/mobile/v1/pos/sales/'.$id.'/cancel-payment', ['reason' => 'Batal'])->assertNotFound();
+    \Illuminate\Support\Facades\Http::assertNothingSent();
+});
+
+test('mobile cancel payment does not treat an open Snap token as cancelled on core 404', function () {
+    [$f, $token, $id, $payment] = qrisCancellationFixture();
+    \Illuminate\Support\Facades\Http::preventStrayRequests();
+    \Illuminate\Support\Facades\Http::fake(function ($request) {
+        if (str_ends_with($request->url(), '/status')) return \Illuminate\Support\Facades\Http::response(['status_code' => '404'], 404);
+        return \Illuminate\Support\Facades\Http::response(['error_messages' => ['Transaction is on progress']], 409);
+    });
+    $this->withToken($token)->postJson('/api/mobile/v1/pos/sales/'.$id.'/cancel-payment', ['reason' => 'Batal'])->assertStatus(409);
+    expect(Sale::find($id)->status)->toBe('pending');
+    expect($payment->fresh()->status)->toBe('pending');
+});
+
+
+test('mobile cancel payment denies foreign store or another cashier without void permission', function (bool $foreignStore) {
+    [$f, $token, $id] = qrisCancellationFixture();
+    \Illuminate\Support\Facades\Http::fake();
+    if ($foreignStore) {
+        $store = Store::create(['company_id' => $f['company']->id, 'name' => 'Other Store', 'code' => 'OTHER']);
+        $f['user']->update(['store_id' => $store->id]);
+    } else {
+        $allowed = Permission::where('company_id', $f['company']->id)->where('route', 'admin-panel/pos/sell')->pluck('id');
+        $f['user']->role->permissions()->sync($allowed);
+        $other = User::factory()->create(['company_id' => $f['company']->id, 'role_id' => $f['user']->role_id, 'is_super_admin' => false]);
+        Sale::whereKey($id)->update(['user_id' => $other->id]);
+    }
+    $this->withToken($token)->postJson('/api/mobile/v1/pos/sales/'.$id.'/cancel-payment', ['reason' => 'Batal'])->assertForbidden();
+    \Illuminate\Support\Facades\Http::assertNothingSent();
+})->with([true, false]);
+
+test('mobile cancel payment refuses a locally settled invoice without contacting gateway', function () {
+    [$f, $token, $id] = qrisCancellationFixture();
+    \Illuminate\Support\Facades\Http::fake();
+    Sale::whereKey($id)->update(['payment_status' => 'PAID', 'paid_amount' => 110, 'status' => 'completed']);
+    $this->withToken($token)->postJson('/api/mobile/v1/pos/sales/'.$id.'/cancel-payment', ['reason' => 'Batal'])->assertStatus(409);
+    \Illuminate\Support\Facades\Http::assertNothingSent();
+    expect(Sale::find($id)->status)->toBe('completed');
+});
+
