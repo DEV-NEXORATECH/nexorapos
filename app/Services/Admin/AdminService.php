@@ -68,7 +68,13 @@ class AdminService
             ];
         }
 
-        return view('admin.dashboard', compact('userCount', 'store', 'cats', 'products', 'variants', 'suppliers', 'customers', 'taxes', 'purchases', 'items', 'sales', 'payments', 'paymentCount', 'qrisPayments', 'qrisPaymentCount', 'subscriptionPayments', 'subscriptionPaymentCount', 'platformStats'));
+        $recentSales = Sale::with(['store', 'customer', 'user'])
+            ->when($companyId, fn ($query) => $query->where('company_id', $companyId))
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        return view('admin.dashboard', compact('userCount', 'store', 'cats', 'products', 'variants', 'suppliers', 'customers', 'taxes', 'purchases', 'items', 'sales', 'payments', 'paymentCount', 'qrisPayments', 'qrisPaymentCount', 'subscriptionPayments', 'subscriptionPaymentCount', 'platformStats', 'recentSales'));
     }
 
   

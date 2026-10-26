@@ -4,12 +4,16 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <title>{{ config('app.name', 'Retail Point Of Sale') }}</title>
+        <title>{{ config('app.name', 'NexoraPOS - Point Of Sale') }}</title>
+        <!-- Google Fonts: Poppins & Inter -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         <link rel="stylesheet" href="{{ asset('admin/custom/css/nexora-strict-override.css') }}">
         <style>
-            :root { --login-navy: #0B2345; --login-dark-navy: #123A6B; --login-bg: #F8FAFC; --login-text: #0F172A; --login-muted: #475569; --login-border: #D9E2EC; --login-focus: #2563EB; --login-error: #DC2626; }
-            .login-shell { min-height: 100vh; display: grid; grid-template-columns: 45% 55%; background: var(--login-bg); color: var(--login-text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+            :root { --login-navy: #0058A6; --login-dark-navy: #003F7D; --login-bg: #F4F7FB; --login-text: #0F1F3D; --login-muted: #64748B; --login-border: #E2E8F0; --login-focus: #0058A6; --login-error: #EF4444; }
+            .login-shell { min-height: 100vh; display: grid; grid-template-columns: 45% 55%; background: var(--login-bg); color: var(--login-text); font-family: 'Poppins', 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
             .login-form-panel { display: flex; align-items: center; justify-content: center; background: #fff; padding: 48px clamp(24px, 6vw, 88px); }
             .login-form-wrap { width: min(100%, 420px); animation: login-fade-in .22s ease-out both; }
             .login-brand { display: inline-flex; align-items: center; gap: 12px; margin-bottom: 42px; color: var(--login-navy); text-decoration: none; }
@@ -61,11 +65,11 @@
             <section class="login-form-panel" aria-label="Login form">
                 <div class="login-form-wrap">
                     <a href="{{ url('/') }}" class="login-brand" aria-label="Retail Point Of Sale home">
-                        <img src="{{ asset('admin/images/retail-point-of-sale-logo.png') }}" alt="">
-                        <span>Retail Point Of Sale</span>
+                        <img src="{{ asset('admin/images/retail-point-of-sale-logo.png') }}" alt="NexoraPOS">
+                        <span>Nexora<span style="color:#0058A6;">POS</span></span>
                     </a>
                     <h1 class="login-heading">Welcome Back</h1>
-                    <p class="login-subheading">Sign in to your Retail POS workspace</p>
+                    <p class="login-subheading">Sign in to your NexoraPOS workspace</p>
                     {{ $slot }}
                     <div class="login-powered">
                         <span>Powered by</span>

@@ -6,6 +6,11 @@
     <title>@yield('title', 'Dashboard')</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <!-- Google Fonts: Poppins & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <!-- Bootstrap CSS (Ready Dashboard - Bootstrap 4) -->
     <link rel="stylesheet" href="{{ asset('admin/assets/css/bootstrap.min.css') }}">
 
@@ -13,11 +18,24 @@
     <link rel="stylesheet" href="{{ asset('admin/assets/css/ready.css') }}">
     <link rel="stylesheet" href="{{ asset('admin/assets/css/demo.css') }}">
     <link rel="stylesheet" href="{{ asset('admin/pos/custome.css') }}">
-    <link rel="stylesheet" href="{{ asset('admin/custom/css/nexora-theme.css') }}">
-    <link rel="stylesheet" href="{{ asset('admin/custom/css/nexora-strict-override.css') }}">
+    <link rel="stylesheet" href="{{ asset('admin/custom/css/nexora-theme.css') }}?v={{ file_exists(public_path('admin/custom/css/nexora-theme.css')) ? filemtime(public_path('admin/custom/css/nexora-theme.css')) : time() }}">
+    <link rel="stylesheet" href="{{ asset('admin/custom/css/nexora-strict-override.css') }}?v={{ file_exists(public_path('admin/custom/css/nexora-strict-override.css')) ? filemtime(public_path('admin/custom/css/nexora-strict-override.css')) : time() }}">
+    <link rel="stylesheet" href="{{ asset('admin/custom/css/nexora-modern.css') }}?v={{ file_exists(public_path('admin/custom/css/nexora-modern.css')) ? filemtime(public_path('admin/custom/css/nexora-modern.css')) : time() }}">
 
-    <!-- Font Awesome -->
+    <!-- Font Awesome & Line Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        (function() {
+            var savedTheme = localStorage.getItem('nexora_theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('theme-dark');
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.classList.remove('theme-dark');
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
 
     @php
         $usesDataTable = request()->is('admin-panel/*/listing')
@@ -128,7 +146,7 @@
 
     @if($usesDashboardChart)
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script src="{{ asset('admin/custom/js/chart.js') }}"></script>
+        <script src="{{ asset('admin/custom/js/chart.js') }}?v={{ file_exists(public_path('admin/custom/js/chart.js')) ? filemtime(public_path('admin/custom/js/chart.js')) : time() }}"></script>
     @endif
 
     @if($usesSelect2)
@@ -302,16 +320,25 @@
     <!-- Custom Page Scripts -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const toggle = document.querySelector('.sidebar-toggle-control');
-            if (!toggle) {
-                // Continue initializing shared form/table behavior even if a page has no sidebar toggle.
-            } else {
-                toggle.addEventListener('click', function () {
+            const toggles = document.querySelectorAll('.sidebar-toggle-control');
+            toggles.forEach(function (toggle) {
+                toggle.addEventListener('click', function (e) {
+                    e.preventDefault();
                     if (window.innerWidth >= 992) {
-                        document.documentElement.classList.toggle('sidebar-collapsed');
-                        toggle.classList.toggle('toggled');
+                        const isCollapsed = document.documentElement.classList.toggle('sidebar-collapsed');
+                        localStorage.setItem('nexora_sidebar_collapsed', isCollapsed ? '1' : '0');
+                        toggles.forEach(t => t.classList.toggle('toggled', isCollapsed));
+                    } else {
+                        const isNavOpen = document.documentElement.classList.toggle('nav_open');
+                        toggles.forEach(t => t.classList.toggle('toggled', isNavOpen));
                     }
                 });
+            });
+
+            // Restore collapsed state on desktop
+            if (window.innerWidth >= 992 && localStorage.getItem('nexora_sidebar_collapsed') === '1') {
+                document.documentElement.classList.add('sidebar-collapsed');
+                toggles.forEach(t => t.classList.add('toggled'));
             }
 
             document.querySelectorAll('table.table, table.dataTable').forEach(function (table) {
@@ -358,6 +385,49 @@
                         }
                     });
                 });
+            });
+            // Theme Toggle Handler (Job-Finance style)
+            const themeBtn = document.querySelector('[data-theme-toggle]');
+            const themeIcon = document.querySelector('[data-theme-icon]');
+            const syncTheme = function() {
+                const isDark = document.documentElement.classList.contains('theme-dark');
+                if (document.body) {
+                    document.body.classList.toggle('theme-dark', isDark);
+                }
+                if (themeIcon) {
+                    themeIcon.className = isDark ? 'fa fa-sun text-warning' : 'fa fa-moon';
+                }
+                document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+            };
+            if (themeBtn) {
+                syncTheme();
+                themeBtn.addEventListener('click', function() {
+                    const isDark = document.documentElement.classList.toggle('theme-dark');
+                    localStorage.setItem('nexora_theme', isDark ? 'dark' : 'light');
+                    syncTheme();
+                    window.dispatchEvent(new CustomEvent('nexora-theme-changed', { detail: { isDark: isDark } }));
+                });
+            } else {
+                syncTheme();
+            }
+
+            // Toast Auto-Dismissal
+            document.querySelectorAll('.app-toast').forEach(function(toast) {
+                const closeBtn = toast.querySelector('.app-toast-close');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', function() {
+                        toast.style.opacity = '0';
+                        toast.style.transform = 'translateX(20px)';
+                        setTimeout(() => toast.remove(), 250);
+                    });
+                }
+                setTimeout(function() {
+                    if (toast && toast.parentElement) {
+                        toast.style.opacity = '0';
+                        toast.style.transform = 'translateX(20px)';
+                        setTimeout(() => toast.remove(), 250);
+                    }
+                }, 6000);
             });
         });
     </script>

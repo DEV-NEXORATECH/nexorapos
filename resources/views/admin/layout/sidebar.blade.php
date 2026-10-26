@@ -1,74 +1,77 @@
 @php
     $data = modules(); // Get all categories with permissions
 
-    $user=Auth::user();
-    $role=$user->role;
-    $permissions=$user->isSuperAdmin()
+    $user = Auth::user();
+    $role = $user->role;
+    $permissions = $user->isSuperAdmin()
         ? null
         : ($role ? $role->permissions()->pluck('permissions.id')->unique()->toArray() : []);
-
 @endphp
 
 <div class="sidebar">
     <div class="scrollbar-inner sidebar-wrapper">
         <ul class="nav">
             @if ($user->isSuperAdmin())
+                <li class="nav-heading">WORKSPACE</li>
+
                 <li class="nav-item {{ request()->is('admin-panel/dashboard') ? 'active' : '' }}">
                     <a href="{{ url('admin-panel/dashboard') }}">
-                        <i class="la la-dashboard"></i>
-                        <p>Dashboard</p>
+                        <i class="fa-solid fa-table-cells-large"></i>
+                        <span>Dashboard</span>
                     </a>
                 </li>
 
                 <li class="nav-item {{ request()->is('admin-panel/features*') ? 'active' : '' }}">
                     <a href="{{ url('admin-panel/features') }}">
-                        <i class="la la-toggle-on"></i>
-                        <p>Company Features</p>
+                        <i class="fa-solid fa-toggle-on"></i>
+                        <span>Company Features</span>
                     </a>
                 </li>
+
+                <li class="nav-heading">ADMINISTRASI</li>
 
                 @php
                     $superAdminModules = [
                         [
-                            'name' => 'User Management',
-                            'icon' => 'la la-users',
+                            'name' => 'User & Akses',
+                            'icon' => 'fa-regular fa-user',
                             'items' => [
-                                ['name' => 'Users', 'route' => 'admin-panel/users/listing', 'icon' => 'la la-user-plus'],
-                                ['name' => 'Roles & Access', 'route' => 'admin-panel/roles/listing', 'icon' => 'la la-key'],
+                                ['name' => 'Daftar Pengguna', 'route' => 'admin-panel/users/listing', 'icon' => 'fa-regular fa-address-card'],
+                                ['name' => 'Role & Permission', 'route' => 'admin-panel/roles/listing', 'icon' => 'fa-solid fa-shield-halved'],
                             ],
                         ],
                         [
-                            'name' => 'System Setup',
-                            'icon' => 'la la-cog',
+                            'name' => 'Pengaturan Sistem',
+                            'icon' => 'fa-solid fa-sliders',
                             'items' => [
-                                ['name' => 'App Settings', 'route' => 'admin-panel/settings/listing', 'icon' => 'la la-sliders'],
+                                ['name' => 'App Settings', 'route' => 'admin-panel/settings/listing', 'icon' => 'fa-solid fa-gear'],
                             ],
                         ],
                         [
-                            'name' => 'POS Master',
-                            'icon' => 'la la-database',
+                            'name' => 'Master Data POS',
+                            'icon' => 'fa-solid fa-database',
                             'items' => [
-                                ['name' => 'Stores', 'route' => 'admin-panel/stores/listing', 'icon' => 'la la-home'],
-                                ['name' => 'Categories', 'route' => 'admin-panel/categories/listing', 'icon' => 'la la-tags'],
-                                ['name' => 'Products', 'route' => 'admin-panel/products/listing', 'icon' => 'la la-cube'],
-                                ['name' => 'Product Variants', 'route' => 'admin-panel/variants/listing', 'icon' => 'la la-cubes'],
-                                ['name' => 'Tax', 'route' => 'admin-panel/tax/listing', 'icon' => 'la la-percent'],
-                                ['name' => 'Suppliers', 'route' => 'admin-panel/supplier/listing', 'icon' => 'la la-truck'],
-                                ['name' => 'Customers', 'route' => 'admin-panel/customer/listing', 'icon' => 'la la-address-book'],
-                                ['name' => 'Discounts', 'route' => 'admin-panel/discounts/listing', 'icon' => 'la la-ticket'],
-                                ['name' => 'Stock Movements', 'route' => 'admin-panel/stock/listing', 'icon' => 'la la-exchange'],
-                                ['name' => 'Payment Methods', 'route' => 'admin-panel/payment-methods/listing', 'icon' => 'la la-credit-card'],
+                                ['name' => 'Toko / Cabang', 'route' => 'admin-panel/stores/listing', 'icon' => 'fa-solid fa-store'],
+                                ['name' => 'Kategori Produk', 'route' => 'admin-panel/categories/listing', 'icon' => 'fa-solid fa-tags'],
+                                ['name' => 'Katalog Produk', 'route' => 'admin-panel/products/listing', 'icon' => 'fa-regular fa-file-lines'],
+                                ['name' => 'Varian Produk', 'route' => 'admin-panel/variants/listing', 'icon' => 'fa-solid fa-cubes'],
+                                ['name' => 'Pajak / Tax', 'route' => 'admin-panel/tax/listing', 'icon' => 'fa-solid fa-percent'],
+                                ['name' => 'Data Supplier', 'route' => 'admin-panel/supplier/listing', 'icon' => 'fa-solid fa-truck'],
+                                ['name' => 'Data Pelanggan', 'route' => 'admin-panel/customer/listing', 'icon' => 'fa-regular fa-address-book'],
+                                ['name' => 'Diskon & Promosi', 'route' => 'admin-panel/discounts/listing', 'icon' => 'fa-solid fa-ticket'],
+                                ['name' => 'Mutasi Stok', 'route' => 'admin-panel/stock/listing', 'icon' => 'fa-solid fa-right-left'],
+                                ['name' => 'Metode Pembayaran', 'route' => 'admin-panel/payment-methods/listing', 'icon' => 'fa-regular fa-credit-card'],
                             ],
                         ],
                         [
-                            'name' => 'Transactions',
-                            'icon' => 'la la-shopping-cart',
+                            'name' => 'Transaksi & Kasir',
+                            'icon' => 'fa-solid fa-cash-register',
                             'items' => [
-                                ['name' => 'POS Sell', 'route' => 'admin-panel/pos/sell', 'icon' => 'la la-shopping-cart'],
-                                ['name' => 'Sales', 'route' => 'admin-panel/sales/listing', 'icon' => 'la la-shopping-bag'],
-                                ['name' => 'Sales Reconciliation', 'route' => 'admin-panel/sales/reconciliation', 'icon' => 'la la-balance-scale'],
-                                ['name' => 'Purchases', 'route' => 'admin-panel/purchase/listing', 'icon' => 'la la-cart-plus'],
-                                ['name' => 'Payments', 'route' => 'admin-panel/payments/listing', 'icon' => 'la la-money'],
+                                ['name' => 'Buka Kasir POS', 'route' => 'admin-panel/pos/sell', 'icon' => 'fa-solid fa-cash-register'],
+                                ['name' => 'Riwayat Penjualan', 'route' => 'admin-panel/sales/listing', 'icon' => 'fa-solid fa-bag-shopping'],
+                                ['name' => 'Rekonsiliasi Harian', 'route' => 'admin-panel/sales/reconciliation', 'icon' => 'fa-solid fa-scale-balanced'],
+                                ['name' => 'Pembelian Barang', 'route' => 'admin-panel/purchase/listing', 'icon' => 'fa-solid fa-cart-shopping'],
+                                ['name' => 'Catatan Pembayaran', 'route' => 'admin-panel/payments/listing', 'icon' => 'fa-regular fa-money-bill-1'],
                             ],
                         ],
                     ];
@@ -83,12 +86,13 @@
                         <a href="#superAdminMenu{{ $index }}" class="nav-link dropdown-toggle" data-toggle="collapse" role="button" aria-expanded="{{ $isModuleActive ? 'true' : 'false' }}" aria-controls="superAdminMenu{{ $index }}">
                             <i class="{{ $module['icon'] }}"></i>
                             <span>{{ $module['name'] }}</span>
+                            <i class="fas fa-chevron-down submenu-arrow"></i>
                         </a>
-                        <ul class="collapse list-unstyled ml-3 {{ $isModuleActive ? 'show' : '' }}" id="superAdminMenu{{ $index }}">
+                        <ul class="collapse list-unstyled {{ $isModuleActive ? 'show' : '' }}" id="superAdminMenu{{ $index }}">
                             @foreach ($module['items'] as $item)
                                 <li class="nav-item {{ request()->is($item['route']) || request()->is($item['route'].'/*') ? 'active' : '' }}">
                                     <a href="{{ url($item['route']) }}" class="nav-link">
-                                        <i class="{{ $item['icon'] ?? 'la la-angle-right' }}"></i>
+                                        <i class="{{ $item['icon'] ?? 'fas fa-chevron-right' }}"></i>
                                         <span class="nav-link-text">{{ $item['name'] }}</span>
                                     </a>
                                 </li>
@@ -97,26 +101,39 @@
                     </li>
                 @endforeach
             @else
-                <li class="nav-item {{ request()->is('admin-panel/business-process') ? 'active' : '' }}">
-                    <a href="{{ url('admin-panel/business-process') }}">
-                        <i class="la la-sitemap"></i>
-                        <p>Business Process</p>
+                <li class="nav-heading">WORKSPACE</li>
+
+                <li class="nav-item {{ request()->is('admin-panel/dashboard') ? 'active' : '' }}">
+                    <a href="{{ url('admin-panel/dashboard') }}">
+                        <i class="fa-solid fa-table-cells-large"></i>
+                        <span>Dashboard</span>
                     </a>
                 </li>
 
+                <li class="nav-item {{ request()->is('admin-panel/business-process') ? 'active' : '' }}">
+                    <a href="{{ url('admin-panel/business-process') }}">
+                        <i class="fas fa-sitemap"></i>
+                        <span>Business Process</span>
+                    </a>
+                </li>
+
+                <li class="nav-heading">INFORMASI & LISENSI</li>
+
                 <li class="nav-item {{ request()->is('admin-panel/settings/license') ? 'active' : '' }}">
                     <a href="{{ url('admin-panel/settings/license') }}">
-                        <i class="la la-certificate"></i>
-                        <p>License Status</p>
+                        <i class="fas fa-certificate"></i>
+                        <span>Status Lisensi</span>
                     </a>
                 </li>
 
                 <li class="nav-item {{ request()->is('admin-panel/settings/company') ? 'active' : '' }}">
                     <a href="{{ url('admin-panel/settings/company') }}">
-                        <i class="la la-building"></i>
-                        <p>Company Settings</p>
+                        <i class="fas fa-building"></i>
+                        <span>Profil Perusahaan</span>
                     </a>
                 </li>
+
+                <li class="nav-heading">MODUL OPERASIONAL</li>
 
                 @foreach ($data as $category)
                     @php
@@ -125,38 +142,39 @@
 
                     @if ($filteredPermissions->isNotEmpty())
                         @php
-                        $currentRoute = Route::current()->uri();
+                        $currentRoute = Route::current() ? Route::current()->uri() : '';
                         $allRoutes = $filteredPermissions->pluck('route')->toArray();
-                        $isCategoryActive = in_array($currentRoute, $allRoutes);
+                        $isCategoryActive = in_array($currentRoute, $allRoutes) || collect($allRoutes)->contains(fn($r) => request()->is($r) || request()->is($r.'/*'));
 
                         $categoryIcons = [
-                            'pos' => 'la la-cash-register',
-                            'sales' => 'la la-shopping-bag',
-                            'products' => 'la la-cube',
-                            'customers' => 'la la-address-book',
-                            'suppliers' => 'la la-truck',
-                            'payments' => 'la la-money',
-                            'reports' => 'la la-bar-chart',
-                            'stores' => 'la la-home',
-                            'taxes' => 'la la-percent',
-                            'discounts' => 'la la-ticket',
-                            'roles' => 'la la-key',
-                            'settings' => 'la la-cog',
+                            'pos' => 'fas fa-cash-register',
+                            'sales' => 'fas fa-bag-shopping',
+                            'products' => 'fas fa-box-open',
+                            'customers' => 'fas fa-address-book',
+                            'suppliers' => 'fas fa-truck',
+                            'payments' => 'fas fa-money-bill-wave',
+                            'reports' => 'fas fa-chart-line',
+                            'stores' => 'fas fa-store',
+                            'taxes' => 'fas fa-percent',
+                            'discounts' => 'fas fa-ticket',
+                            'roles' => 'fas fa-shield-halved',
+                            'settings' => 'fas fa-gear',
                         ];
-                        $categoryIcon = $categoryIcons[$category->feature_key ?? ''] ?? ($category->icon ?: 'la la-circle');
-
+                        $categoryIcon = $categoryIcons[$category->feature_key ?? ''] ?? ($category->icon ?: 'fas fa-layer-group');
                         @endphp
+                        
                         <li class="nav-item dropdown {{ $isCategoryActive ? 'show' : '' }}">
                             <a href="#categoryDropdown{{ $category->id }}" class="nav-link dropdown-toggle" data-toggle="collapse" role="button" aria-expanded="{{ $isCategoryActive ? 'true' : 'false' }}" aria-controls="categoryDropdown{{ $category->id }}">
                                 <i class="{{ $categoryIcon }}"></i>
                                 <span>{{ $category->name }}</span>
+                                <i class="fas fa-chevron-down submenu-arrow"></i>
                             </a>
-                            <ul class="collapse list-unstyled ml-3 {{ $isCategoryActive ? 'show' : '' }}" id="categoryDropdown{{ $category->id }}">
+                            <ul class="collapse list-unstyled {{ $isCategoryActive ? 'show' : '' }}" id="categoryDropdown{{ $category->id }}">
                                 @foreach ($filteredPermissions as $permission)
                                     @if ($permission->route)
-                                        <li class="nav-item {{ request()->is($permission->route) ? 'active' : '' }}">
+                                        <li class="nav-item {{ request()->is($permission->route) || request()->is($permission->route.'/*') ? 'active' : '' }}">
                                             <a href="{{ url($permission->route) }}" class="nav-link">
-                                                <i class="{{ $permission->icon ?? 'la la-angle-right' }}"></i>
+                                                <i class="{{ $permission->icon ?? 'fas fa-chevron-right' }}"></i>
                                                 <span class="nav-link-text">{{ $permission->name }}</span>
                                             </a>
                                         </li>

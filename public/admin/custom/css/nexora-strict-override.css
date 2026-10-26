@@ -82,14 +82,35 @@ a:hover { color: #002E58 !important; }
     
     /* Sidebar collapsed state */
     html.sidebar-collapsed .logo-header {
+        width: 70px !important;
+        min-width: 70px !important;
+        max-width: 70px !important;
         justify-content: center !important;
         padding: 0 !important;
     }
     html.sidebar-collapsed .logo-header .logo {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        width: 100% !important;
+        padding: 0 !important;
+    }
+    html.sidebar-collapsed .logo-header .brand-name {
         display: none !important;
     }
-    html.sidebar-collapsed .logo-header .navbar-toggler {
-        margin: 0 auto !important;
+    html.sidebar-collapsed .sidebar {
+        width: 70px !important;
+        min-width: 70px !important;
+        max-width: 70px !important;
+    }
+    html.sidebar-collapsed .navbar-header {
+        left: 70px !important;
+        margin-left: 0 !important;
+        width: calc(100% - 70px) !important;
+    }
+    html.sidebar-collapsed .main-panel {
+        margin-left: 70px !important;
+        width: calc(100% - 70px) !important;
     }
 }
 
@@ -543,4 +564,66 @@ a:hover { color: #002E58 !important; }
     body.pos-fullscreen-mode .pos-cart-footer div.d-flex {
         display: none !important;
     }
+}
+
+/* ==========================================================================
+   STRICT OVERRIDE: DARK MODE HARMONIZATION
+   ========================================================================== */
+html.theme-dark body,
+html.theme-dark .wrapper,
+html.theme-dark .main-panel,
+html.theme-dark .content,
+body.theme-dark,
+body.theme-dark .wrapper,
+body.theme-dark .main-panel,
+body.theme-dark .content {
+    background: #0B1120 !important;
+    color: #CBD5E1 !important;
+}
+
+html.theme-dark .main-header,
+html.theme-dark .navbar-header,
+html.theme-dark .logo-header,
+html.theme-dark .sidebar,
+html.theme-dark .sidebar .nav-collapse,
+body.theme-dark .main-header,
+body.theme-dark .navbar-header,
+body.theme-dark .logo-header,
+body.theme-dark .sidebar,
+body.theme-dark .sidebar .nav-collapse {
+    background: #111C2E !important;
+    border-color: #1E2D44 !important;
+}
+
+html.theme-dark .table,
+html.theme-dark .table-bordered,
+html.theme-dark .dataTable,
+body.theme-dark .table,
+body.theme-dark .table-bordered,
+body.theme-dark .dataTable {
+    background: transparent !important;
+    border-color: #1E2D44 !important;
+    color: #CBD5E1 !important;
+}
+
+html.theme-dark .table th,
+html.theme-dark .table td,
+html.theme-dark .table thead th,
+html.theme-dark .table tbody td,
+body.theme-dark .table th,
+body.theme-dark .table td {
+    border-color: #1E2D44 !important;
+}
+
+html.theme-dark .table thead,
+html.theme-dark .table thead th,
+body.theme-dark .table thead,
+body.theme-dark .table thead th {
+    background: #1C283F !important;
+    color: #94A3B8 !important;
+}
+
+html.theme-dark .table tbody tr:hover,
+body.theme-dark .table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.04) !important;
 }
