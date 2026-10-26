@@ -92,19 +92,19 @@
 
             {{-- SUPER ADMIN PLATFORM STATS --}}
             @if(isset($platformStats) && $platformStats)
-                <div class="row mb-3">
-                    <div class="col-12 mb-2">
+                <div class="mb-3">
+                    <div class="mb-2">
                         <span class="eyebrow-tag"><span class="dot"></span> PLATFORM MASTER OVERVIEW</span>
                     </div>
-                    @foreach([
-                        ['label' => 'Total Perusahaan', 'value' => $platformStats['total_companies'], 'icon' => 'fa fa-building', 'color' => 'blue'],
-                        ['label' => 'Perusahaan Aktif', 'value' => $platformStats['active_companies'], 'icon' => 'fa fa-check-circle', 'color' => 'emerald'],
-                        ['label' => 'Lisensi Aktif', 'value' => $platformStats['active_licenses'], 'icon' => 'fa fa-certificate', 'color' => 'purple'],
-                        ['label' => 'Lisensi Warning', 'value' => $platformStats['expiring_licenses'], 'icon' => 'fa fa-clock', 'color' => 'amber'],
-                        ['label' => 'Total Pengguna', 'value' => $platformStats['total_users'], 'icon' => 'fa fa-users', 'color' => 'blue'],
-                        ['label' => 'Fitur Terpasang', 'value' => $platformStats['enabled_features'], 'icon' => 'fa fa-toggle-on', 'color' => 'emerald'],
-                    ] as $stat)
-                        <div class="col-md-4 col-xl-2 mb-3">
+                    <div class="platform-overview-grid">
+                        @foreach([
+                            ['label' => 'Total Perusahaan', 'value' => $platformStats['total_companies'], 'icon' => 'fa fa-building', 'color' => 'blue'],
+                            ['label' => 'Perusahaan Aktif', 'value' => $platformStats['active_companies'], 'icon' => 'fa fa-check-circle', 'color' => 'emerald'],
+                            ['label' => 'Lisensi Aktif', 'value' => $platformStats['active_licenses'], 'icon' => 'fa fa-certificate', 'color' => 'purple'],
+                            ['label' => 'Lisensi Warning', 'value' => $platformStats['expiring_licenses'], 'icon' => 'fa fa-clock', 'color' => 'amber'],
+                            ['label' => 'Total Pengguna', 'value' => $platformStats['total_users'], 'icon' => 'fa fa-users', 'color' => 'blue'],
+                            ['label' => 'Fitur Terpasang', 'value' => $platformStats['enabled_features'], 'icon' => 'fa fa-toggle-on', 'color' => 'emerald'],
+                        ] as $stat)
                             <div class="metric-card-item">
                                 <div class="metric-card-top">
                                     <span class="metric-card-label">{{ $stat['label'] }}</span>
@@ -113,8 +113,8 @@
                                 <div class="metric-card-value">{{ $stat['value'] }}</div>
                                 <span class="metric-card-footer">Tenant Platform</span>
                             </div>
-                        </div>
-                    @endforeach
+                        @endforeach
+                    </div>
                 </div>
             @endif
 

@@ -87,6 +87,7 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                resizeDelay: 50,
                 interaction: {
                     mode: 'index',
                     intersect: false,
@@ -220,6 +221,7 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                resizeDelay: 50,
                 cutout: '68%',
                 plugins: {
                     legend: {
@@ -301,6 +303,20 @@
         }
 
         initDonutChart();
+
+        // Smooth reflow on browser zoom or window resize
+        let resizeTimer = null;
+        window.addEventListener('resize', function () {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function () {
+                if (mainChartInstance) {
+                    mainChartInstance.resize();
+                }
+                if (donutChartInstance) {
+                    donutChartInstance.resize();
+                }
+            }, 60);
+        });
     });
 
     // Expose for external calls or re-render
