@@ -160,9 +160,27 @@ a:hover {
 .logo-header .logo {
     display: inline-flex !important;
     align-items: center !important;
-    gap: 10px !important;
     text-decoration: none !important;
-    color: var(--nexora-primary) !important;
+    max-width: 100% !important;
+    line-height: 1 !important;
+    padding: 0 !important;
+}
+
+.logo-header .brand-full-logo {
+    height: 38px !important;
+    width: auto !important;
+    max-width: 190px !important;
+    object-fit: contain !important;
+    display: block !important;
+    transition: all 0.2s ease !important;
+}
+
+.logo-header .brand-mini-logo {
+    display: none !important;
+    height: 34px !important;
+    width: auto !important;
+    object-fit: contain !important;
+    margin: 0 auto !important;
 }
 
 .brand-mark {
@@ -993,8 +1011,12 @@ html.sidebar-collapsed .logo-header .brand-mark img {
     margin: 0 auto !important;
     display: block !important;
 }
-html.sidebar-collapsed .logo-header .brand-name {
+html.sidebar-collapsed .logo-header .brand-name,
+html.sidebar-collapsed .logo-header .brand-full-logo {
     display: none !important;
+}
+html.sidebar-collapsed .logo-header .brand-mini-logo {
+    display: block !important;
 }
 
 /* 2. Topbar Header Collapsed */
@@ -3768,6 +3790,322 @@ body.theme-dark .nexora-btn-back:hover {
     background: #334155 !important;
     color: #FFFFFF !important;
 }
+
+/* ==========================================================================
+   JOB-FINANCE MODERN DROPDOWN / SELECT2 SYSTEM
+   ========================================================================== */
+.select2-container {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.select2-container--default .select2-selection--single {
+    height: 44px !important;
+    background: #FFFFFF !important;
+    border: 1px solid #D9E2EC !important;
+    border-radius: 10px !important;
+    padding: 0 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    transition: all 0.2s ease !important;
+    box-shadow: none !important;
+}
+
+.nexora-input-wrap .select2-container .select2-selection--single {
+    padding-left: 40px !important;
+}
+
+.select2-container--default .select2-selection--single:hover {
+    border-color: #CBD5E1 !important;
+}
+
+.select2-container--default.select2-container--focus .select2-selection--single,
+.select2-container--default.select2-container--open .select2-selection--single {
+    border-color: #0058A6 !important;
+    box-shadow: 0 0 0 3px rgba(0, 88, 166, 0.12) !important;
+    outline: none !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #0F1F3D !important;
+    font-size: 13.5px !important;
+    font-weight: 500 !important;
+    line-height: 42px !important;
+    padding-left: 0 !important;
+    padding-right: 28px !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__placeholder {
+    color: #94A3B8 !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 42px !important;
+    right: 12px !important;
+    top: 0 !important;
+    width: 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow b {
+    border: none !important;
+    width: 8px !important;
+    height: 8px !important;
+    border-right: 2px solid #64748B !important;
+    border-bottom: 2px solid #64748B !important;
+    transform: rotate(45deg) !important;
+    margin: 0 !important;
+    position: static !important;
+    transition: transform 0.2s ease, border-color 0.2s ease !important;
+}
+
+.select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
+    transform: rotate(-135deg) !important;
+    border-color: #0058A6 !important;
+}
+
+/* Floating Dropdown Popup */
+.select2-dropdown.nexora-select2-dropdown,
+.select2-dropdown {
+    background: #FFFFFF !important;
+    border: 1px solid #E6EBF3 !important;
+    border-radius: 14px !important;
+    box-shadow: 0 14px 36px rgba(15, 31, 61, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+    padding: 8px !important;
+    z-index: 10050 !important;
+    margin-top: 6px !important;
+    overflow: hidden !important;
+}
+
+.select2-search--dropdown {
+    padding: 4px 4px 8px 4px !important;
+}
+
+.select2-search--dropdown .select2-search__field {
+    height: 38px !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 8px !important;
+    padding: 8px 12px !important;
+    font-size: 12.5px !important;
+    background: #F8FAFC !important;
+    color: #0F1F3D !important;
+    outline: none !important;
+    transition: all 0.2s ease !important;
+}
+
+.select2-search--dropdown .select2-search__field:focus {
+    border-color: #0058A6 !important;
+    background: #FFFFFF !important;
+    box-shadow: 0 0 0 2px rgba(0, 88, 166, 0.1) !important;
+}
+
+.select2-results__options {
+    max-height: 240px !important;
+    padding: 0 !important;
+    overflow-y: auto !important;
+}
+
+.select2-results__option {
+    padding: 9px 14px !important;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    color: #334155 !important;
+    font-weight: 500 !important;
+    margin-bottom: 2px !important;
+    transition: all 0.15s ease !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+
+.select2-results__option--highlighted[aria-selected],
+.select2-results__option:hover {
+    background: #F1F5F9 !important;
+    color: #0058A6 !important;
+    font-weight: 600 !important;
+}
+
+.select2-results__option[aria-selected="true"] {
+    background: #0058A6 !important;
+    color: #FFFFFF !important;
+    font-weight: 700 !important;
+}
+
+.select2-results__option[aria-selected="true"]::after {
+    content: "✓";
+    font-weight: 800;
+    font-size: 12px;
+    margin-left: 8px;
+}
+
+.select2-results__option--disabled {
+    opacity: 0.45 !important;
+    cursor: not-allowed !important;
+}
+
+/* Custom Period Dropdown for Dashboard */
+.chart-period-dropdown-wrap {
+    position: relative;
+    display: inline-block;
+}
+
+.chart-period-pill-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #FFFFFF;
+    border: 1px solid #D9E2EC;
+    color: #0F1F3D;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(15, 31, 61, 0.04);
+}
+
+.chart-period-pill-btn:hover {
+    border-color: #0058A6;
+    color: #0058A6;
+}
+
+.chart-period-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: #FFFFFF;
+    border: 1px solid #E6EBF3;
+    border-radius: 14px;
+    box-shadow: 0 12px 30px rgba(15, 31, 61, 0.12);
+    min-width: 190px;
+    padding: 6px;
+    display: none;
+    z-index: 1000;
+    animation: nexoraDropdownSlide 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.chart-period-menu.is-open {
+    display: block;
+}
+
+.chart-period-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.chart-period-item:hover {
+    background: #F1F5F9;
+    color: #0058A6;
+    font-weight: 600;
+}
+
+.chart-period-item.is-active {
+    background: #0058A6;
+    color: #FFFFFF;
+    font-weight: 700;
+}
+
+/* Dark mode for modern dropdowns */
+html.theme-dark .select2-container--default .select2-selection--single,
+body.theme-dark .select2-container--default .select2-selection--single {
+    background: #0F172A !important;
+    border-color: #334155 !important;
+}
+
+html.theme-dark .select2-container--default .select2-selection--single .select2-selection__rendered,
+body.theme-dark .select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #F8FAFC !important;
+}
+
+html.theme-dark .select2-container--default .select2-selection--single .select2-selection__arrow b,
+body.theme-dark .select2-container--default .select2-selection--single .select2-selection__arrow b {
+    border-color: #94A3B8 !important;
+}
+
+html.theme-dark .select2-dropdown.nexora-select2-dropdown,
+html.theme-dark .select2-dropdown,
+body.theme-dark .select2-dropdown {
+    background: #151F32 !important;
+    border-color: #334155 !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35) !important;
+}
+
+html.theme-dark .select2-search--dropdown .select2-search__field,
+body.theme-dark .select2-search--dropdown .select2-search__field {
+    background: #0F172A !important;
+    border-color: #334155 !important;
+    color: #F8FAFC !important;
+}
+
+html.theme-dark .select2-results__option,
+body.theme-dark .select2-results__option {
+    color: #CBD5E1 !important;
+}
+
+html.theme-dark .select2-results__option--highlighted[aria-selected],
+html.theme-dark .select2-results__option:hover,
+body.theme-dark .select2-results__option:hover {
+    background: #1E293B !important;
+    color: #38BDF8 !important;
+}
+
+html.theme-dark .select2-results__option[aria-selected="true"],
+body.theme-dark .select2-results__option[aria-selected="true"] {
+    background: #0058A6 !important;
+    color: #FFFFFF !important;
+}
+
+html.theme-dark .chart-period-pill-btn,
+body.theme-dark .chart-period-pill-btn {
+    background: #151F32 !important;
+    border-color: #334155 !important;
+    color: #F8FAFC !important;
+}
+
+html.theme-dark .chart-period-menu,
+body.theme-dark .chart-period-menu {
+    background: #151F32 !important;
+    border-color: #334155 !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4) !important;
+}
+
+html.theme-dark .chart-period-item,
+body.theme-dark .chart-period-item {
+    color: #CBD5E1 !important;
+}
+
+html.theme-dark .chart-period-item:hover,
+body.theme-dark .chart-period-item:hover {
+    background: #1E293B !important;
+    color: #38BDF8 !important;
+}
+
+html.theme-dark .chart-period-item.is-active,
+body.theme-dark .chart-period-item.is-active {
+    background: #0058A6 !important;
+    color: #FFFFFF !important;
+}
+
+/* Dark mode sidebar header logo */
+html.theme-dark .logo-header .brand-full-logo,
+body.theme-dark .logo-header .brand-full-logo {
+    filter: brightness(0) invert(1);
+    opacity: 0.95;
+}
+
+
 
 
 

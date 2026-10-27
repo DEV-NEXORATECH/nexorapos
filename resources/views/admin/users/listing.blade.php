@@ -31,7 +31,7 @@
                     <div class="hero-stat-card-preview" style="min-width: 250px;">
                         <div class="hero-stat-badge-check">🏢</div>
                         <small>Filter Tenant Perusahaan</small>
-                        <select class="form-control mt-2" id="superAdminCompanyFilter" style="border-radius: 8px; font-size: 12.5px; font-weight: 600; background: #FFFFFF; border: 1px solid #E2E8F0; color: #0F1F3D;">
+                        <select class="form-control select2 mt-2" id="superAdminCompanyFilter" style="width: 100%;">
                             <option value="">Semua Perusahaan (All)</option>
                             @php
                                 $allCompanies = \App\Models\Company::orderBy('name')->get();
@@ -54,8 +54,8 @@
                         <p class="card-category" style="margin-bottom: 0;">Seluruh akun staf yang terdaftar pada sistem POS Nexora.</p>
                     </div>
                     @if(auth()->user() && auth()->user()->isSuperAdmin())
-                    <div class="d-lg-none">
-                        <select class="form-control" id="superAdminCompanyFilterMobile" style="border-radius: 8px; font-size: 12px; font-weight: 600; min-width: 180px;">
+                    <div class="d-lg-none" style="min-width: 200px;">
+                        <select class="form-control select2" id="superAdminCompanyFilterMobile" style="width: 100%;">
                             <option value="">Semua Perusahaan</option>
                             @foreach($allCompanies as $c)
                                 <option value="{{ $c->name }}">{{ $c->name }}</option>

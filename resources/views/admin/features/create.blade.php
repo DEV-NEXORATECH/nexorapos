@@ -138,7 +138,7 @@
                                 <label class="nexora-input-label">Status Lisensi <span class="text-danger">*</span></label>
                                 <div class="nexora-input-wrap">
                                     <i class="fas fa-circle-check input-icon text-success"></i>
-                                    <select name="subscription_status" class="form-control nexora-input" required>
+                                    <select name="subscription_status" class="form-control nexora-input select2" required>
                                         <option value="active" {{ old('subscription_status', 'active') === 'active' ? 'selected' : '' }}>Active (Aktif)</option>
                                         <option value="past_due" {{ old('subscription_status') === 'past_due' ? 'selected' : '' }}>Past Due (Jatuh Tempo)</option>
                                         <option value="inactive" {{ old('subscription_status') === 'inactive' ? 'selected' : '' }}>Inactive (Non-aktif)</option>
@@ -152,7 +152,7 @@
                                 <label class="nexora-input-label">Periode Penagihan <span class="text-danger">*</span></label>
                                 <div class="nexora-input-wrap">
                                     <i class="fas fa-calendar-alt input-icon"></i>
-                                    <select name="billing_period" class="form-control nexora-input nexora-billing-period" required>
+                                    <select name="billing_period" class="form-control nexora-input nexora-billing-period select2" required>
                                         <option value="monthly" {{ old('billing_period', 'monthly') === 'monthly' ? 'selected' : '' }}>Bulanan (1 Bulan)</option>
                                         <option value="yearly" {{ old('billing_period') === 'yearly' ? 'selected' : '' }}>Tahunan (12 Bulan)</option>
                                         <option value="custom" {{ old('billing_period') === 'custom' ? 'selected' : '' }}>Kustom (Tentukan Bulan)</option>
@@ -306,14 +306,14 @@
         }
     });
 
-    document.querySelector('.nexora-billing-period')?.addEventListener('change', function(e) {
+    $(document).on('change', '.nexora-billing-period', function() {
         const months = document.querySelector('.nexora-billing-months');
         if (!months) return;
-        
-        if (e.target.value === 'monthly') {
+        const val = $(this).val();
+        if (val === 'monthly') {
             months.value = 1;
             months.readOnly = true;
-        } else if (e.target.value === 'yearly') {
+        } else if (val === 'yearly') {
             months.value = 12;
             months.readOnly = true;
         } else {

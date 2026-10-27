@@ -48,7 +48,7 @@
                                 <label class="nexora-input-label">Metode Login Utama</label>
                                 <div class="nexora-input-wrap">
                                     <i class="fas fa-key input-icon"></i>
-                                    <select name="login_method" id="login_method" class="form-control nexora-input">
+                                    <select name="login_method" id="login_method" class="form-control nexora-input select2">
                                         <option value="phone" {{ old('login_method', $settings->where('key', 'login_method')->first()->value ?? '') == 'phone' ? 'selected' : '' }}>Nomor Telepon / WhatsApp</option>
                                         <option value="email" {{ old('login_method', $settings->where('key', 'login_method')->first()->value ?? '') == 'email' ? 'selected' : '' }}>Alamat Email</option>
                                     </select>

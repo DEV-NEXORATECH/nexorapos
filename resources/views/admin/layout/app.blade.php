@@ -42,12 +42,7 @@
             || request()->is('admin-panel/*/*/listing')
             || request()->is('admin-panel/products/recycle');
         $usesDashboardChart = request()->is('admin-panel/dashboard');
-        $usesSelect2 = request()->is('admin-panel/*/add')
-            || request()->is('admin-panel/*/*/add')
-            || request()->is('admin-panel/*/edit/*')
-            || request()->is('admin-panel/*/*/edit/*')
-            || request()->is('admin-panel/settings*')
-            || request()->is('profile');
+        $usesSelect2 = true; // Always available for modern Job-Finance dropdowns
     @endphp
 
     @if($usesDataTable)
@@ -55,10 +50,8 @@
         <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
     @endif
 
-    @if($usesSelect2)
-        <!-- Select2 CSS -->
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet">
-    @endif
+    <!-- Select2 Modern Dropdowns CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet">
 </head>
 <body>
     @include('admin.layout.message')
@@ -308,11 +301,30 @@
         </script>
     @endif
 
-    <!-- Initialize Select2 -->
+    <!-- Initialize Select2 (Job-Finance Modern Dropdowns) -->
     <script>
         $(document).ready(function() {
-            if ($.fn.select2 && $('.select2').length) {
-                $('.select2').select2();
+            if ($.fn.select2) {
+                try {
+                    $.fn.select2.defaults.set('dropdownCssClass', 'nexora-select2-dropdown');
+                    $.fn.select2.defaults.set('width', '100%');
+                } catch(e) {}
+
+                $('.select2, .nexora-select').each(function() {
+                    const $el = $(this);
+                    if ($el.hasClass('select2-hidden-accessible')) return;
+                    const optCount = $el.find('option').length;
+                    $el.select2({
+                        width: '100%',
+                        minimumResultsForSearch: optCount > 6 ? 0 : Infinity,
+                        dropdownCssClass: 'nexora-select2-dropdown',
+                        language: {
+                            noResults: function() {
+                                return "Tidak ada hasil yang sesuai";
+                            }
+                        }
+                    });
+                });
             }
         });
     </script>

@@ -75,7 +75,7 @@
                                 <label class="nexora-input-label">Peran / Role Otoritas <span class="text-danger">*</span></label>
                                 <div class="nexora-input-wrap">
                                     <i class="fas fa-shield-halved input-icon"></i>
-                                    <select name="role_id" id="role" class="form-control nexora-input" required>
+                                    <select name="role_id" id="role" class="form-control nexora-input select2" required>
                                         <option value="">-- Pilih Role Peran --</option>
                                         @foreach ($roles as $role)
                                             <option value="{{ $role->id }}" @selected(old('role_id', $user->role_id) == $role->id)>
@@ -114,7 +114,7 @@
                                 <label class="nexora-input-label">Toko / Cabang Bertugas</label>
                                 <div class="nexora-input-wrap">
                                     <i class="fas fa-shop input-icon"></i>
-                                    <select name="store_id" id="store_id" class="form-control nexora-input">
+                                    <select name="store_id" id="store_id" class="form-control nexora-input select2">
                                         <option value="">Akses Seluruh Toko (Owner / General Manager)</option>
                                         @foreach($stores as $store)
                                             <option value="{{ $store->id }}" data-company="{{ $store->company_id }}" @selected(old('store_id', $user->store_id) == $store->id)>

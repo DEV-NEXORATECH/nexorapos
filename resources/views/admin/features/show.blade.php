@@ -62,7 +62,7 @@
                             <label class="nexora-input-label">Status Langganan</label>
                             <div class="nexora-input-wrap">
                                 <i class="fas fa-toggle-on input-icon"></i>
-                                <select name="subscription_status" class="form-control nexora-input">
+                                <select name="subscription_status" class="form-control nexora-input select2">
                                     <option value="active" {{ ($company->subscription_status ?? 'active') === 'active' ? 'selected' : '' }}>Active (Aktif Normal)</option>
                                     <option value="past_due" {{ $company->subscription_status === 'past_due' ? 'selected' : '' }}>Past Due (Jatuh Tempo)</option>
                                     <option value="inactive" {{ $company->subscription_status === 'inactive' ? 'selected' : '' }}>Inactive (Non-aktif)</option>
@@ -75,7 +75,7 @@
                             <label class="nexora-input-label">Periode Pembayaran</label>
                             <div class="nexora-input-wrap">
                                 <i class="fas fa-calendar-alt input-icon"></i>
-                                <select name="billing_period" class="form-control nexora-input nexora-billing-period">
+                                <select name="billing_period" class="form-control nexora-input nexora-billing-period select2">
                                     <option value="monthly" {{ ($company->billing_period ?? 'monthly') === 'monthly' ? 'selected' : '' }}>Bulanan (1 Bulan)</option>
                                     <option value="yearly" {{ $company->billing_period === 'yearly' ? 'selected' : '' }}>Tahunan (12 Bulan)</option>
                                     <option value="custom" {{ $company->billing_period === 'custom' ? 'selected' : '' }}>Kustom</option>
@@ -259,6 +259,7 @@
             };
 
             period.addEventListener('change', syncMonths);
+            $(period).on('change', syncMonths);
             syncMonths();
         });
 

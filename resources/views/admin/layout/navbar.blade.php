@@ -20,11 +20,8 @@
 
 <div class="logo-header">
     <a href="{{ url('admin-panel/dashboard') }}" class="logo">
-        <span class="brand-mark">
-            <img src="{{ asset('admin/images/retail-point-of-sale-logo.png') }}" alt="NexoraPOS" onerror="this.style.display='none'">
-            <i class="fas fa-cash-register" style="font-size:16px;color:var(--nexora-primary);" onerror="this.style.display='inline-block'"></i>
-        </span>
-        <span class="brand-name">Nexora<span>POS</span></span>
+        <img src="{{ asset('admin/images/nexora-technology-logo.png') }}" alt="Nexora Technology" class="brand-full-logo" onerror="this.style.display='none'">
+        <img src="{{ asset('admin/images/nexora-emblem.png') }}" alt="Nexora" class="brand-mini-logo" onerror="this.style.display='none'">
     </a>
 </div>
 

@@ -134,9 +134,26 @@
                             <i class="fa fa-chart-line mr-1"></i>
                             <span>Arus Kasir Stabil</span>
                         </span>
-                        <div class="chart-period-badge">
-                            <i class="fa fa-calendar-alt mr-1"></i>
-                            <select id="salesFilter" class="chart-period-select">
+                        <div class="chart-period-dropdown-wrap">
+                            <button type="button" class="chart-period-pill-btn" id="salesPeriodDropdownBtn" aria-haspopup="true" aria-expanded="false">
+                                <i class="fa fa-calendar-alt mr-1" style="color: #0058A6;"></i>
+                                <span id="salesPeriodLabel">Bulan Ini (Per Bulan)</span>
+                                <i class="fa fa-chevron-down ml-1" style="font-size: 10px; color: #64748B;"></i>
+                            </button>
+                            <div class="chart-period-menu" id="salesPeriodMenu">
+                                <div class="chart-period-item" data-value="daily">
+                                    <span>Hari Ini (Per Jam)</span>
+                                </div>
+                                <div class="chart-period-item" data-value="weekly">
+                                    <span>Minggu Ini (Per Hari)</span>
+                                </div>
+                                <div class="chart-period-item is-active" data-value="monthly">
+                                    <span>Bulan Ini (Per Bulan)</span>
+                                    <i class="fa fa-check ml-2" style="font-size: 11px;"></i>
+                                </div>
+                            </div>
+                            <!-- Hidden select for chart.js binding -->
+                            <select id="salesFilter" style="display: none;">
                                 <option value="daily">Hari Ini (Per Jam)</option>
                                 <option value="weekly">Minggu Ini (Per Hari)</option>
                                 <option value="monthly" selected>Bulan Ini (Per Bulan)</option>
@@ -393,6 +410,50 @@
     };
     if (window.NexoraDashboardCharts && typeof window.NexoraDashboardCharts.initDonutChart === 'function') {
         window.NexoraDashboardCharts.initDonutChart();
+    }
+
+    // Modern Period Dropdown Pill Controller
+    const periodBtn = document.getElementById('salesPeriodDropdownBtn');
+    const periodMenu = document.getElementById('salesPeriodMenu');
+    const periodLabel = document.getElementById('salesPeriodLabel');
+    const salesFilter = document.getElementById('salesFilter');
+
+    if (periodBtn && periodMenu) {
+        periodBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            periodMenu.classList.toggle('is-open');
+        });
+
+        periodMenu.querySelectorAll('.chart-period-item').forEach(function(item) {
+            item.addEventListener('click', function() {
+                const val = this.getAttribute('data-value');
+                const text = this.querySelector('span').innerText;
+                
+                periodLabel.innerText = text;
+                periodMenu.querySelectorAll('.chart-period-item').forEach(i => {
+                    i.classList.remove('is-active');
+                    const check = i.querySelector('.fa-check');
+                    if (check) check.remove();
+                });
+                this.classList.add('is-active');
+                const check = document.createElement('i');
+                check.className = 'fa fa-check ml-2';
+                check.style.fontSize = '11px';
+                this.appendChild(check);
+                periodMenu.classList.remove('is-open');
+
+                if (salesFilter) {
+                    salesFilter.value = val;
+                    salesFilter.dispatchEvent(new Event('change'));
+                }
+            });
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!periodMenu.contains(e.target) && !periodBtn.contains(e.target)) {
+                periodMenu.classList.remove('is-open');
+            }
+        });
     }
 </script>
 @endpush
