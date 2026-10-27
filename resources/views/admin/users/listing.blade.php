@@ -1,70 +1,103 @@
 @extends('admin.layout.app')
 
-@section('title', 'Users')
+@section('title', 'Daftar Pengguna - Users Management')
 
 @section('content')
-
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
             
-            <div class="superadmin-header-card mb-4">
-                <h4><i class="fas fa-users"></i> Users</h4>
-                <div class="d-flex align-items-center">
-                    @if(auth()->user() && auth()->user()->isSuperAdmin())
-                        @php
-                            $allCompanies = \App\Models\Company::orderBy('name')->get();
-                        @endphp
-                        <select class="form-control mr-3" id="superAdminCompanyFilter" style="min-width: 200px;">
-                            <option value="">All Companies</option>
+            {{-- 1. HERO BANNER (JOB-FINANCE STYLE) --}}
+            <div class="dashboard-hero-banner">
+                <div class="dashboard-hero-left">
+                    <div class="dashboard-hero-badges">
+                        <span class="hero-tag-pill">
+                            <i class="fa fa-circle" style="font-size: 6px; color: #10B981;"></i>
+                            USER & AKSES
+                        </span>
+                        <span class="hero-tag-pill">
+                            <i class="fa fa-users"></i>
+                            PENGGUNA SISTEM
+                        </span>
+                    </div>
+                    <h2>Manajemen Pengguna & Staf.</h2>
+                    <p>Kelola seluruh akun staf kasir, kepala gudang, dan administrator per cabang tenant dengan kontrol hak akses lisensi yang aman.</p>
+                    <a href="{{ url('admin-panel/users/add') }}" class="dashboard-hero-btn">
+                        <i class="fa fa-user-plus mr-1"></i> Tambah Pengguna Baru &rarr;
+                    </a>
+                </div>
+                @if(auth()->user() && auth()->user()->isSuperAdmin())
+                <div class="dashboard-hero-right d-none d-lg-flex">
+                    <div class="hero-stat-card-preview" style="min-width: 250px;">
+                        <div class="hero-stat-badge-check">🏢</div>
+                        <small>Filter Tenant Perusahaan</small>
+                        <select class="form-control mt-2" id="superAdminCompanyFilter" style="border-radius: 8px; font-size: 12.5px; font-weight: 600; background: #FFFFFF; border: 1px solid #E2E8F0; color: #0F1F3D;">
+                            <option value="">Semua Perusahaan (All)</option>
+                            @php
+                                $allCompanies = \App\Models\Company::orderBy('name')->get();
+                            @endphp
                             @foreach($allCompanies as $c)
                                 <option value="{{ $c->name }}">{{ $c->name }} ({{ $c->company_code }})</option>
                             @endforeach
                         </select>
-                    @endif
-                    <a href="{{ url('admin-panel/users/add') }}" class="btn btn-secondary" style="border: none;">Add New User</a>
+                    </div>
                 </div>
+                @endif
             </div>
 
-            <table class="table nexora-data-table" id="categoriesTable" style="width:100%">
-                <thead>
-                    <tr>
-                        <th>Nama</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Company</th>
-                        <th>Store</th>
-                        <th>Shift</th>
-                        <th>License</th>
-                        <th>Status</th>
-                        <th class="min-w-120 text-nowrap">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                                    <!-- AJAX loaded by DataTables -->
-                                </tbody>
-            </table>
+            {{-- 2. TABLE CARD --}}
+            <div class="nexora-table-card">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                    <div>
+                        <span class="eyebrow-tag"><span class="dot"></span> DATABASE PENGGUNA</span>
+                        <h4 class="card-title mb-0" style="font-size: 17px; font-weight: 700; color: #0F1F3D;">Daftar Akun Pengguna Aktif</h4>
+                        <p class="card-category" style="margin-bottom: 0;">Seluruh akun staf yang terdaftar pada sistem POS Nexora.</p>
+                    </div>
+                    @if(auth()->user() && auth()->user()->isSuperAdmin())
+                    <div class="d-lg-none">
+                        <select class="form-control" id="superAdminCompanyFilterMobile" style="border-radius: 8px; font-size: 12px; font-weight: 600; min-width: 180px;">
+                            <option value="">Semua Perusahaan</option>
+                            @foreach($allCompanies as $c)
+                                <option value="{{ $c->name }}">{{ $c->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @endif
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table nexora-data-table" id="categoriesTable" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Nama</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Company</th>
+                                <th>Store</th>
+                                <th>Shift</th>
+                                <th>License</th>
+                                <th>Status</th>
+                                <th class="text-nowrap" style="width: 85px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- AJAX loaded by DataTables -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-
-<style>
-    .min-w-120 {
-        min-width: 120px;
-    }
-    .nexora-table-wrapper { background: #fff; border: 1px solid #DCEEFF; border-radius: 12px; overflow: hidden; padding: 16px; }
-</style>
-
 @endsection
 
 @section('scripts')
-
 <script>
     $(document).ready(function() {
         if ($.fn.DataTable.isDataTable('.nexora-data-table')) {
             $('.nexora-data-table').DataTable().destroy();
         }
-        $('.nexora-data-table').DataTable({
+        var table = $('.nexora-data-table').DataTable({
             processing: true,
             serverSide: true,
             ajax: '{{ url("admin-panel/users/listing") }}',
@@ -79,6 +112,14 @@
                 { data: 'status', name: 'status' , orderable: false, searchable: false },
                 { data: 'action', name: 'action', orderable: false, searchable: false }
             ]
+        });
+
+        $('#superAdminCompanyFilter').on('change', function() {
+            table.column(3).search($(this).val()).draw();
+        });
+
+        $('#superAdminCompanyFilterMobile').on('change', function() {
+            table.column(3).search($(this).val()).draw();
         });
     });
 </script>
