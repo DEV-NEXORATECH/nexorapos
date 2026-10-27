@@ -1,23 +1,39 @@
 @extends('admin.layout.app')
 
-@section('title', 'License & Features')
+@section('title', 'Status Lisensi & Paket SaaS - NexoraPOS')
 
 @section('content')
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
-            <div class="d-flex justify-content-between align-items-center flex-wrap mb-3" style="gap: 12px;">
-                <div>
-                    <h4 class="page-title mb-1">{{ auth()->user()?->isSuperAdmin() ? 'License & Features' : 'License Status' }}</h4>
-                    <p class="text-muted mb-0">
-                        {{ auth()->user()?->isSuperAdmin()
-                            ? 'Status lisensi company, pembayaran, dan fitur yang sedang aktif.'
-                            : 'Bukti status pembayaran, paket aktif, masa berlaku, dan fitur yang bisa dipakai company kamu.' }}
-                    </p>
+            
+            <!-- Simple & Clean Page Header -->
+            <div class="nexora-page-header-card mb-4">
+                <div class="nexora-page-header-left">
+                    <div class="nexora-page-header-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="nexora-page-header-meta">
+                        <span class="nexora-page-header-eyebrow"><span class="dot"></span> PENGATURAN SISTEM &bull; LISENSI SAAS</span>
+                        <h3 class="nexora-page-header-title">{{ auth()->user()?->isSuperAdmin() ? 'Kelola Lisensi & Tagihan Tenant' : 'Status Lisensi & Layanan Toko' }}</h3>
+                        <p class="nexora-page-header-desc">
+                            {{ auth()->user()?->isSuperAdmin()
+                                ? 'Pantau status aktif tenant, jatuh tempo, kuota user, dan pembayaran.'
+                                : 'Paket langganan aktif, masa berlaku aplikasi, kuota kasir, dan perpanjangan QRIS.' }}
+                        </p>
+                    </div>
                 </div>
-                @if(auth()->user()?->isSuperAdmin())
-                    <a href="{{ url('admin-panel/features') }}" class="btn btn-primary btn-sm">Manage Features</a>
-                @endif
+                <div class="nexora-page-header-right">
+                    @if(auth()->user()?->isSuperAdmin())
+                        <a href="{{ url('admin-panel/features') }}" class="nexora-btn-back">
+                            <i class="fas fa-toggle-on"></i> Hub Fitur Tenant
+                        </a>
+                    @else
+                        <a href="{{ url('admin-panel/dashboard') }}" class="nexora-btn-back">
+                            <i class="fa fa-arrow-left"></i> Kembali ke Dashboard
+                        </a>
+                    @endif
+                </div>
             </div>
 
             @foreach($companies as $company)
@@ -27,126 +43,150 @@
                     $totalFeatures = $features->count();
                     $blocked = $license['is_locked'];
                     $licenseInactive = $license['is_locked'] || $company->isLicenseInactive();
+                    $statusColor = match ($license['status']) {
+                        'ACTIVE' => '#10B981',
+                        'EXPIRING_SOON', 'GRACE_PERIOD' => '#F59E0B',
+                        'OVERDUE', 'BLOCKED' => '#EF4444',
+                        default => '#64748B',
+                    };
                 @endphp
-                <div class="card mb-4">
-                    <div class="card-header d-flex justify-content-between align-items-start flex-wrap" style="gap: 12px;">
-                        <div>
-                            <h4 class="card-title mb-1">{{ $company->name }}</h4>
-                            <p class="card-category mb-0">
-                                Code: <strong>{{ $company->company_code }}</strong>
+
+                <div class="nexora-form-card mb-4">
+                    <div class="nexora-form-card-head d-flex justify-content-between align-items-center flex-wrap" style="gap: 12px; border-bottom: 1px solid #E6EBF3; padding-bottom: 18px;">
+                        <div class="d-flex align-items-center" style="gap: 14px;">
+                            <div class="nexora-form-card-icon" style="background: rgba(0, 88, 166, 0.1); color: #0058A6;">
+                                <i class="fas fa-store"></i>
+                            </div>
+                            <div>
+                                <span class="nexora-form-card-eyebrow">TENANT CODE: {{ $company->company_code }}</span>
+                                <h4 class="nexora-form-card-title mb-0">{{ $company->name }}</h4>
                                 @if($company->payment_due_at)
-                                    | Due: <strong>{{ $company->payment_due_at->format('d M Y') }}</strong>
+                                    <small class="text-muted"><i class="fa fa-calendar mr-1"></i>Jatuh tempo: <strong>{{ $company->payment_due_at->format('d M Y') }}</strong></small>
                                 @endif
-                            </p>
+                            </div>
                         </div>
-                        <span class="nexora-status nexora-status-{{ $license['badge_class'] }}">
-                            {{ $license['label'] }}
-                        </span>
+                        <div>
+                            <span class="badge px-3 py-2" style="background: {{ $statusColor }}; color: #FFFFFF; font-size: 13px; font-weight: 700; border-radius: 20px;">
+                                <i class="fa fa-circle mr-1" style="font-size: 8px;"></i> {{ $license['label'] }}
+                            </span>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <div class="row mb-3">
-                            <div class="col-md-2 mb-3">
-                                <div class="nexora-license-summary">
-                                    <small>Status</small>
-                                    <strong>{{ $license['label'] }}</strong>
+
+                    <div class="nexora-form-card-body pt-3">
+                        <!-- METRIC HIGHLIGHTS -->
+                        <div class="row mb-4">
+                            <div class="col-6 col-md-3 col-lg mb-3">
+                                <div class="p-3 rounded text-center" style="background: #F8FAFC; border: 1px solid #E2E8F0;">
+                                    <div class="text-muted mb-1" style="font-size: 11.5px; font-weight: 600; text-transform: uppercase;">Paket Aktif</div>
+                                    <div style="font-size: 15px; font-weight: 700; color: #0F1F3D;">{{ $license['package'] }}</div>
                                 </div>
                             </div>
-                            <div class="col-md-2 mb-3">
-                                <div class="nexora-license-summary">
-                                    <small>Paket Aktif</small>
-                                    <strong>{{ $license['package'] }}</strong>
+                            <div class="col-6 col-md-3 col-lg mb-3">
+                                <div class="p-3 rounded text-center" style="background: #F8FAFC; border: 1px solid #E2E8F0;">
+                                    <div class="text-muted mb-1" style="font-size: 11.5px; font-weight: 600; text-transform: uppercase;">Mulai Aktif</div>
+                                    <div style="font-size: 14.5px; font-weight: 700; color: #0F1F3D;">{{ optional($license['started_at'])->format('d M Y') ?? '-' }}</div>
                                 </div>
                             </div>
-                            <div class="col-md-2 mb-3">
-                                <div class="nexora-license-summary">
-                                    <small>Mulai</small>
-                                    <strong>{{ optional($license['started_at'])->format('d M Y') ?? '-' }}</strong>
+                            <div class="col-6 col-md-3 col-lg mb-3">
+                                <div class="p-3 rounded text-center" style="background: #F8FAFC; border: 1px solid #E2E8F0;">
+                                    <div class="text-muted mb-1" style="font-size: 11.5px; font-weight: 600; text-transform: uppercase;">Jatuh Tempo</div>
+                                    <div style="font-size: 14.5px; font-weight: 700; color: #0F1F3D;">{{ optional($license['expiry_date'])->format('d M Y') ?? '-' }}</div>
                                 </div>
                             </div>
-                            <div class="col-md-2 mb-3">
-                                <div class="nexora-license-summary">
-                                    <small>Jatuh Tempo</small>
-                                    <strong>{{ optional($license['expiry_date'])->format('d M Y') ?? '-' }}</strong>
+                            <div class="col-6 col-md-3 col-lg mb-3">
+                                <div class="p-3 rounded text-center" style="background: #F8FAFC; border: 1px solid #E2E8F0;">
+                                    <div class="text-muted mb-1" style="font-size: 11.5px; font-weight: 600; text-transform: uppercase;">Masa Tenggang</div>
+                                    <div style="font-size: 15px; font-weight: 700; color: #0F1F3D;">{{ $license['grace_period_days'] }} Hari</div>
                                 </div>
                             </div>
-                            <div class="col-md-2 mb-3">
-                                <div class="nexora-license-summary">
-                                    <small>Grace</small>
-                                    <strong>{{ $license['grace_period_days'] }} hari</strong>
+                            <div class="col-6 col-md-3 col-lg mb-3">
+                                <div class="p-3 rounded text-center" style="background: #F8FAFC; border: 1px solid #E2E8F0;">
+                                    <div class="text-muted mb-1" style="font-size: 11.5px; font-weight: 600; text-transform: uppercase;">Tagihan</div>
+                                    <div style="font-size: 15px; font-weight: 700; color: #0058A6;">{{ $license['payment_amount'] ? 'Rp '.number_format($license['payment_amount'], 0, ',', '.') : 'Gratis / Pro' }}</div>
                                 </div>
                             </div>
-                            <div class="col-md-2 mb-3">
-                                <div class="nexora-license-summary">
-                                    <small>Nominal</small>
-                                    <strong>{{ $license['payment_amount'] ? 'Rp '.number_format($license['payment_amount'], 0, ',', '.') : '-' }}</strong>
-                                </div>
-                            </div>
-                            <div class="col-md-2 mb-3">
-                                <div class="nexora-license-summary">
-                                    <small>User Slot</small>
-                                    <strong>{{ $company->activeUsersCount() }} / {{ $company->max_users ?: '-' }}</strong>
+                            <div class="col-6 col-md-3 col-lg mb-3">
+                                <div class="p-3 rounded text-center" style="background: #F8FAFC; border: 1px solid #E2E8F0;">
+                                    <div class="text-muted mb-1" style="font-size: 11.5px; font-weight: 600; text-transform: uppercase;">Slot Pengguna</div>
+                                    <div style="font-size: 15px; font-weight: 700; color: #0F1F3D;">{{ $company->activeUsersCount() }} / {{ $company->max_users ?: '&infin;' }}</div>
                                 </div>
                             </div>
                         </div>
 
+                        <!-- ALERTS -->
                         @if($license['is_locked'])
-                            <div class="nexora-billing-alert nexora-billing-alert-danger mb-3">
-                                <strong>License {{ $license['label'] }}.</strong>
-                                <span>{{ $company->block_reason ?: 'Hubungi Super Admin untuk mengaktifkan fitur atau memperpanjang pembayaran.' }}</span>
+                            <div class="p-3 rounded mb-4 d-flex align-items-center" style="background: #FEF2F2; border: 1px solid #FCA5A5; color: #991B1B; gap: 12px;">
+                                <i class="fas fa-lock fa-2x"></i>
+                                <div>
+                                    <strong>Lisensi Terkunci ({{ $license['label'] }}).</strong>
+                                    <div>{{ $company->block_reason ?: 'Masa aktif toko telah habis. Hubungi Super Admin atau perbarui pembayaran untuk membuka kembali akses kasir dan operasional.' }}</div>
+                                </div>
                             </div>
                         @elseif($license['is_warning'])
-                            <div class="nexora-billing-alert nexora-billing-alert-warning mb-3">
-                                <strong>{{ $license['status'] === 'GRACE_PERIOD' ? 'Grace period berjalan.' : 'Reminder pembayaran.' }}</strong>
-                                <span>
-                                    @if($license['status'] === 'GRACE_PERIOD')
-                                        Sisa grace {{ max($license['remaining_grace_days'], 0) }} hari sebelum fitur operasional diblok.
-                                    @else
-                                        Sisa {{ max($license['remaining_days'], 0) }} hari sebelum jatuh tempo.
-                                    @endif
-                                </span>
-                            </div>
-                        @endif
-
-                        <div class="row">
-                            @foreach($features as $feature)
-                                @php
-                                    $toggle = $companyFeatures[$company->id][$feature->key] ?? null;
-                                    $enabled = $toggle ? $toggle->is_enabled : true;
-                                    if ($enabled && ! $blocked) {
-                                        $enabledCount++;
-                                    }
-                                @endphp
-                                <div class="col-md-4 mb-3">
-                                    <div class="nexora-license-feature {{ $enabled && ! $blocked ? 'is-enabled' : 'is-disabled' }}">
-                                        <div>
-                                            <strong>{{ $feature->name }}</strong>
-                                            <small>{{ $feature->description ?: 'Module access' }}</small>
-                                        </div>
-                                        <span>{{ $enabled && ! $blocked ? 'Active' : 'Off' }}</span>
+                            <div class="p-3 rounded mb-4 d-flex align-items-center" style="background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; gap: 12px;">
+                                <i class="fas fa-exclamation-triangle fa-2x"></i>
+                                <div>
+                                    <strong>{{ $license['status'] === 'GRACE_PERIOD' ? 'Masa Tenggang (Grace Period) Sedang Berjalan.' : 'Pengingat Jatuh Tempo Pembayaran.' }}</strong>
+                                    <div>
+                                        @if($license['status'] === 'GRACE_PERIOD')
+                                            Tersisa {{ max($license['remaining_grace_days'], 0) }} hari lagi sebelum akses fitur otomatis diblokir sistem.
+                                        @else
+                                            Tersisa {{ max($license['remaining_days'], 0) }} hari lagi sebelum tanggal jatuh tempo.
+                                        @endif
                                     </div>
                                 </div>
-                            @endforeach
-                        </div>
-                        <div class="text-muted">
-                            Active features: <strong>{{ $enabledCount }}</strong> / {{ $totalFeatures }}
-                            | Remaining user slots:
-                            <strong>{{ is_null($company->remainingUserSlots()) ? 'Unlimited' : $company->remainingUserSlots() }}</strong>
-                            @if($company->block_reason)
-                                | Note: {{ $company->block_reason }}
-                            @endif
-                        </div>
-
-                        @if(!auth()->user()?->isSuperAdmin() && (float) $company->payment_amount > 0)
-                            <div class="mt-3">
-                                <button type="button" class="btn btn-success license-qris-btn" data-company-id="{{ $company->id }}">
-                                    <i class="fas fa-qrcode"></i> Bayar / Perpanjang via QRIS
-                                </button>
-                                <small class="text-muted ml-2">Nominal: Rp {{ number_format($company->payment_amount, 0, ',', '.') }}</small>
                             </div>
                         @endif
+
+                        <!-- FEATURES GRID -->
+                        <div class="mb-3">
+                            <span class="nexora-form-card-eyebrow mb-2 d-block">MODUL OPERASIONAL AKTIF</span>
+                            <div class="row">
+                                @foreach($features as $feature)
+                                    @php
+                                        $toggle = $companyFeatures[$company->id][$feature->key] ?? null;
+                                        $enabled = $toggle ? $toggle->is_enabled : true;
+                                        if ($enabled && ! $blocked) {
+                                            $enabledCount++;
+                                        }
+                                    @endphp
+                                    <div class="col-md-4 col-sm-6 mb-3">
+                                        <div class="p-3 rounded d-flex justify-content-between align-items-center" style="background: {{ $enabled && !$blocked ? '#F0FDF4' : '#F8FAFC' }}; border: 1px solid {{ $enabled && !$blocked ? '#BBF7D0' : '#E2E8F0' }};">
+                                            <div>
+                                                <strong style="color: {{ $enabled && !$blocked ? '#166534' : '#64748B' }}; font-size: 13.5px;">{{ $feature->name }}</strong>
+                                                <small class="d-block text-muted" style="font-size: 11px;">{{ $feature->description ?: 'Akses modul toko' }}</small>
+                                            </div>
+                                            <span class="badge {{ $enabled && !$blocked ? 'badge-success' : 'badge-light' }}" style="font-size: 11px;">
+                                                {{ $enabled && !$blocked ? 'Aktif' : 'Non-aktif' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- BOTTOM SUMMARY & PAYMENT -->
+                        <div class="d-flex justify-content-between align-items-center flex-wrap pt-3" style="border-top: 1px solid #E6EBF3; gap: 12px;">
+                            <div class="text-muted" style="font-size: 12.5px;">
+                                Total Fitur Aktif: <strong>{{ $enabledCount }} / {{ $totalFeatures }}</strong>
+                                &bull; Sisa Kuota User: <strong>{{ is_null($company->remainingUserSlots()) ? 'Unlimited' : $company->remainingUserSlots() }}</strong>
+                                @if($company->block_reason)
+                                    &bull; Catatan: <em>{{ $company->block_reason }}</em>
+                                @endif
+                            </div>
+
+                            @if(!auth()->user()?->isSuperAdmin() && (float) $company->payment_amount > 0)
+                                <div>
+                                    <button type="button" class="btn btn-success license-qris-btn" data-company-id="{{ $company->id }}" style="border-radius: 10px; font-weight: 700; padding: 10px 24px; background: #10B981; border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+                                        <i class="fas fa-qrcode mr-1"></i> Bayar Perpanjangan via QRIS (Rp {{ number_format($company->payment_amount, 0, ',', '.') }})
+                                    </button>
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
             @endforeach
+
         </div>
     </div>
 </div>
