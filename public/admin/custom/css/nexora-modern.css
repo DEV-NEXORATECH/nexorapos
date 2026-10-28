@@ -3851,7 +3851,9 @@ body.theme-dark .nexora-btn-back:hover {
     max-width: 100% !important;
 }
 
-.select2-container--default .select2-selection--single {
+.select2-container--default .select2-selection--single,
+.select2-container--bootstrap4 .select2-selection--single,
+.select2-container .select2-selection--single {
     height: 44px !important;
     background: #FFFFFF !important;
     border: 1px solid #D9E2EC !important;
@@ -3863,22 +3865,35 @@ body.theme-dark .nexora-btn-back:hover {
     box-shadow: none !important;
 }
 
+.nexora-input-wrap .select2-container {
+    width: 100% !important;
+    flex: 1 1 auto !important;
+}
+
 .nexora-input-wrap .select2-container .select2-selection--single {
     padding-left: 40px !important;
 }
 
-.select2-container--default .select2-selection--single:hover {
+.select2-container--default .select2-selection--single:hover,
+.select2-container--bootstrap4 .select2-selection--single:hover,
+.select2-container .select2-selection--single:hover {
     border-color: #CBD5E1 !important;
 }
 
 .select2-container--default.select2-container--focus .select2-selection--single,
-.select2-container--default.select2-container--open .select2-selection--single {
+.select2-container--default.select2-container--open .select2-selection--single,
+.select2-container--bootstrap4.select2-container--focus .select2-selection--single,
+.select2-container--bootstrap4.select2-container--open .select2-selection--single,
+.select2-container.select2-container--focus .select2-selection--single,
+.select2-container.select2-container--open .select2-selection--single {
     border-color: #0058A6 !important;
     box-shadow: 0 0 0 3px rgba(0, 88, 166, 0.12) !important;
     outline: none !important;
 }
 
-.select2-container--default .select2-selection--single .select2-selection__rendered {
+.select2-container--default .select2-selection--single .select2-selection__rendered,
+.select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered,
+.select2-container .select2-selection--single .select2-selection__rendered {
     color: #0F1F3D !important;
     font-size: 13.5px !important;
     font-weight: 500 !important;
@@ -3887,11 +3902,15 @@ body.theme-dark .nexora-btn-back:hover {
     padding-right: 28px !important;
 }
 
-.select2-container--default .select2-selection--single .select2-selection__placeholder {
+.select2-container--default .select2-selection--single .select2-selection__placeholder,
+.select2-container--bootstrap4 .select2-selection--single .select2-selection__placeholder,
+.select2-container .select2-selection--single .select2-selection__placeholder {
     color: #94A3B8 !important;
 }
 
-.select2-container--default .select2-selection--single .select2-selection__arrow {
+.select2-container--default .select2-selection--single .select2-selection__arrow,
+.select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow,
+.select2-container .select2-selection--single .select2-selection__arrow {
     height: 42px !important;
     right: 12px !important;
     top: 0 !important;
@@ -3901,7 +3920,9 @@ body.theme-dark .nexora-btn-back:hover {
     justify-content: center !important;
 }
 
-.select2-container--default .select2-selection--single .select2-selection__arrow b {
+.select2-container--default .select2-selection--single .select2-selection__arrow b,
+.select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow b,
+.select2-container .select2-selection--single .select2-selection__arrow b {
     border: none !important;
     width: 8px !important;
     height: 8px !important;
@@ -3910,10 +3931,13 @@ body.theme-dark .nexora-btn-back:hover {
     transform: rotate(45deg) !important;
     margin: 0 !important;
     position: static !important;
+    display: block !important;
     transition: transform 0.2s ease, border-color 0.2s ease !important;
 }
 
-.select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
+.select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b,
+.select2-container--bootstrap4.select2-container--open .select2-selection--single .select2-selection__arrow b,
+.select2-container.select2-container--open .select2-selection--single .select2-selection__arrow b {
     transform: rotate(-135deg) !important;
     border-color: #0058A6 !important;
 }

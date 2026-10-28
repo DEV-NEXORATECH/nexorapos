@@ -83,6 +83,8 @@ Route::middleware('auth')->group(function () {
     Route::get('admin-panel/purchases', fn () => redirect('admin-panel/purchase/listing'));
     Route::get('admin-panel/taxes', fn () => redirect('admin-panel/tax/listing'));
     Route::get('admin-panel/taxes/listing', fn () => redirect('admin-panel/tax/listing'));
+    Route::get('admin-panel/discounts', fn () => redirect('admin-panel/discounts/listing'));
+    Route::get('admin-panel/discount', fn () => redirect('admin-panel/discounts/listing'));
 });
 
 Route::middleware(['auth', \App\Http\Middleware\CheckCompanyLicense::class, 'Admin', 'XSS'])->group(function () {
@@ -259,14 +261,20 @@ Route::middleware(['auth', \App\Http\Middleware\CheckCompanyLicense::class, 'Adm
     Route::post('admin-panel/stock/update/{id}', [StockController::class, 'update']);
     Route::delete('admin-panel/stock/delete/{id}', [StockController::class, 'destroy']);
 
-    //Route For Discounts
-
+    // Route For Discounts
     Route::get('admin-panel/discounts/listing', [DiscountCountroller::class, 'index']);
     Route::get('admin-panel/discounts/add', [DiscountCountroller::class, 'add']);
     Route::post('admin-panel/discounts/add', [DiscountCountroller::class, 'store']);
     Route::get('admin-panel/discounts/edit/{id}', [DiscountCountroller::class, 'edit']);
     Route::post('admin-panel/discounts/update/{id}', [DiscountCountroller::class, 'update']);
-    Route::delete('admin-panel/discounts/delete/{id}', [DiscountCountroller::class, 'destroy']);
+    Route::match(['get', 'delete'], 'admin-panel/discounts/delete/{id}', [DiscountCountroller::class, 'destroy']);
+
+    Route::get('admin-panel/discount/listing', [DiscountCountroller::class, 'index']);
+    Route::get('admin-panel/discount/add', [DiscountCountroller::class, 'add']);
+    Route::post('admin-panel/discount/add', [DiscountCountroller::class, 'store']);
+    Route::get('admin-panel/discount/edit/{id}', [DiscountCountroller::class, 'edit']);
+    Route::post('admin-panel/discount/update/{id}', [DiscountCountroller::class, 'update']);
+    Route::match(['get', 'delete'], 'admin-panel/discount/delete/{id}', [DiscountCountroller::class, 'destroy']);
 
     //Route For Sales
     Route::get('admin-panel/sales/listing', [SaleController::class, 'index']);

@@ -43,7 +43,7 @@
 
                     <div class="nexora-form-card-body">
                         <div class="row">
-                            @include('admin.partials.company-selector')
+                            @include('admin.partials.company-selector', ['selectedCompanyId' => $tax->company_id])
 
                             <div class="col-md-6 mb-3">
                                 <label class="nexora-input-label">Nama Pajak <span class="text-danger">*</span></label>

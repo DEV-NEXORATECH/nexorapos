@@ -94,13 +94,3 @@
     </div>
 </div>
 @endsection
-
-@section('scripts')
-<script>
-    $(document).ready(function() {
-        if ($.fn.select2) {
-            $('.select2').select2({ width: '100%' });
-        }
-    });
-</script>
-@endsection

@@ -50,6 +50,7 @@
                                 <div class="nexora-input-wrap">
                                     <i class="fas fa-store input-icon"></i>
                                     <select name="store_id" id="store_id" class="form-control nexora-input select2" required>
+                                        <option value="">-- Pilih Toko / Outlet --</option>
                                         @foreach ($stores as $store)
                                             <option value="{{ $store->id }}" {{ old('store_id') == $store->id ? 'selected' : '' }}>{{ $store->name }}</option>
                                         @endforeach
@@ -75,6 +76,7 @@
                                 <div class="nexora-input-wrap">
                                     <i class="fas fa-box input-icon"></i>
                                     <select name="product_id" id="product_id" class="form-control nexora-input select2" required>
+                                        <option value="">-- Pilih Produk --</option>
                                         @foreach ($products as $product)
                                             <option value="{{ $product->id }}" {{ old('product_id') == $product->id ? 'selected' : '' }}>{{ $product->name }}</option>
                                         @endforeach
@@ -123,17 +125,4 @@
         </div>
     </div>
 </div>
-@endsection
-
-@section('scripts')
-<script>
-    $(document).ready(function() {
-        if ($.fn.select2) {
-            $('.select2').select2({
-                theme: 'bootstrap4',
-                width: '100%'
-            });
-        }
-    });
-</script>
 @endsection

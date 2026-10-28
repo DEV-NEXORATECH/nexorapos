@@ -4,7 +4,7 @@
     <label class="nexora-input-label">Perusahaan / Tenant <span class="text-danger">*</span></label>
     <div class="nexora-input-wrap">
         <i class="fas fa-building input-icon"></i>
-        <select name="company_id" id="company_id" class="form-control select2" required>
+        <select name="company_id" id="company_id" class="form-control nexora-input select2" required>
             <option value="">-- Pilih Company --</option>
             @foreach(\App\Models\Company::orderBy('name')->get() as $company)
                 <option value="{{ $company->id }}" @selected(old('company_id', $selectedCompanyId ?? '') == $company->id)>

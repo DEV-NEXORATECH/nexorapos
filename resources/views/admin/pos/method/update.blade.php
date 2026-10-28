@@ -43,7 +43,7 @@
 
                     <div class="nexora-form-card-body">
                         <div class="row">
-                            @include('admin.partials.company-selector')
+                            @include('admin.partials.company-selector', ['selectedCompanyId' => $method->company_id])
 
                             <div class="col-md-6 mb-3">
                                 <label class="nexora-input-label">Nama Metode Pembayaran <span class="text-danger">*</span></label>
@@ -71,17 +71,4 @@
         </div>
     </div>
 </div>
-@endsection
-
-@section('scripts')
-<script>
-    $(document).ready(function() {
-        if ($('.select2').length) {
-            $('.select2').select2({
-                theme: 'bootstrap4',
-                width: '100%'
-            });
-        }
-    });
-</script>
 @endsection

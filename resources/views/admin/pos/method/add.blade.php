@@ -72,16 +72,3 @@
     </div>
 </div>
 @endsection
-
-@section('scripts')
-<script>
-    $(document).ready(function() {
-        if ($('.select2').length) {
-            $('.select2').select2({
-                theme: 'bootstrap4',
-                width: '100%'
-            });
-        }
-    });
-</script>
-@endsection
