@@ -48,9 +48,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Render cart items
     function renderCart(cart) {
+        if (window.renderPosCart) {
+            window.renderPosCart(cart);
+            return;
+        }
         if (!cartItems) return;
         cartItems.innerHTML = '';
-        Object.keys(cart).forEach(key => {
+        Object.keys(cart || {}).forEach(key => {
             const item = cart[key];
             const div = document.createElement('div');
             div.className = 'd-flex align-items-center justify-content-between mb-2';
@@ -70,6 +74,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Update totals
     function updateTotals(t) {
+        if (window.updatePosTotals) {
+            window.updatePosTotals(t);
+            return;
+        }
         if (!subtotalEl || !discountEl || !taxEl || !totalEl) return;
         subtotalEl.textContent = Number(t.subtotal).toFixed(2);
         discountEl.textContent = Number(t.discount).toFixed(2);

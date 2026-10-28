@@ -35,28 +35,100 @@ class SaleService
     public function index()
     {
         if (request()->ajax()) {
-            $data = Sale::with(["store", "customer", "user", "sale_items", "payments.method", "company"]);
+            $user = auth()->user();
+            $data = Sale::with(["store", "customer", "user", "sale_items", "payments.method", "company"])
+                ->when(!$user?->isSuperAdmin(), function ($q) use ($user) {
+                    $q->where('company_id', $user?->company_id);
+                })
+                ->latest('id');
+
             return \Yajra\DataTables\Facades\DataTables::of($data)
-                ->addColumn('invoice', function($row) { return $row->invoice_number; })
-                ->addColumn('date', function($row) { return $row->created_at ? $row->created_at->format("d M Y") : "-"; })
-                ->addColumn('store', function($row) { return $row->store ? $row->store->name : "-"; })
-                ->addColumn('customer', function($row) { return $row->customer ? $row->customer->name : "-"; })
-                ->addColumn('cashier', function($row) { return "-"; })
-                ->addColumn('items', function($row) { return $row->sale_items ? $row->sale_items->sum("quantity") : 0; })
-                ->addColumn('subtotal', function($row) { return "Rp " . number_format((float) $row->subtotal, 0, ',', '.'); })
-                ->addColumn('discount', function($row) { return "Rp " . number_format((float) $row->discount, 0, ',', '.'); })
-                ->addColumn('tax', function($row) { return "Rp " . number_format((float) $row->tax, 0, ',', '.'); })
-                ->addColumn('grand_total', function($row) { return "Rp " . number_format((float) $row->total, 0, ',', '.'); })
-                ->addColumn('paid', function($row) { return "Rp " . number_format((float) $row->paid_amount, 0, ',', '.'); })
-                ->addColumn('change', function($row) { return "Rp " . number_format((float) $row->change_amount, 0, ',', '.'); })
-                ->addColumn('payment_method', function($row) { return $row->payments->map(fn ($payment) => $payment->method?->name)->filter()->unique()->implode(', ') ?: '-'; })
-                ->addColumn('payment_status', function($row) { return $row->payment_status; })
-                ->addColumn('sale_status', function($row) { return $row->status; })
-                ->addColumn('created', function($row) { return $row->created_at ? $row->created_at->format("H:i") : "-"; })
-                ->addColumn('company', function($row) { return $row->company ? $row->company->name : "-"; })
-                ->addColumn('created_by', function($row) { return "-"; })
-                ->addColumn('created_at', function($row) { return $row->created_at ? $row->created_at->format("d M Y H:i") : "-"; })
-                ->addColumn('action', function($row) { return '<a href="'.url('admin-panel/pos/invoice/'.$row->id).'" class="nexora-action-btn is-info" title="View invoice"><i class="fas fa-eye"></i></a>'; })
+                ->addColumn('invoice', function ($row) {
+                    $num = $row->invoice_number ?: ('#' . $row->id);
+                    return '<a href="' . url('admin-panel/pos/invoice/' . $row->id) . '" class="font-weight-bold text-primary">' . e($num) . '</a>';
+                })
+                ->addColumn('date', function ($row) {
+                    return $row->created_at ? $row->created_at->format("d M Y H:i") : "-";
+                })
+                ->addColumn('store', function ($row) {
+                    return $row->store ? e($row->store->name) : "-";
+                })
+                ->addColumn('customer', function ($row) {
+                    return $row->customer ? e($row->customer->name) : '<span class="text-muted">Umum / Walk-in</span>';
+                })
+                ->addColumn('cashier', function ($row) {
+                    return $row->user ? e($row->user->name) : "-";
+                })
+                ->addColumn('items', function ($row) {
+                    $qty = $row->sale_items ? $row->sale_items->sum("quantity") : 0;
+                    return '<span class="nexora-badge is-info">' . (int)$qty . ' item</span>';
+                })
+                ->addColumn('subtotal', function ($row) {
+                    return "Rp " . number_format((float) $row->subtotal, 0, ',', '.');
+                })
+                ->addColumn('discount', function ($row) {
+                    return "Rp " . number_format((float) $row->discount, 0, ',', '.');
+                })
+                ->addColumn('tax', function ($row) {
+                    return "Rp " . number_format((float) $row->tax, 0, ',', '.');
+                })
+                ->addColumn('grand_total', function ($row) {
+                    return '<span class="font-weight-bold text-dark">Rp ' . number_format((float) $row->total, 0, ',', '.') . '</span>';
+                })
+                ->addColumn('paid', function ($row) {
+                    return "Rp " . number_format((float) $row->paid_amount, 0, ',', '.');
+                })
+                ->addColumn('change', function ($row) {
+                    return "Rp " . number_format((float) $row->change_amount, 0, ',', '.');
+                })
+                ->addColumn('payment_method', function ($row) {
+                    $methods = $row->payments->map(fn ($payment) => $payment->method?->name)->filter()->unique()->implode(', ');
+                    return e($methods ?: '-');
+                })
+                ->addColumn('payment_status', function ($row) {
+                    $st = strtoupper($row->payment_status ?: ($row->paid_amount >= $row->total ? 'PAID' : 'UNPAID'));
+                    $cls = match($st) {
+                        'PAID' => 'is-success',
+                        'PARTIAL' => 'is-warning',
+                        default => 'is-danger'
+                    };
+                    return '<span class="nexora-badge ' . $cls . '">' . e($st) . '</span>';
+                })
+                ->addColumn('sale_status', function ($row) {
+                    $st = strtoupper($row->status ?: 'COMPLETED');
+                    $cls = match($st) {
+                        'COMPLETED' => 'is-success',
+                        'PENDING' => 'is-warning',
+                        'CANCELLED', 'VOID' => 'is-danger',
+                        default => 'is-info'
+                    };
+                    return '<span class="nexora-badge ' . $cls . '">' . e($st) . '</span>';
+                })
+                ->addColumn('created', function ($row) {
+                    return $row->created_at ? $row->created_at->format("H:i") : "-";
+                })
+                ->addColumn('company', function ($row) {
+                    return $row->company ? e($row->company->name) : "-";
+                })
+                ->addColumn('created_by', function ($row) {
+                    return $row->user ? e($row->user->name) : "-";
+                })
+                ->addColumn('created_at', function ($row) {
+                    return $row->created_at ? $row->created_at->format("d M Y H:i") : "-";
+                })
+                ->addColumn('action', function ($row) {
+                    $viewUrl = url('admin-panel/pos/invoice/' . $row->id);
+                    $pdfUrl = url('admin-panel/pos/pdf/' . $row->id);
+                    $delUrl = url('admin-panel/sales/delete/' . $row->id);
+                    $actions = '<div class="nexora-action-group">';
+                    $actions .= '<a href="' . $viewUrl . '" class="nexora-action-btn is-info" title="Lihat Struk / Invoice"><i class="fas fa-eye"></i></a>';
+                    $actions .= '<a href="' . $pdfUrl . '" target="_blank" class="nexora-action-btn is-primary" title="Cetak / Unduh PDF"><i class="fas fa-file-pdf"></i></a>';
+                    if (!in_array(strtolower($row->status ?? ''), ['cancelled', 'void'])) {
+                        $actions .= '<a href="' . $delUrl . '" class="nexora-action-btn is-danger no-ajax" onclick="return confirm(\'Batalkan transaksi penjualan ini?\')" title="Batalkan Sale"><i class="fas fa-ban"></i></a>';
+                    }
+                    $actions .= '</div>';
+                    return $actions;
+                })
                 
                 
                 
@@ -105,7 +177,7 @@ class SaleService
                 
                 
                 
-                ->rawColumns(['action'])
+                ->rawColumns(['invoice', 'customer', 'items', 'grand_total', 'payment_status', 'sale_status', 'action'])
                 ->make(true);
         }
         return view('admin.pos.sale.listing');
@@ -114,15 +186,17 @@ class SaleService
     public function reconciliation(Request $request)
     {
         $date = $request->get('date', now()->toDateString());
-        $companyId = auth()->user()?->company_id;
+        $user = auth()->user();
+        $companyId = $user?->isSuperAdmin() ? ($request->get('company_id') ?: $user?->company_id) : $user?->company_id;
 
-        $sales = Sale::with(['store', 'customer', 'user'])
-            ->where('company_id', $companyId)
+        $sales = Sale::with(['store', 'customer', 'user', 'payments.method'])
+            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
             ->whereDate('created_at', $date)
             ->latest()
             ->get();
 
-        $payments = Payment::whereHas('sale', fn ($query) => $query->whereDate('created_at', $date))
+        $payments = Payment::whereHas('sale', fn ($query) => $query->whereDate('created_at', $date)->when($companyId, fn ($q) => $q->where('company_id', $companyId)))
+            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
             ->get();
 
         $summary = [
@@ -136,7 +210,7 @@ class SaleService
         $summary['difference'] = $summary['net_sales'] - $summary['payment_total'];
 
         $paymentsByMethod = $payments
-            ->groupBy(fn ($payment) => $payment->method?->name ?? 'Unknown')
+            ->groupBy(fn ($payment) => $payment->method?->name ?? 'Lainnya')
             ->map(fn ($items, $method) => [
                 'method' => $method,
                 'count' => $items->count(),
@@ -145,12 +219,13 @@ class SaleService
             ->values();
 
         $hourlySales = Sale::selectRaw('HOUR(created_at) as hour, SUM(total) as total')
+            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
             ->whereDate('created_at', $date)
             ->groupBy(DB::raw('HOUR(created_at)'))
             ->orderBy('hour')
             ->get();
 
-        return view('admin.pos.sale.reconciliation', compact('date', 'sales', 'summary', 'paymentsByMethod', 'hourlySales'));
+        return view('admin.pos.sale.reconciliation', compact('date', 'sales', 'summary', 'paymentsByMethod', 'hourlySales', 'companyId'));
     }
 
     public function shiftReport(Request $request)

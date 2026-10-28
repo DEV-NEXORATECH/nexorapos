@@ -1,87 +1,123 @@
 @extends('admin.layout.app')
 
-@section('title', 'Add Payment')
+@section('title', 'Tambah Pembayaran')
 
 @section('content')
-
-
-        	<div class="main-panel">
-				<div class="content">
-					<div class="container-fluid">
-
-                                     <div class="superadmin-header-card mb-4">
-                <h4><i class="fas fa-edit"></i> Payments</h4>
-                <a href="javascript:history.back()" class="btn btn-secondary" style="border: none;">Cancel</a>
+<div class="main-panel">
+    <div class="content">
+        <div class="container-fluid">
+            {{-- Header Card --}}
+            <div class="nexora-page-header-card mb-4">
+                <div class="nexora-page-header-left">
+                    <div class="nexora-page-header-icon">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <div>
+                        <span class="nexora-page-header-eyebrow">Transaksi & Kasir</span>
+                        <h4 class="nexora-page-header-title">Tambah Pembayaran</h4>
+                        <p class="nexora-page-header-desc">Input catatan pembayaran baru untuk transaksi penjualan.</p>
+                    </div>
+                </div>
+                <div class="nexora-page-header-right">
+                    <a href="{{ url('admin-panel/payments/listing') }}" class="btn btn-secondary" style="border-radius: 10px; font-weight: 600; font-size: 12.5px; padding: 9px 18px; border: 1px solid #E2E8F0; color: #475569;">
+                        <i class="fas fa-arrow-left mr-1"></i> Kembali
+                    </a>
+                </div>
             </div>
-						<div >
-							<div class="">
-								<div class="nexora-control-card is-success mb-4">
-                    <h5><i class="fas fa-folder"></i> Add New Payment</h5>
-                    
-                                    <form action="{{ url('admin-panel/payments/add') }}" method="POST" id="categoryForm">
-                                        @csrf
 
-                                        <div class="row">
-                                            @include('admin.partials.company-selector')
-                                        </div>
-                                                            <div class="card-body p-0 mt-3">
-										<div class="form-group">
-											<label for="sale_id">Sale Status</label>
-											<select name="sale_id" id="sale_id" class="form-control">
-                                                @foreach ($sales as $sale)
-                                                    <option value="{{ $sale->id }}">{{ $sale->status }}</option>
-                                                @endforeach
-                                            </select>
-                                            @error('sale_id')
-                                                <div class="text-danger mt-2">{{ $message }}</div>
-                                            @enderror
-										</div>
-										<div class="form-group">
-											<label for="method_id">Choose Method</label>
-											<select name="method_id" id="method_id" class="form-control">
-                                                @foreach ($methods as $met)
-                                                    <option value="{{ $met->id }}">{{ $met->name }}</option>
-                                                @endforeach
-                                            </select>
-                                            @error('method_id')
-                                                <div class="text-danger mt-2">{{ $message }}</div>
-                                            @enderror
-										</div>
+            {{-- Alerts --}}
+            @if(session('failed'))
+                <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                    <i class="fas fa-exclamation-triangle mr-2"></i> {{ session('failed') }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            @endif
 
-										<div class="form-group">
-											<label for="amount">Amount</label>
-											<input type="number" name="amount" id="amount" class="form-control" placeholder="Enter Amount">
-                                            @error('amount')
-                                                <div class="text-danger mt-2">{{ $message }}</div>
-                                            @enderror
-										</div>
-										<div class="form-group">
-											<label for="reference">Reference</label>
-											<input type="text" name="reference" id="reference" class="form-control" placeholder="Enter reference">
-                                            @error('reference')
-                                                <div class="text-danger mt-2">{{ $message }}</div>
-                                            @enderror
-										</div>
+            {{-- Form Card --}}
+            <form action="{{ url('admin-panel/payments/add') }}" method="POST">
+                @csrf
 
-                                        <div class="nexora-form-actions mt-3">
-											<button class="btn btn-primary">Submit</button>
-											 <a href="{{ url('admin-panel/payments/listing') }}" class="btn btn-danger">Cancel</a>
-										</div>
+                <div class="nexora-form-card mb-4">
+                    <div class="nexora-form-card-head">
+                        <div class="nexora-form-card-icon is-navy">
+                            <i class="fas fa-credit-card"></i>
+                        </div>
+                        <div>
+                            <span class="nexora-form-card-eyebrow">DETAIL PEMBAYARAN</span>
+                            <h4 class="nexora-form-card-title">Informasi Transaksi & Pembayaran</h4>
+                            <p class="nexora-form-card-subtitle">Lengkapi catatan penerimaan kas dan metode bayar transaksi pelanggan.</p>
+                        </div>
+                    </div>
 
-                                    </div>
-                                    </form>
+                    <div class="nexora-form-card-body">
+                        <div class="row">
+                            @include('admin.partials.company-selector')
 
-                     </div>
-                 </div>
-            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="nexora-input-label">Pilih Penjualan / Invoice <span class="text-danger">*</span></label>
+                                <div class="nexora-input-wrap">
+                                    <i class="fas fa-receipt input-icon"></i>
+                                    <select name="sale_id" id="sale_id" class="form-control nexora-input select2" required>
+                                        <option value="">-- Pilih Transaksi Penjualan --</option>
+                                        @foreach ($sales as $sale)
+                                            <option value="{{ $sale->id }}" {{ old('sale_id') == $sale->id ? 'selected' : '' }}>
+                                                {{ $sale->invoice_number ?: ('#' . $sale->id) }} - Total: Rp {{ number_format((float)$sale->total, 0, ',', '.') }} ({{ strtoupper($sale->status ?? 'COMPLETED') }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                @error('sale_id')<div class="nexora-field-error"><i class="fa fa-circle-exclamation mr-1"></i>{{ $message }}</div>@enderror
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="nexora-input-label">Metode Pembayaran <span class="text-danger">*</span></label>
+                                <div class="nexora-input-wrap">
+                                    <i class="fas fa-credit-card input-icon"></i>
+                                    <select name="method_id" id="method_id" class="form-control nexora-input select2" required>
+                                        <option value="">-- Pilih Metode Pembayaran --</option>
+                                        @foreach ($methods as $met)
+                                            <option value="{{ $met->id }}" {{ old('method_id') == $met->id ? 'selected' : '' }}>
+                                                {{ $met->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                @error('method_id')<div class="nexora-field-error"><i class="fa fa-circle-exclamation mr-1"></i>{{ $message }}</div>@enderror
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="nexora-input-label">Jumlah Pembayaran (Rp) <span class="text-danger">*</span></label>
+                                <div class="nexora-input-wrap">
+                                    <i class="fas fa-coins input-icon"></i>
+                                    <input type="number" step="0.01" name="amount" id="amount" class="form-control nexora-input" placeholder="Contoh: 50000" value="{{ old('amount') }}" required>
+                                </div>
+                                @error('amount')<div class="nexora-field-error"><i class="fa fa-circle-exclamation mr-1"></i>{{ $message }}</div>@enderror
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="nexora-input-label">Nomor Referensi / Catatan <span class="text-danger">*</span></label>
+                                <div class="nexora-input-wrap">
+                                    <i class="fas fa-hashtag input-icon"></i>
+                                    <input type="text" name="reference" id="reference" class="form-control nexora-input" placeholder="Contoh: REF-PAY-001 atau No. Approval EDC" value="{{ old('reference') }}" required>
+                                </div>
+                                @error('reference')<div class="nexora-field-error"><i class="fa fa-circle-exclamation mr-1"></i>{{ $message }}</div>@enderror
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nexora-form-action-bar mb-5">
+                    <a href="{{ url('admin-panel/payments/listing') }}" class="btn btn-secondary" style="border-radius: 12px; font-weight: 600; padding: 12px 24px;">
+                        <i class="fa fa-times mr-1"></i> Batal
+                    </a>
+                    <button type="submit" class="btn btn-primary" style="border-radius: 12px; font-weight: 700; padding: 12px 32px; box-shadow: 0 4px 14px rgba(0, 88, 166, 0.35);">
+                        <i class="fas fa-save mr-1"></i> Simpan Pembayaran
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
-
-
-
-@endsection
-@section('scripts')
-
-
 @endsection

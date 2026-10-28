@@ -219,14 +219,22 @@ Route::middleware(['auth', \App\Http\Middleware\CheckCompanyLicense::class, 'Adm
     Route::post('admin-panel/customer/update/{id}', [CustomerController::class, 'update']);
     Route::delete('admin-panel/customer/delete/{id}', [CustomerController::class, 'destroy']);
 
-    //Route For Purchase
+    // Route For Purchase
     Route::get('admin-panel/purchase/listing', [PurchaseController::class, 'index']);
     Route::get('admin-panel/purchase/add', [PurchaseController::class, 'add']);
     Route::post('admin-panel/purchase/add', [PurchaseController::class, 'store']);
     Route::get('admin-panel/purchase/show/{id}', [PurchaseController::class, 'show']);
     Route::get('admin-panel/purchase/edit/{id}', [PurchaseController::class, 'edit']);
     Route::post('admin-panel/purchase/update/{id}', [PurchaseController::class, 'update']);
-    Route::delete('admin-panel/purchase/delete/{id}', [PurchaseController::class, 'destroy']);
+    Route::match(['get', 'delete'], 'admin-panel/purchase/delete/{id}', [PurchaseController::class, 'destroy']);
+
+    Route::get('admin-panel/purchases/listing', [PurchaseController::class, 'index']);
+    Route::get('admin-panel/purchases/add', [PurchaseController::class, 'add']);
+    Route::post('admin-panel/purchases/add', [PurchaseController::class, 'store']);
+    Route::get('admin-panel/purchases/show/{id}', [PurchaseController::class, 'show']);
+    Route::get('admin-panel/purchases/edit/{id}', [PurchaseController::class, 'edit']);
+    Route::post('admin-panel/purchases/update/{id}', [PurchaseController::class, 'update']);
+    Route::match(['get', 'delete'], 'admin-panel/purchases/delete/{id}', [PurchaseController::class, 'destroy']);
 
     //Route for Purchase Items
     Route::get('admin-panel/purchase-items/listing', [PurchaseItemController::class, 'index']);
@@ -278,13 +286,15 @@ Route::middleware(['auth', \App\Http\Middleware\CheckCompanyLicense::class, 'Adm
 
     //Route For Sales
     Route::get('admin-panel/sales/listing', [SaleController::class, 'index']);
+    Route::get('admin-panel/sale/listing', [SaleController::class, 'index']);
     Route::get('admin-panel/sales/reconciliation', [SaleController::class, 'reconciliation']);
     Route::get('admin-panel/pos/shifts/report', [SaleController::class, 'shiftReport']);
     Route::get('admin-panel/sales/add', [SaleController::class, 'add']);
     Route::post('admin-panel/sales/add', [SaleController::class, 'store']);
     Route::get('admin-panel/sales/edit/{id}', [SaleController::class, 'edit']);
     Route::post('admin-panel/sales/update/{id}', [SaleController::class, 'update']);
-    Route::delete('admin-panel/sales/delete/{id}', [SaleController::class, 'destroy']);
+    Route::match(['get', 'delete'], 'admin-panel/sales/delete/{id}', [SaleController::class, 'destroy']);
+    Route::match(['get', 'delete'], 'admin-panel/sale/delete/{id}', [SaleController::class, 'destroy']);
 
     // POS Selling Screen and Cart
     Route::get('admin-panel/pos/sell', [SaleController::class, 'pos']);
@@ -322,11 +332,17 @@ Route::middleware(['auth', \App\Http\Middleware\CheckCompanyLicense::class, 'Adm
 
     //Route For Payment
     Route::get('admin-panel/payments/listing', [PaymentController::class, 'index']);
+    Route::get('admin-panel/payment/listing', [PaymentController::class, 'index']);
     Route::get('admin-panel/payments/add', [PaymentController::class, 'add']);
+    Route::get('admin-panel/payment/add', [PaymentController::class, 'add']);
     Route::post('admin-panel/payments/add', [PaymentController::class, 'store']);
+    Route::post('admin-panel/payment/add', [PaymentController::class, 'store']);
     Route::get('admin-panel/payments/edit/{id}', [PaymentController::class, 'edit']);
+    Route::get('admin-panel/payment/edit/{id}', [PaymentController::class, 'edit']);
     Route::post('admin-panel/payments/update/{id}', [PaymentController::class, 'update']);
-    Route::delete('admin-panel/payments/delete/{id}', [PaymentController::class, 'destroy']);
+    Route::post('admin-panel/payment/update/{id}', [PaymentController::class, 'update']);
+    Route::match(['get', 'delete'], 'admin-panel/payments/delete/{id}', [PaymentController::class, 'destroy']);
+    Route::match(['get', 'delete'], 'admin-panel/payment/delete/{id}', [PaymentController::class, 'destroy']);
 
 
 
