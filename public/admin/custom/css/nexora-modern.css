@@ -902,27 +902,46 @@ body .sidebar {
     content: '' !important;
 }
 
-/* Collapsible Submenus (Clean indent matching Job-Finance) */
-.sidebar .nav .collapse {
+/* Collapsible Submenus (Clean indent matching Job-Finance - Zero horizontal shift) */
+.sidebar .nav .collapse,
+.sidebar .nav .collapsing {
     padding-left: 0 !important;
     margin: 2px 0 !important;
     list-style: none !important;
     border: none !important;
 }
-.sidebar .nav .collapse .nav-item a {
-    padding: 8px 14px 8px 44px !important;
-    font-size: 12.5px !important;
-    min-height: 34px !important;
-    color: #64748B !important;
-    margin: 1px 10px !important;
-    border-radius: 8px !important;
+
+.sidebar .nav .collapse .nav-item,
+.sidebar .nav .collapsing .nav-item {
+    list-style: none !important;
+    margin-bottom: 2px !important;
+    padding: 0 !important;
+}
+
+.sidebar .nav .collapse .nav-item a,
+.sidebar .nav .collapsing .nav-item a,
+.sidebar .nav .collapse .nav-item .nav-link,
+.sidebar .nav .collapsing .nav-item .nav-link {
     display: flex !important;
     align-items: center !important;
     justify-content: flex-start !important;
     text-align: left !important;
     gap: 10px !important;
+    padding: 8px 14px 8px 30px !important;
+    font-size: 12.5px !important;
+    min-height: 36px !important;
+    color: #64748B !important;
+    margin: 2px 12px 2px 18px !important;
+    border-radius: 8px !important;
+    position: relative !important;
+    box-shadow: none !important;
+    border: none !important;
+    text-decoration: none !important;
+    transition: background 0.15s ease, color 0.15s ease !important;
 }
-.sidebar .nav .collapse .nav-item a i {
+
+.sidebar .nav .collapse .nav-item a i,
+.sidebar .nav .collapsing .nav-item a i {
     font-size: 13px !important;
     width: 16px !important;
     min-width: 16px !important;
@@ -932,25 +951,59 @@ body .sidebar {
     flex-shrink: 0 !important;
     text-align: center !important;
 }
-.sidebar .nav .collapse .nav-item a:hover {
+
+.sidebar .nav .collapse .nav-item a:hover,
+.sidebar .nav .collapsing .nav-item a:hover {
     background: #F8FAFC !important;
     color: #0F1F3D !important;
 }
-.sidebar .nav .collapse .nav-item a:hover i {
+
+.sidebar .nav .collapse .nav-item a:hover i,
+.sidebar .nav .collapsing .nav-item a:hover i {
     color: #0F1F3D !important;
 }
-.sidebar .nav .collapse .nav-item.active > a {
+
+/* Active Submenu Item (Consistent with Job-Finance Pill & Attached Capsule) */
+.sidebar .nav .collapse .nav-item.active > a,
+.sidebar .nav .collapsing .nav-item.active > a,
+.sidebar .nav .collapse .nav-item.active > .nav-link,
+.sidebar .nav .collapsing .nav-item.active > .nav-link {
+    position: relative !important;
     background: #EAF5FF !important;
-    color: var(--nexora-primary) !important;
+    color: #0F1F3D !important;
     font-weight: 600 !important;
 }
-.sidebar .nav .collapse .nav-item.active > a i {
-    color: var(--nexora-primary) !important;
+
+.sidebar .nav .collapse .nav-item.active > a i,
+.sidebar .nav .collapsing .nav-item.active > a i {
+    color: #0F1F3D !important;
 }
+
 .sidebar .nav .collapse .nav-item.active > a span,
-.sidebar .nav .collapse .nav-item.active > a .nav-link-text {
-    color: var(--nexora-primary) !important;
+.sidebar .nav .collapsing .nav-item.active > a span,
+.sidebar .nav .collapse .nav-item.active > a .nav-link-text,
+.sidebar .nav .collapsing .nav-item.active > a .nav-link-text {
+    color: #0F1F3D !important;
     font-weight: 600 !important;
+}
+
+.sidebar .nav .collapse .nav-item.active > a::before,
+.sidebar .nav .collapsing .nav-item.active > a::before,
+.sidebar .nav .collapse .nav-item.active > .nav-link::before,
+.sidebar .nav .collapsing .nav-item.active > .nav-link::before {
+    content: '' !important;
+    position: absolute !important;
+    left: -2px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    height: 18px !important;
+    width: 3.5px !important;
+    background: #0F1F3D !important;
+    border-radius: 3px !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 10 !important;
 }
 
 /* Custom Dropdown Chevron in Sidebar */
@@ -2205,36 +2258,54 @@ body.theme-dark .sidebar .nav .nav-item.active > .nav-link::before {
     background: #38BDF8 !important;
 }
 html.theme-dark .sidebar .nav .collapse .nav-item a,
-body.theme-dark .sidebar .nav .collapse .nav-item a {
+html.theme-dark .sidebar .nav .collapsing .nav-item a,
+body.theme-dark .sidebar .nav .collapse .nav-item a,
+body.theme-dark .sidebar .nav .collapsing .nav-item a {
     color: #889BB4 !important;
     background: transparent !important;
     background-color: transparent !important;
 }
 html.theme-dark .sidebar .nav .collapse .nav-item a:hover,
-body.theme-dark .sidebar .nav .collapse .nav-item a:hover {
+html.theme-dark .sidebar .nav .collapsing .nav-item a:hover,
+body.theme-dark .sidebar .nav .collapse .nav-item a:hover,
+body.theme-dark .sidebar .nav .collapsing .nav-item a:hover {
     background: rgba(255, 255, 255, 0.05) !important;
     background-color: rgba(255, 255, 255, 0.05) !important;
     color: #FFFFFF !important;
 }
 html.theme-dark .sidebar .nav .collapse .nav-item a:hover i,
-body.theme-dark .sidebar .nav .collapse .nav-item a:hover i {
+html.theme-dark .sidebar .nav .collapsing .nav-item a:hover i,
+body.theme-dark .sidebar .nav .collapse .nav-item a:hover i,
+body.theme-dark .sidebar .nav .collapsing .nav-item a:hover i {
     color: #38BDF8 !important;
 }
 html.theme-dark .sidebar .nav .collapse .nav-item.active > a,
-body.theme-dark .sidebar .nav .collapse .nav-item.active > a {
+html.theme-dark .sidebar .nav .collapsing .nav-item.active > a,
+body.theme-dark .sidebar .nav .collapse .nav-item.active > a,
+body.theme-dark .sidebar .nav .collapsing .nav-item.active > a {
     background: rgba(0, 88, 166, 0.28) !important;
     background-color: rgba(0, 88, 166, 0.28) !important;
     color: #38BDF8 !important;
     font-weight: 600 !important;
 }
 html.theme-dark .sidebar .nav .collapse .nav-item.active > a i,
-body.theme-dark .sidebar .nav .collapse .nav-item.active > a i {
+html.theme-dark .sidebar .nav .collapsing .nav-item.active > a i,
+body.theme-dark .sidebar .nav .collapse .nav-item.active > a i,
+body.theme-dark .sidebar .nav .collapsing .nav-item.active > a i {
     color: #38BDF8 !important;
 }
 html.theme-dark .sidebar .nav .collapse .nav-item.active > a span,
-body.theme-dark .sidebar .nav .collapse .nav-item.active > a span {
+html.theme-dark .sidebar .nav .collapsing .nav-item.active > a span,
+body.theme-dark .sidebar .nav .collapse .nav-item.active > a span,
+body.theme-dark .sidebar .nav .collapsing .nav-item.active > a span {
     color: #38BDF8 !important;
     font-weight: 600 !important;
+}
+html.theme-dark .sidebar .nav .collapse .nav-item.active > a::before,
+html.theme-dark .sidebar .nav .collapsing .nav-item.active > a::before,
+body.theme-dark .sidebar .nav .collapse .nav-item.active > a::before,
+body.theme-dark .sidebar .nav .collapsing .nav-item.active > a::before {
+    background: #38BDF8 !important;
 }
 html.theme-dark .sidebar .nav .submenu-arrow,
 body.theme-dark .sidebar .nav .submenu-arrow {
