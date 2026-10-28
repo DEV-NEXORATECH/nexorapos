@@ -1,126 +1,189 @@
 @extends('admin.layout.app')
 
-@section('title', 'Update Product')
+@section('title', 'Perbarui Produk - ' . $product->name)
 
 @section('content')
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
-                        <div class="superadmin-header-card mb-4">
-                <h4><i class="fas fa-edit"></i> Edit Product</h4>
-                <a href="javascript:history.back()" class="btn btn-secondary" style="border: none;">Cancel</a>
-            </div>
-                <a href="{{ url('admin-panel/products/listing') }}" class="btn btn-secondary">Cancel</a>
+            
+            <!-- Modern Page Header -->
+            <div class="nexora-page-header-card mb-4">
+                <div class="nexora-page-header-left">
+                    <div class="nexora-page-header-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="nexora-page-header-meta">
+                        <span class="nexora-page-header-eyebrow"><span class="dot"></span> MASTER DATA POS &bull; EDIT PRODUK</span>
+                        <h3 class="nexora-page-header-title">Perbarui Produk: {{ $product->name }}</h3>
+                        <p class="nexora-page-header-desc">Sesuaikan spesifikasi barang, penetapan harga baru, barcode, atau pengaturan stok.</p>
+                    </div>
+                </div>
+                <div class="nexora-page-header-right">
+                    <a href="{{ url('admin-panel/products/listing') }}" class="nexora-btn-back">
+                        <i class="fa fa-arrow-left"></i> Kembali ke Katalog
+                    </a>
+                </div>
             </div>
 
-            <form action="{{ url('admin-panel/products/update', $product->id) }}" method="POST" class="nexora-form">
+            <form action="{{ url('admin-panel/products/update', $product->id) }}" method="POST">
                 @csrf
 
-                                        <div class="row">
-                                            @include('admin.partials.company-selector')
-                                        </div>
-                <div class="nexora-control-card is-neutral mb-4">
-                    <h5><i class="fas fa-folder"></i> Product Information</h5>
-                                        <div class="card-body p-0 mt-3">
+                <!-- CARD 1: Informasi Dasar Produk -->
+                <div class="nexora-form-card mb-4">
+                    <div class="nexora-form-card-head">
+                        <div class="nexora-form-card-icon is-navy">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div>
+                            <span class="nexora-form-card-eyebrow">IDENTITAS PRODUK</span>
+                            <h4 class="nexora-form-card-title">Informasi & Barcode Produk</h4>
+                            <p class="nexora-form-card-subtitle">Nama barang, kategori, serta kode SKU unik untuk pelacakan transaksi.</p>
+                        </div>
+                    </div>
+
+                    <div class="nexora-form-card-body">
                         <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="name">Product Name *</label>
-                                    <input type="text" class="form-control" name="name" id="name" value="{{ old('name', $product->name) }}" required>
-                                    @error('name')<div class="nexora-field-error">{{ $message }}</div>@enderror
+                            @include('admin.partials.company-selector', ['selectedCompanyId' => $product->company_id])
+
+                            <div class="col-md-6 mb-3">
+                                <label class="nexora-input-label">Nama Produk <span class="text-danger">*</span></label>
+                                <div class="nexora-input-wrap">
+                                    <i class="fas fa-cube input-icon"></i>
+                                    <input type="text" class="form-control nexora-input" name="name" id="name" value="{{ old('name', $product->name) }}" required>
                                 </div>
+                                @error('name')<div class="nexora-field-error"><i class="fa fa-circle-exclamation mr-1"></i>{{ $message }}</div>@enderror
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="category_id">Category *</label>
-                                    <select name="category_id" id="category_id" class="form-control select2" required>
-                                        <option value="">Select category</option>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="nexora-input-label">Kategori Produk <span class="text-danger">*</span></label>
+                                <div class="nexora-input-wrap">
+                                    <i class="fas fa-tag input-icon"></i>
+                                    <select name="category_id" id="category_id" class="form-control nexora-input select2" required>
+                                        <option value="">-- Pilih Kategori --</option>
                                         @foreach($categories as $cat)
                                             <option value="{{ $cat->id }}" @selected(old('category_id', $product->category_id) == $cat->id)>{{ $cat->name }}</option>
                                         @endforeach
                                     </select>
-                                    @error('category_id')<div class="nexora-field-error">{{ $message }}</div>@enderror
                                 </div>
+                                @error('category_id')<div class="nexora-field-error"><i class="fa fa-circle-exclamation mr-1"></i>{{ $message }}</div>@enderror
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="sku">SKU *</label>
-                                    <input type="text" class="form-control" name="sku" id="sku" value="{{ old('sku', $product->sku) }}" required>
-                                    @error('sku')<div class="nexora-field-error">{{ $message }}</div>@enderror
+
+                            <div class="col-md-6 mb-3">
+                                <label class="nexora-input-label">Kode SKU (Stock Keeping Unit) <span class="text-danger">*</span></label>
+                                <div class="nexora-input-wrap">
+                                    <i class="fas fa-barcode input-icon"></i>
+                                    <input type="text" class="form-control nexora-input" name="sku" id="sku" value="{{ old('sku', $product->sku) }}" required>
                                 </div>
+                                @error('sku')<div class="nexora-field-error"><i class="fa fa-circle-exclamation mr-1"></i>{{ $message }}</div>@enderror
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="barcode">Barcode</label>
-                                    <input type="text" class="form-control" name="barcode" id="barcode" value="{{ old('barcode', $product->barcode) }}">
-                                    @error('barcode')<div class="nexora-field-error">{{ $message }}</div>@enderror
+
+                            <div class="col-md-6 mb-3">
+                                <label class="nexora-input-label">Nomor Barcode / EAN</label>
+                                <div class="nexora-input-wrap">
+                                    <i class="fas fa-qrcode input-icon"></i>
+                                    <input type="text" class="form-control nexora-input" name="barcode" id="barcode" value="{{ old('barcode', $product->barcode) }}">
                                 </div>
+                                @error('barcode')<div class="nexora-field-error"><i class="fa fa-circle-exclamation mr-1"></i>{{ $message }}</div>@enderror
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="nexora-control-card is-neutral mb-4">
-                    <h5><i class="fas fa-folder"></i> Pricing</h5>
-                                        <div class="card-body p-0 mt-3">
+                <!-- CARD 2: Penetapan Harga & Pajak -->
+                <div class="nexora-form-card mb-4">
+                    <div class="nexora-form-card-head">
+                        <div class="nexora-form-card-icon is-emerald">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div>
+                            <span class="nexora-form-card-eyebrow">STRUKTUR HARGA</span>
+                            <h4 class="nexora-form-card-title">Penetapan Biaya Modal, Harga Jual & Pajak</h4>
+                            <p class="nexora-form-card-subtitle">Tentukan harga pokok pembelian, harga jual konsumen, serta tarif pajak berlaku.</p>
+                        </div>
+                    </div>
+
+                    <div class="nexora-form-card-body">
                         <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="cost">Cost Price</label>
-                                    <input type="number" step="0.01" min="0" class="form-control" name="cost" id="cost" value="{{ old('cost', $product->cost) }}">
-                                    @error('cost')<div class="nexora-field-error">{{ $message }}</div>@enderror
+                            <div class="col-md-4 mb-3">
+                                <label class="nexora-input-label">Harga Pokok Modal (Cost Price)</label>
+                                <div class="nexora-input-wrap">
+                                    <i class="fas fa-coins input-icon"></i>
+                                    <input type="number" step="0.01" min="0" class="form-control nexora-input" name="cost" id="cost" value="{{ old('cost', $product->cost) }}">
                                 </div>
+                                <small class="nexora-input-help"><i class="fa fa-info-circle mr-1"></i>Biaya modal per unit barang.</small>
+                                @error('cost')<div class="nexora-field-error"><i class="fa fa-circle-exclamation mr-1"></i>{{ $message }}</div>@enderror
                             </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="price">Selling Price *</label>
-                                    <input type="number" step="0.01" min="0" class="form-control" name="price" id="price" value="{{ old('price', $product->price) }}" required>
-                                    @error('price')<div class="nexora-field-error">{{ $message }}</div>@enderror
+
+                            <div class="col-md-4 mb-3">
+                                <label class="nexora-input-label">Harga Jual Kasir (Selling Price) <span class="text-danger">*</span></label>
+                                <div class="nexora-input-wrap">
+                                    <i class="fas fa-rupiah-sign input-icon"></i>
+                                    <input type="number" step="0.01" min="0" class="form-control nexora-input" name="price" id="price" value="{{ old('price', $product->price) }}" required>
                                 </div>
+                                <small class="nexora-input-help"><i class="fa fa-info-circle mr-1"></i>Harga resmi saat ditransaksikan di kasir.</small>
+                                @error('price')<div class="nexora-field-error"><i class="fa fa-circle-exclamation mr-1"></i>{{ $message }}</div>@enderror
                             </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="tax_id">Tax *</label>
-                                    <select name="tax_id" id="tax_id" class="form-control select2" required>
-                                        <option value="">Select tax</option>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="nexora-input-label">Tarif Pajak (Tax) <span class="text-danger">*</span></label>
+                                <div class="nexora-input-wrap">
+                                    <i class="fas fa-percent input-icon"></i>
+                                    <select name="tax_id" id="tax_id" class="form-control nexora-input select2" required>
+                                        <option value="">-- Pilih Pajak --</option>
                                         @foreach($taxes as $tax)
-                                            <option value="{{ $tax->id }}" @selected(old('tax_id', $product->tax_id) == $tax->id)>{{ $tax->name }} - {{ $tax->rate }}%</option>
+                                            <option value="{{ $tax->id }}" @selected(old('tax_id', $product->tax_id) == $tax->id)>{{ $tax->name }} ({{ $tax->rate }}%)</option>
                                         @endforeach
                                     </select>
-                                    @error('tax_id')<div class="nexora-field-error">{{ $message }}</div>@enderror
                                 </div>
+                                @error('tax_id')<div class="nexora-field-error"><i class="fa fa-circle-exclamation mr-1"></i>{{ $message }}</div>@enderror
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="nexora-control-card is-neutral mb-4">
-                    <h5><i class="fas fa-folder"></i> Inventory</h5>
-                                        <div class="card-body p-0 mt-3">
+                <!-- CARD 3: Manajemen Stok & Inventaris -->
+                <div class="nexora-form-card mb-4">
+                    <div class="nexora-form-card-head">
+                        <div class="nexora-form-card-icon is-amber">
+                            <i class="fas fa-warehouse"></i>
+                        </div>
+                        <div>
+                            <span class="nexora-form-card-eyebrow">INVENTARIS & STOK</span>
+                            <h4 class="nexora-form-card-title">Pelacakan Persediaan Gudang</h4>
+                            <p class="nexora-form-card-subtitle">Atur apakah kuantitas barang ini dipantau secara otomatis saat terjual.</p>
+                        </div>
+                    </div>
+
+                    <div class="nexora-form-card-body">
                         <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="track_stock">Track Stock *</label>
-                                    <select name="track_stock" id="track_stock" class="form-control" required>
-                                        <option value="1" @selected(old('track_stock', $product->track_stock) == 1)>Yes</option>
-                                        <option value="0" @selected(old('track_stock', $product->track_stock) == 0)>No</option>
+                            <div class="col-md-6 mb-3">
+                                <label class="nexora-input-label">Lacak Stok Otomatis (Track Stock) <span class="text-danger">*</span></label>
+                                <div class="nexora-input-wrap">
+                                    <i class="fas fa-boxes-stacked input-icon"></i>
+                                    <select name="track_stock" id="track_stock" class="form-control nexora-input select2" required>
+                                        <option value="1" @selected(old('track_stock', $product->track_stock) == 1)>Ya (Kurangi stok otomatis saat transaksi)</option>
+                                        <option value="0" @selected(old('track_stock', $product->track_stock) == 0)>Tidak (Stok tidak terbatas / Jasa)</option>
                                     </select>
-                                    @error('track_stock')<div class="nexora-field-error">{{ $message }}</div>@enderror
                                 </div>
+                                @error('track_stock')<div class="nexora-field-error"><i class="fa fa-circle-exclamation mr-1"></i>{{ $message }}</div>@enderror
                             </div>
                         </div>
                     </div>
-                    <div class="nexora-form-actions mt-3">
-                        <a href="{{ url('admin-panel/products/listing') }}" class="btn btn-secondary">Cancel</a>
-                        <button type="submit" class="btn btn-primary">Update Product</button>
-                    </div>
+                </div>
+
+                <!-- Action Bar -->
+                <div class="nexora-form-action-bar mb-5">
+                    <a href="{{ url('admin-panel/products/listing') }}" class="btn btn-secondary" style="border-radius: 12px; font-weight: 600; padding: 12px 24px;">
+                        <i class="fa fa-times mr-1"></i> Batalkan
+                    </a>
+                    <button type="submit" class="btn btn-primary" style="border-radius: 12px; font-weight: 700; padding: 12px 32px; box-shadow: 0 4px 14px rgba(0, 88, 166, 0.35);">
+                        <i class="fas fa-save mr-1"></i> Simpan Perubahan Produk
+                    </button>
                 </div>
             </form>
+
         </div>
     </div>
 </div>
-@endsection
-@section('scripts')
-
-
 @endsection

@@ -3340,6 +3340,40 @@ body.theme-dark .tenant-domain-left {
     color: #FFFFFF !important;
 }
 
+.nexora-action-btn.is-info {
+    background: #E0F2FE !important;
+    border: 1px solid #BAE6FD !important;
+    color: #0284C7 !important;
+}
+.nexora-action-btn.is-info i {
+    color: #0284C7 !important;
+}
+.nexora-action-btn.is-info:hover {
+    background: #0284C7 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 3px 8px rgba(2, 132, 199, 0.25) !important;
+}
+.nexora-action-btn.is-info:hover i {
+    color: #FFFFFF !important;
+}
+
+/* Action group to keep buttons side-by-side */
+.nexora-action-group {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
+}
+
+.nexora-data-table th.action-col,
+.nexora-data-table td.action-col {
+    white-space: nowrap !important;
+    min-width: 130px !important;
+    text-align: center !important;
+}
+
 /* Pagination polish */
 .dataTables_wrapper .dataTables_info {
     font-size: 12.5px !important;

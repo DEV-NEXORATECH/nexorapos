@@ -489,50 +489,70 @@ a:hover { color: #002E58 !important; }
 
 /* Global Action Group & Buttons styling (matching users/listing) */
 .nexora-action-group {
-    display: flex;
-    gap: 8px;
-    align-items: center;
+    display: inline-flex !important;
+    gap: 6px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
 }
 .nexora-action-btn {
-    border-radius: 6px !important;
+    border-radius: 8px !important;
     width: 32px !important;
     height: 32px !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    transition: background 0.15s ease !important;
+    transition: all 0.15s ease !important;
+    flex-shrink: 0 !important;
+    text-decoration: none !important;
 }
 .nexora-action-btn.is-warning {
-    background: #F39C12 !important;
-    color: #FFFFFF !important;
+    background: #FEF3C7 !important;
+    border: 1px solid #FDE68A !important;
+    color: #D97706 !important;
 }
 .nexora-action-btn.is-warning:hover {
-    background: #D68910 !important;
+    background: #D97706 !important;
     color: #FFFFFF !important;
+    box-shadow: 0 3px 8px rgba(217, 119, 6, 0.25) !important;
 }
 .nexora-action-btn.is-warning i {
+    color: #D97706 !important;
+}
+.nexora-action-btn.is-warning:hover i {
     color: #FFFFFF !important;
 }
 .nexora-action-btn.is-danger {
-    background: #E74C3C !important;
-    color: #FFFFFF !important;
+    background: #FEE2E2 !important;
+    border: 1px solid #FECACA !important;
+    color: #DC2626 !important;
 }
 .nexora-action-btn.is-danger:hover {
-    background: #C0392B !important;
+    background: #DC2626 !important;
     color: #FFFFFF !important;
+    box-shadow: 0 3px 8px rgba(220, 38, 38, 0.25) !important;
 }
 .nexora-action-btn.is-danger i {
+    color: #DC2626 !important;
+}
+.nexora-action-btn.is-danger:hover i {
     color: #FFFFFF !important;
 }
 .nexora-action-btn.is-info {
-    background: var(--color-blue) !important;
-    color: #FFFFFF !important;
+    background: #E0F2FE !important;
+    border: 1px solid #BAE6FD !important;
+    color: #0284C7 !important;
 }
 .nexora-action-btn.is-info:hover {
-    background: #002E58 !important;
+    background: #0284C7 !important;
     color: #FFFFFF !important;
+    box-shadow: 0 3px 8px rgba(2, 132, 199, 0.25) !important;
 }
 .nexora-action-btn.is-info i {
+    color: #0284C7 !important;
+}
+.nexora-action-btn.is-info:hover i {
     color: #FFFFFF !important;
 }
 

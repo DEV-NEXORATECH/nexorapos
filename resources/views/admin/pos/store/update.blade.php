@@ -1,64 +1,84 @@
 @extends('admin.layout.app')
 
-@section('title', 'Update Store')
+@section('title', 'Perbarui Toko - ' . $store->name)
 
 @section('content')
-
-
-        	<div class="main-panel">
-				<div class="content">
-					<div class="container-fluid">
-
-                                     <div class="superadmin-header-card mb-4">
-                <h4><i class="fas fa-edit"></i> Store</h4>
-                <a href="javascript:history.back()" class="btn btn-secondary" style="border: none;">Cancel</a>
+<div class="main-panel">
+    <div class="content">
+        <div class="container-fluid">
+            
+            <!-- Modern Page Header -->
+            <div class="nexora-page-header-card mb-4">
+                <div class="nexora-page-header-left">
+                    <div class="nexora-page-header-icon">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <div class="nexora-page-header-meta">
+                        <span class="nexora-page-header-eyebrow"><span class="dot"></span> MASTER DATA POS &bull; EDIT TOKO</span>
+                        <h3 class="nexora-page-header-title">Perbarui Toko: {{ $store->name }}</h3>
+                        <p class="nexora-page-header-desc">Sesuaikan nama cabang atau konfigurasi kode outlet ini.</p>
+                    </div>
+                </div>
+                <div class="nexora-page-header-right">
+                    <a href="{{ url('admin-panel/stores/listing') }}" class="nexora-btn-back">
+                        <i class="fa fa-arrow-left"></i> Kembali ke Daftar
+                    </a>
+                </div>
             </div>
-						<div >
-							<div class="">
-								<div class="nexora-control-card is-success mb-4">
-                    <h5><i class="fas fa-folder"></i> Update Store</h5>
-                    
-                                    <form action="{{ url('admin-panel/stores/update', $store->id) }}" method="POST" id="categoryForm">
-                                        @csrf
 
-                                        <div class="row">
-                                            @include('admin.partials.company-selector')
-                                        </div>
-                                                            <div class="card-body p-0 mt-3">
-										<div class="form-group">
-											<label for="name">Store Name</label>
-											<input type="text" class="form-control" name="name" id="name" value="{{ $store->name }}">
-                                            @error('name')
-                                                <div class="text-danger mt-2">{{ $message }}</div>
-                                            @enderror
-										</div>
-										<div class="form-group">
-											<label for="code">Store Code</label>
-											<input type="text" class="form-control" name="code" id="code" value="{{ $store->code }}">
-                                            @error('code')
-                                                <div class="text-danger mt-2">{{ $message }}</div>
-                                            @enderror
-										</div>
+            <form action="{{ url('admin-panel/stores/update', $store->id) }}" method="POST" id="storeForm">
+                @csrf
 
-                                        <div class="nexora-form-actions mt-3">
-											<button class="btn btn-primary">Update</button>
-											 <a href="{{ url('admin-panel/stores/listing') }}" class="btn btn-danger">Cancel</a>
-										</div>
+                <div class="nexora-form-card mb-4">
+                    <div class="nexora-form-card-head">
+                        <div class="nexora-form-card-icon is-navy">
+                            <i class="fas fa-shop"></i>
+                        </div>
+                        <div>
+                            <span class="nexora-form-card-eyebrow">IDENTITAS OUTLET</span>
+                            <h4 class="nexora-form-card-title">Informasi & Lokasi Toko</h4>
+                            <p class="nexora-form-card-subtitle">Perubahan pada data cabang akan langsung tersinkronkan pada seluruh sesi kasir aktif.</p>
+                        </div>
+                    </div>
 
-                                    </div>
-                                    </form>
+                    <div class="nexora-form-card-body">
+                        <div class="row">
+                            @include('admin.partials.company-selector', ['selectedCompanyId' => $store->company_id])
 
-                     </div>
-                 </div>
-            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="nexora-input-label">Nama Toko / Cabang <span class="text-danger">*</span></label>
+                                <div class="nexora-input-wrap">
+                                    <i class="fas fa-store input-icon"></i>
+                                    <input type="text" class="form-control nexora-input" name="name" id="name" value="{{ old('name', $store->name) }}" required>
+                                </div>
+                                @error('name')<div class="nexora-field-error"><i class="fa fa-circle-exclamation mr-1"></i>{{ $message }}</div>@enderror
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="nexora-input-label">Kode Toko (Store Code) <span class="text-danger">*</span></label>
+                                <div class="nexora-input-wrap">
+                                    <i class="fas fa-barcode input-icon"></i>
+                                    <input type="text" class="form-control nexora-input" name="code" id="code" value="{{ old('code', $store->code) }}" required>
+                                </div>
+                                <small class="nexora-input-help"><i class="fa fa-info-circle mr-1"></i>Kode pengenal unik toko pada sistem POS.</small>
+                                @error('code')<div class="nexora-field-error"><i class="fa fa-circle-exclamation mr-1"></i>{{ $message }}</div>@enderror
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Bar -->
+                <div class="nexora-form-action-bar mb-5">
+                    <a href="{{ url('admin-panel/stores/listing') }}" class="btn btn-secondary" style="border-radius: 12px; font-weight: 600; padding: 12px 24px;">
+                        <i class="fa fa-times mr-1"></i> Batalkan
+                    </a>
+                    <button type="submit" class="btn btn-primary" style="border-radius: 12px; font-weight: 700; padding: 12px 32px; box-shadow: 0 4px 14px rgba(0, 88, 166, 0.35);">
+                        <i class="fas fa-save mr-1"></i> Simpan Perubahan Toko
+                    </button>
+                </div>
+            </form>
+
         </div>
     </div>
 </div>
-
-
-
-@endsection
-@section('scripts')
-
-
 @endsection

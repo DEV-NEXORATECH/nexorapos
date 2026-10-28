@@ -34,10 +34,11 @@ class StoreService{
                     return $row->created_at ? $row->created_at->format('d M Y H:i') : '-';
                 })
                 ->addColumn('action', function ($row) {
-                    return '
-                    <a href="'.url('admin-panel/stores/show/'.$row->id).'" class="nexora-action-btn is-info" title="View"><i class="fas fa-eye"></i></a>
-                    <a href="'.url('admin-panel/stores/edit/'.$row->id).'" class="nexora-action-btn is-warning" title="Edit"><i class="fas fa-edit"></i></a>
-                    <a href="'.url('admin-panel/stores/delete/'.$row->id).'" class="nexora-action-btn is-danger" onclick="return confirm(\'Delete?\')" title="Delete"><i class="fas fa-trash"></i></a>';
+                    return '<div class="nexora-action-group">
+                        <a href="'.url('admin-panel/stores/show/'.$row->id).'" class="nexora-action-btn is-info" title="Detail Toko"><i class="fas fa-eye"></i></a>
+                        <a href="'.url('admin-panel/stores/edit/'.$row->id).'" class="nexora-action-btn is-warning" title="Edit Toko"><i class="fas fa-edit"></i></a>
+                        <a href="'.url('admin-panel/stores/delete/'.$row->id).'" class="nexora-action-btn is-danger" onclick="return confirm(\'Hapus toko ini?\')" title="Hapus Toko"><i class="fas fa-trash"></i></a>
+                    </div>';
                 })
                 ->rawColumns(['code', 'action'])
                 ->make(true);
