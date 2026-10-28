@@ -3562,10 +3562,23 @@ body.theme-dark .dataTables_wrapper .dataTables_paginate .paginate_button.curren
 .nexora-input-wrap .input-icon {
     position: absolute !important;
     left: 14px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
     color: #94A3B8 !important;
     font-size: 14px !important;
+    line-height: 1 !important;
     pointer-events: none !important;
     z-index: 2 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 16px !important;
+    height: 16px !important;
+    transition: color 0.2s ease !important;
+}
+
+.nexora-input-wrap:focus-within .input-icon {
+    color: #0058A6 !important;
 }
 
 .nexora-input-wrap .nexora-input {
@@ -3674,6 +3687,11 @@ body.theme-dark .nexora-input:disabled {
 html.theme-dark .nexora-input-wrap .input-icon,
 body.theme-dark .nexora-input-wrap .input-icon {
     color: #64748B !important;
+}
+
+html.theme-dark .nexora-input-wrap:focus-within .input-icon,
+body.theme-dark .nexora-input-wrap:focus-within .input-icon {
+    color: #38BDF8 !important;
 }
 
 /* ==========================================================================
@@ -4138,6 +4156,34 @@ body.theme-dark .logo-header .brand-full-logo {
     filter: brightness(0) invert(1);
     opacity: 0.95;
 }
+
+/* ==========================================================================
+   REQUIRED FIELD ASTERISK (*) - ALWAYS INLINE BESIDE LABEL TEXT
+   ========================================================================== */
+label .text-danger,
+.nexora-input-label .text-danger,
+.nexora-form-label .text-danger,
+.form-group label .text-danger,
+span.text-danger {
+    display: inline-block !important;
+    color: #EF4444 !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    margin-left: 3px !important;
+    line-height: 1 !important;
+    vertical-align: baseline !important;
+    white-space: nowrap !important;
+}
+
+label,
+.nexora-input-label,
+.nexora-form-label {
+    display: block !important;
+    white-space: normal !important;
+}
+
 
 
 

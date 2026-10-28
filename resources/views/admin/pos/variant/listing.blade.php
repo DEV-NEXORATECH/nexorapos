@@ -50,34 +50,11 @@
                                 <th class="text-nowrap">Perusahaan</th>
                                 <th class="text-nowrap">Dibuat Oleh</th>
                                 <th class="text-nowrap">Waktu Dibuat</th>
-                                <th class="text-nowrap text-center" style="width: 90px;">Aksi</th>
+                                <th class="text-nowrap text-center action-col" style="min-width: 100px; width: 100px;">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($variants as $v)
-                                <tr>
-                                    <td><span class="badge badge-light" style="font-weight: 700; color: #64748B;">#{{ $v->id }}</span></td>
-                                    <td style="font-weight: 700; color: #0058A6;">{{ optional($v->product)->name ?? '-' }}</td>
-                                    <td style="font-weight: 600; color: #0F1F3D;">{{ $v->name }}</td>
-                                    <td>{{ $v->sku ?? '-' }}</td>
-                                    <td>{{ $v->barcode ?? '-' }}</td>
-                                    <td class="text-right" style="font-weight: 700; color: #10B981;">Rp {{ number_format($v->price, 0, ',', '.') }}</td>
-                                    <td class="text-right">Rp {{ number_format($v->cost, 0, ',', '.') }}</td>
-                                    <td class="text-nowrap">{{ $v->company?->name ?? 'System' }}</td>
-                                    <td class="text-nowrap">{{ $v->user?->name ?? $v->creator?->name ?? '-' }}</td>
-                                    <td class="text-nowrap">{{ $v->created_at ? $v->created_at->format('d/m/Y H:i') : '-' }}</td>
-                                    <td class="text-center">
-                                        <div class="table-actions justify-content-center">
-                                            <a href="{{ url('admin-panel/variants/edit', $v->id) }}" class="btn-action btn-action-primary" title="Edit Varian">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <a href="{{ url('admin-panel/variants/delete', $v->id) }}" class="btn-action btn-action-danger delete-category" title="Hapus Varian">
-                                                <i class="fas fa-trash"></i>
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
+                            <!-- AJAX loaded by DataTables -->
                         </tbody>
                     </table>
                 </div>
@@ -86,4 +63,45 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script src="{{ asset('admin/custom/js/category.js') }}"></script>
+<script>
+    $(document).ready(function() {
+        if ($.fn.DataTable.isDataTable('#variantsTable')) {
+            $('#variantsTable').DataTable().destroy();
+        }
+        $('#variantsTable').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: '{{ url("admin-panel/variants/listing") }}',
+            columns: [
+                { data: 'id', name: 'id' },
+                { data: 'product_name', name: 'product.name' },
+                { data: 'name', name: 'name' },
+                { data: 'sku', name: 'sku' },
+                { data: 'barcode', name: 'barcode' },
+                { data: 'price', name: 'price', className: 'text-right' },
+                { data: 'cost', name: 'cost', className: 'text-right' },
+                { data: 'company', name: 'company.name', orderable: false, searchable: false },
+                { data: 'created_by', name: 'created_by', searchable: false, orderable: false },
+                { data: 'created_at', name: 'created_at' },
+                { data: 'action', name: 'action', orderable: false, searchable: false, className: 'text-center text-nowrap action-col' }
+            ],
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Cari data varian...",
+                lengthMenu: "Tampilkan _MENU_ data",
+                info: "Menampilkan _START_ s/d _END_ dari _TOTAL_ varian",
+                infoEmpty: "Menampilkan 0 data",
+                zeroRecords: "Tidak ditemukan data yang cocok",
+                paginate: {
+                    previous: '<i class="fas fa-chevron-left"></i>',
+                    next: '<i class="fas fa-chevron-right"></i>'
+                }
+            }
+        });
+    });
+</script>
 @endsection

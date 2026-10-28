@@ -353,11 +353,12 @@ body {
 }
 
 .nexora-field-error,
-.text-danger {
-    color: var(--nexora-blue-dark) !important;
+div.text-danger,
+p.text-danger {
+    color: #DC2626 !important;
     display: block;
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 600;
     margin-top: 6px;
 }
 
@@ -3052,7 +3053,7 @@ a:hover {
 .text-success { color: #0058A6 !important; }
 .text-info    { color: #1976C9 !important; }
 .text-warning { color: #003F7D !important; }
-.text-danger  { color: #002E58 !important; }
+.text-danger  { color: #DC2626 !important; }
 .text-muted   { color: #1976C9 !important; }
 .text-secondary { color: #003F7D !important; }
 .text-dark    { color: #002E58 !important; }

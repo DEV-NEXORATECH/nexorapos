@@ -26,123 +26,100 @@
                 </div>
             </div>
 
-            {{-- Form Card --}}
-            <div class="row">
-                <div class="col-lg-8 col-md-10 mx-auto">
-                    <form action="{{ url('admin-panel/stock/update', $stock->id) }}" method="POST" id="stockForm">
-                        @csrf
+            <form action="{{ url('admin-panel/stock/update', $stock->id) }}" method="POST" id="stockForm">
+                @csrf
 
-                        <div class="nexora-form-card mb-4">
-                            <div class="nexora-form-card-head">
-                                <div class="nexora-form-card-icon is-navy">
-                                    <i class="fas fa-edit"></i>
+                <div class="nexora-form-card mb-4">
+                    <div class="nexora-form-card-head">
+                        <div class="nexora-form-card-icon is-navy">
+                            <i class="fas fa-edit"></i>
+                        </div>
+                        <div>
+                            <span class="nexora-form-card-eyebrow">PENYESUAIAN STOK</span>
+                            <h4 class="nexora-form-card-title">Rincian Mutasi Barang</h4>
+                            <p class="nexora-form-card-subtitle">Perbarui data mutasi kuantitas stok barang.</p>
+                        </div>
+                    </div>
+
+                    <div class="nexora-form-card-body">
+                        <div class="row">
+                            @include('admin.partials.company-selector')
+
+                            <div class="col-md-6 mb-3">
+                                <label class="nexora-input-label">Toko / Outlet <span class="text-danger">*</span></label>
+                                <div class="nexora-input-wrap">
+                                    <i class="fas fa-store input-icon"></i>
+                                    <select name="store_id" id="store_id" class="form-control nexora-input select2" required>
+                                        @foreach ($stores as $store)
+                                            <option value="{{ $store->id }}" {{ old('store_id', $stock->store_id) == $store->id ? 'selected' : '' }}>{{ $store->name }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
-                                <div>
-                                    <span class="nexora-form-card-eyebrow">PENYESUAIAN STOK</span>
-                                    <h4 class="nexora-form-card-title">Rincian Mutasi Barang</h4>
-                                    <p class="nexora-form-card-subtitle">Perbarui data mutasi kuantitas stok barang.</p>
-                                </div>
+                                @error('store_id')<div class="nexora-field-error"><i class="fa fa-circle-exclamation mr-1"></i>{{ $message }}</div>@enderror
                             </div>
-                            <div class="nexora-form-card-body">
-                                <div class="row">
-                                    @include('admin.partials.company-selector')
-                                </div>
 
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-3">
-                                            <label for="store_id" class="nexora-form-label">Toko / Outlet <span class="text-danger">*</span></label>
-                                            <div class="nexora-input-wrap select-wrap">
-                                                <i class="fas fa-store nexora-input-icon"></i>
-                                                <select name="store_id" id="store_id" class="form-control select2" required>
-                                                    @foreach ($stores as $store)
-                                                        <option value="{{ $store->id }}" {{ old('store_id', $stock->store_id) == $store->id ? 'selected' : '' }}>{{ $store->name }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                            @error('store_id')
-                                                <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-3">
-                                            <label for="type" class="nexora-form-label">Tipe Mutasi <span class="text-danger">*</span></label>
-                                            <div class="nexora-input-wrap select-wrap">
-                                                <i class="fas fa-random nexora-input-icon"></i>
-                                                <select name="type" id="type" class="form-control select2" required>
-                                                    <option value="in" {{ old('type', $stock->type) === 'in' ? 'selected' : '' }}>Stok Masuk (Stock In)</option>
-                                                    <option value="out" {{ old('type', $stock->type) === 'out' ? 'selected' : '' }}>Stok Keluar (Stock Out)</option>
-                                                </select>
-                                            </div>
-                                            @error('type')
-                                                <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="nexora-input-label">Tipe Mutasi <span class="text-danger">*</span></label>
+                                <div class="nexora-input-wrap">
+                                    <i class="fas fa-random input-icon"></i>
+                                    <select name="type" id="type" class="form-control nexora-input select2" required>
+                                        <option value="in" {{ old('type', $stock->type) === 'in' ? 'selected' : '' }}>Stok Masuk (Stock In)</option>
+                                        <option value="out" {{ old('type', $stock->type) === 'out' ? 'selected' : '' }}>Stok Keluar (Stock Out)</option>
+                                    </select>
                                 </div>
+                                @error('type')<div class="nexora-field-error"><i class="fa fa-circle-exclamation mr-1"></i>{{ $message }}</div>@enderror
+                            </div>
 
-                                <div class="form-group mb-3">
-                                    <label for="product_id" class="nexora-form-label">Pilih Produk <span class="text-danger">*</span></label>
-                                    <div class="nexora-input-wrap select-wrap">
-                                        <i class="fas fa-box nexora-input-icon"></i>
-                                        <select name="product_id" id="product_id" class="form-control select2" required>
-                                            @foreach ($products as $product)
-                                                <option value="{{ $product->id }}" {{ old('product_id', $stock->product_id) == $product->id ? 'selected' : '' }}>{{ $product->name }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    @error('product_id')
-                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</div>
-                                    @enderror
+                            <div class="col-md-6 mb-3">
+                                <label class="nexora-input-label">Pilih Produk <span class="text-danger">*</span></label>
+                                <div class="nexora-input-wrap">
+                                    <i class="fas fa-box input-icon"></i>
+                                    <select name="product_id" id="product_id" class="form-control nexora-input select2" required>
+                                        @foreach ($products as $product)
+                                            <option value="{{ $product->id }}" {{ old('product_id', $stock->product_id) == $product->id ? 'selected' : '' }}>{{ $product->name }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
+                                @error('product_id')<div class="nexora-field-error"><i class="fa fa-circle-exclamation mr-1"></i>{{ $message }}</div>@enderror
+                            </div>
 
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-3">
-                                            <label for="product_variant_id" class="nexora-form-label">Varian Produk</label>
-                                            <div class="nexora-input-wrap select-wrap">
-                                                <i class="fas fa-layer-group nexora-input-icon"></i>
-                                                <select name="product_variant_id" id="product_variant_id" class="form-control select2">
-                                                    <option value="">-- Tanpa Varian (Produk Standar) --</option>
-                                                    @foreach ($variants as $var)
-                                                        <option value="{{ $var->id }}" {{ old('product_variant_id', $stock->product_variant_id) == $var->id ? 'selected' : '' }}>{{ $var->name }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                            @error('product_variant_id')
-                                                <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-3">
-                                            <label for="quantity" class="nexora-form-label">Jumlah Unit (Qty) <span class="text-danger">*</span></label>
-                                            <div class="nexora-input-wrap">
-                                                <i class="fas fa-sort-numeric-up-alt nexora-input-icon"></i>
-                                                <input type="number" min="1" step="1" class="form-control" name="quantity" id="quantity" value="{{ old('quantity', $stock->quantity) }}" required>
-                                            </div>
-                                            @error('quantity')
-                                                <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="nexora-input-label">Varian Produk</label>
+                                <div class="nexora-input-wrap">
+                                    <i class="fas fa-layer-group input-icon"></i>
+                                    <select name="product_variant_id" id="product_variant_id" class="form-control nexora-input select2">
+                                        <option value="">-- Tanpa Varian (Produk Standar) --</option>
+                                        @foreach ($variants as $var)
+                                            <option value="{{ $var->id }}" {{ old('product_variant_id', $stock->product_variant_id) == $var->id ? 'selected' : '' }}>{{ $var->name }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
+                                @error('product_variant_id')<div class="nexora-field-error"><i class="fa fa-circle-exclamation mr-1"></i>{{ $message }}</div>@enderror
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="nexora-input-label">Jumlah Unit (Qty) <span class="text-danger">*</span></label>
+                                <div class="nexora-input-wrap">
+                                    <i class="fas fa-sort-numeric-up-alt input-icon"></i>
+                                    <input type="number" min="1" step="1" class="form-control nexora-input" name="quantity" id="quantity" value="{{ old('quantity', $stock->quantity) }}" required>
+                                </div>
+                                @error('quantity')<div class="nexora-field-error"><i class="fa fa-circle-exclamation mr-1"></i>{{ $message }}</div>@enderror
                             </div>
                         </div>
-
-                        {{-- Action Buttons --}}
-                        <div class="nexora-form-action-bar">
-                            <a href="{{ url('admin-panel/stock/listing') }}" class="btn btn-outline-secondary btn-round">
-                                <i class="fas fa-times mr-1"></i> Batal
-                            </a>
-                            <button type="submit" class="btn btn-primary btn-round">
-                                <i class="fas fa-save mr-1"></i> Simpan Perubahan
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
-            </div>
+
+                <!-- Action Bar -->
+                <div class="nexora-form-action-bar mb-5">
+                    <a href="{{ url('admin-panel/stock/listing') }}" class="btn btn-secondary" style="border-radius: 12px; font-weight: 600; padding: 12px 24px;">
+                        <i class="fa fa-times mr-1"></i> Batalkan
+                    </a>
+                    <button type="submit" class="btn btn-primary" style="border-radius: 12px; font-weight: 700; padding: 12px 32px; box-shadow: 0 4px 14px rgba(0, 88, 166, 0.35);">
+                        <i class="fas fa-save mr-1"></i> Simpan Perubahan
+                    </button>
+                </div>
+            </form>
+
         </div>
     </div>
 </div>
@@ -152,7 +129,10 @@
 <script>
     $(document).ready(function() {
         if ($.fn.select2) {
-            $('.select2').select2({ width: '100%' });
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                width: '100%'
+            });
         }
     });
 </script>

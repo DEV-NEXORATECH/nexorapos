@@ -13,11 +13,51 @@ class ProductVariantService{
     }
     public function index()
     {
-        $companyId = auth()->user()?->company_id;
-        $variants = ProductVariant::with('product')
-            
-            ->get();
-        return view('admin.pos.variant.listing', compact('variants'));
+        if (request()->ajax()) {
+            $data = ProductVariant::with(['product', 'company'])
+                ->when(!auth()->user()?->isSuperAdmin(), fn($q) => $q->where('company_id', auth()->user()?->company_id));
+
+            return \Yajra\DataTables\Facades\DataTables::of($data)
+                ->addColumn('id', function($row) { 
+                    return '<span class="badge badge-light" style="font-weight: 700; color: #64748B;">#' . $row->id . '</span>'; 
+                })
+                ->addColumn('product_name', function($row) { 
+                    return '<span style="font-weight: 700; color: #0058A6;">' . e(optional($row->product)->name ?? '-') . '</span>'; 
+                })
+                ->addColumn('name', function($row) { 
+                    return '<span style="font-weight: 600; color: #0F1F3D;">' . e($row->name) . '</span>'; 
+                })
+                ->addColumn('sku', function($row) { 
+                    return e($row->sku ?? '-'); 
+                })
+                ->addColumn('barcode', function($row) { 
+                    return e($row->barcode ?? '-'); 
+                })
+                ->addColumn('price', function($row) { 
+                    return '<span style="font-weight: 700; color: #10B981;">Rp ' . number_format($row->price ?? 0, 0, ',', '.') . '</span>'; 
+                })
+                ->addColumn('cost', function($row) { 
+                    return 'Rp ' . number_format($row->cost ?? 0, 0, ',', '.') . ''; 
+                })
+                ->addColumn('company', function($row) { 
+                    return $row->company ? e($row->company->name) : 'System'; 
+                })
+                ->addColumn('created_by', function($row) { 
+                    return '-'; 
+                })
+                ->addColumn('created_at', function($row) { 
+                    return $row->created_at ? $row->created_at->format('d/m/Y H:i') : '-'; 
+                })
+                ->addColumn('action', function($row) { 
+                    return '<div class="nexora-action-group justify-content-center text-nowrap">
+                        <a href="'.url('admin-panel/variants/edit/'.$row->id).'" class="nexora-action-btn is-warning" title="Edit Varian"><i class="fas fa-edit"></i></a>
+                        <a href="'.url('admin-panel/variants/delete/'.$row->id).'" class="nexora-action-btn is-danger delete-category" title="Hapus Varian"><i class="fas fa-trash"></i></a>
+                    </div>'; 
+                })
+                ->rawColumns(['id', 'product_name', 'name', 'price', 'cost', 'action'])
+                ->make(true);
+        }
+        return view('admin.pos.variant.listing');
     }
 
     public function add()
@@ -112,7 +152,7 @@ class ProductVariantService{
     public function destroy($id)
     {
         $companyId = auth()->user()?->company_id;
-        $product = ProductVariant::where('company_id', $companyId)->find($id);
+        $product = ProductVariant::when(!auth()->user()?->isSuperAdmin(), fn($q) => $q->where('company_id', $companyId))->find($id);
         if($product)
         {
             $product->delete();

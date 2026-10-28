@@ -647,3 +647,31 @@ html.theme-dark .table tbody tr:hover,
 body.theme-dark .table tbody tr:hover {
     background: rgba(255, 255, 255, 0.04) !important;
 }
+
+/* ==========================================================================
+   REQUIRED FIELD ASTERISK (*) - ALWAYS INLINE BESIDE LABEL TEXT
+   ========================================================================== */
+label .text-danger,
+.nexora-input-label .text-danger,
+.nexora-form-label .text-danger,
+.form-group label .text-danger,
+span.text-danger {
+    display: inline-block !important;
+    color: #EF4444 !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    margin-left: 3px !important;
+    line-height: 1 !important;
+    vertical-align: baseline !important;
+    white-space: nowrap !important;
+}
+
+label,
+.nexora-input-label,
+.nexora-form-label {
+    display: block !important;
+    white-space: normal !important;
+}
+
