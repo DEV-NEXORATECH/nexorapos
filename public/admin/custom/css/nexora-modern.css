@@ -1221,6 +1221,12 @@ body.theme-dark.sidebar-collapsed .sidebar .nav .nav-item > a:hover {
     color: #FFFFFF !important;
 }
 
+.footer {
+    background: transparent !important;
+    border-top: none !important;
+    padding: 0 24px 20px !important;
+}
+
 html.sidebar-collapsed .footer {
     width: calc(100% - 70px) !important;
     margin-left: 70px !important;
@@ -2365,6 +2371,59 @@ body.theme-dark .metric-card-footer {
     color: #64748B !important;
 }
 
+/* Dark Mode: Footer */
+html.theme-dark .footer,
+body.theme-dark .footer,
+html[data-theme="dark"] .footer,
+body[data-theme="dark"] .footer {
+    background: transparent !important;
+    background-color: transparent !important;
+    border-top: none !important;
+}
+
+html.theme-dark .footer .container-fluid,
+body.theme-dark .footer .container-fluid,
+html[data-theme="dark"] .footer .container-fluid,
+body[data-theme="dark"] .footer .container-fluid {
+    background: linear-gradient(135deg, #003F7D 0%, #0058A6 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45) !important;
+    color: #FFFFFF !important;
+}
+
+html.theme-dark .footer-license a,
+html.theme-dark .footer-license span,
+body.theme-dark .footer-license a,
+body.theme-dark .footer-license span,
+html[data-theme="dark"] .footer-license a,
+html[data-theme="dark"] .footer-license span,
+body[data-theme="dark"] .footer-license a,
+body[data-theme="dark"] .footer-license span {
+    color: #FFFFFF !important;
+}
+
+html.theme-dark .footer a:hover,
+body.theme-dark .footer a:hover,
+html[data-theme="dark"] .footer a:hover,
+body[data-theme="dark"] .footer a:hover {
+    color: #38BDF8 !important;
+    text-decoration: none !important;
+}
+
+html.theme-dark .footer-powered span,
+body.theme-dark .footer-powered span,
+html[data-theme="dark"] .footer-powered span,
+body[data-theme="dark"] .footer-powered span {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+html.theme-dark .footer-powered img,
+body.theme-dark .footer-powered img,
+html[data-theme="dark"] .footer-powered img,
+body[data-theme="dark"] .footer-powered img {
+    filter: brightness(0) invert(1) !important;
+}
+
 /* 5. Dark Mode: Table TRANSAKSI TERBARU & Hover Effect */
 html.theme-dark .table-responsive,
 body.theme-dark .table-responsive {
@@ -3492,35 +3551,115 @@ body.theme-dark .tenant-domain-left {
     color: #94A3B8 !important;
 }
 
-/* Dark mode for listing table */
+/* Dark mode for listing table & all DataTables */
 html.theme-dark .nexora-table-card,
-body.theme-dark .nexora-table-card {
+body.theme-dark .nexora-table-card,
+html[data-theme="dark"] .nexora-table-card,
+body[data-theme="dark"] .nexora-table-card {
     background: #151F32 !important;
     border-color: #334155 !important;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
 }
 
+html.theme-dark .dataTables_wrapper,
+body.theme-dark .dataTables_wrapper,
+html[data-theme="dark"] .dataTables_wrapper,
+body[data-theme="dark"] .dataTables_wrapper {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #CBD5E1 !important;
+}
+
 html.theme-dark .nexora-data-table,
-body.theme-dark .nexora-data-table {
+body.theme-dark .nexora-data-table,
+html.theme-dark table.dataTable,
+body.theme-dark table.dataTable,
+html[data-theme="dark"] table.dataTable,
+body[data-theme="dark"] table.dataTable {
+    background: #151F32 !important;
+    background-color: #151F32 !important;
     border-color: #334155 !important;
 }
 
 html.theme-dark .nexora-data-table thead th,
-body.theme-dark .nexora-data-table thead th {
+body.theme-dark .nexora-data-table thead th,
+html.theme-dark table.dataTable thead th,
+body.theme-dark table.dataTable thead th,
+html[data-theme="dark"] table.dataTable thead th,
+body[data-theme="dark"] table.dataTable thead th {
     background: #111827 !important;
+    background-color: #111827 !important;
     color: #94A3B8 !important;
     border-bottom-color: #334155 !important;
 }
 
+html.theme-dark .nexora-data-table tbody tr,
+body.theme-dark .nexora-data-table tbody tr,
+html.theme-dark table.dataTable tbody tr,
+body.theme-dark table.dataTable tbody tr,
+html.theme-dark table.dataTable.display tbody tr,
+body.theme-dark table.dataTable.display tbody tr,
+html.theme-dark table.dataTable.stripe tbody tr,
+body.theme-dark table.dataTable.stripe tbody tr {
+    background: #151F32 !important;
+    background-color: #151F32 !important;
+}
+
+html.theme-dark .nexora-data-table tbody tr:nth-child(even),
+body.theme-dark .nexora-data-table tbody tr:nth-child(even),
+html.theme-dark table.dataTable.display tbody tr.odd,
+html.theme-dark table.dataTable.stripe tbody tr.odd,
+body.theme-dark table.dataTable.display tbody tr.odd,
+body.theme-dark table.dataTable.stripe tbody tr.odd {
+    background: #121B2C !important;
+    background-color: #121B2C !important;
+}
+
+html.theme-dark table.dataTable.display tbody tr.odd > .sorting_1,
+html.theme-dark table.dataTable.order-column.stripe tbody tr.odd > .sorting_1,
+body.theme-dark table.dataTable.display tbody tr.odd > .sorting_1,
+body.theme-dark table.dataTable.order-column.stripe tbody tr.odd > .sorting_1 {
+    background: #162238 !important;
+    background-color: #162238 !important;
+}
+
+html.theme-dark table.dataTable.display tbody tr.even > .sorting_1,
+html.theme-dark table.dataTable.order-column.stripe tbody tr.even > .sorting_1,
+body.theme-dark table.dataTable.display tbody tr.even > .sorting_1,
+body.theme-dark table.dataTable.order-column.stripe tbody tr.even > .sorting_1 {
+    background: #19273E !important;
+    background-color: #19273E !important;
+}
+
 html.theme-dark .nexora-data-table tbody td,
-body.theme-dark .nexora-data-table tbody td {
+body.theme-dark .nexora-data-table tbody td,
+html.theme-dark table.dataTable tbody td,
+body.theme-dark table.dataTable tbody td,
+html[data-theme="dark"] table.dataTable tbody td,
+body[data-theme="dark"] table.dataTable tbody td {
     color: #F8FAFC !important;
     border-bottom-color: #1E293B !important;
 }
 
 html.theme-dark .nexora-data-table tbody tr:hover td,
-body.theme-dark .nexora-data-table tbody tr:hover td {
-    background: #1E293B !important;
+body.theme-dark .nexora-data-table tbody tr:hover td,
+html.theme-dark table.dataTable tbody tr:hover td,
+body.theme-dark table.dataTable tbody tr:hover td,
+html.theme-dark table.dataTable.display tbody tr:hover > .sorting_1,
+body.theme-dark table.dataTable.display tbody tr:hover > .sorting_1 {
+    background: #1E2E4A !important;
+    background-color: #1E2E4A !important;
+}
+
+html.theme-dark .dataTables_wrapper .dataTables_length,
+html.theme-dark .dataTables_wrapper .dataTables_filter,
+html.theme-dark .dataTables_wrapper .dataTables_info,
+body.theme-dark .dataTables_wrapper .dataTables_length,
+body.theme-dark .dataTables_wrapper .dataTables_filter,
+body.theme-dark .dataTables_wrapper .dataTables_info {
+    color: #94A3B8 !important;
 }
 
 html.theme-dark .dataTables_wrapper .dataTables_length select,
